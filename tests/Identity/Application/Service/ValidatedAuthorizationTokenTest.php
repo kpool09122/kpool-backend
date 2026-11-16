@@ -9,7 +9,6 @@ use PHPUnit\Framework\TestCase;
 use Source\Identity\Application\Service\ValidatedAuthorizationToken;
 use Source\Identity\Domain\ValueObject\AccountPrincipalIdentifier;
 use Source\Identity\Domain\ValueObject\AuthorizationScope;
-use Source\Identity\Domain\ValueObject\AuthorizationTarget;
 use Source\Identity\Domain\ValueObject\OAuthClientIdentifier;
 use Source\Identity\Infrastructure\Factory\AuthorizationConsentFactory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
@@ -25,10 +24,8 @@ class ValidatedAuthorizationTokenTest extends TestCase
             new IdentityIdentifier('0199f700-0000-7000-8000-000000000003'),
             new OAuthClientIdentifier('0199f700-0000-4000-8000-000000000010'),
             [AuthorizationScope::WikiRead],
-            [new AuthorizationTarget($account)],
             $account,
             new AccountPrincipalIdentifier('0199f700-0000-7000-8000-000000000004'),
-            $account,
             'https://mcp.example/mcp',
             new DateTimeImmutable()
         );

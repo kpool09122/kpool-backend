@@ -44,6 +44,10 @@ readonly class SwitchAccount implements SwitchAccountInterface
         $targetDelegationIdentifier = $input->targetDelegationIdentifier();
 
         if ($targetDelegationIdentifier === null) {
+            $account = $this->accountRepository->findById($originalPrincipal->accountIdentifier());
+            if ($account === null || $account->status() !== AccountStatus::ACTIVE) {
+                throw new DisallowedDelegationOperationException('The original account is not available.');
+            }
             $currentAccount = new CurrentAccount(
                 originalIdentityIdentifier: $input->identityIdentifier(),
                 originalAccountIdentifier: $originalPrincipal->accountIdentifier(),

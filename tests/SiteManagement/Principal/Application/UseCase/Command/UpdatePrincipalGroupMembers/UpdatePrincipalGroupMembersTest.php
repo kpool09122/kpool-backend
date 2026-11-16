@@ -12,6 +12,7 @@ use Mockery;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use RuntimeException;
+use Source\Identity\Application\UseCase\Query\AuthenticatedIdentityReadModel;
 use Source\Identity\Application\UseCase\Query\GetAuthenticatedIdentity\GetAuthenticatedIdentityInput;
 use Source\Identity\Application\UseCase\Query\GetAuthenticatedIdentity\GetAuthenticatedIdentityInterface;
 use Source\SiteManagement\Principal\Application\Exception\CannotRemoveLastAdministratorException;
@@ -62,6 +63,7 @@ class UpdatePrincipalGroupMembersTest extends TestCase
         $query = $this->app()->make(GetAuthenticatedIdentityInterface::class);
         $input = new GetAuthenticatedIdentityInput($f->administrator->identityIdentifier());
         $before = $query->process($input);
+        self::assertInstanceOf(AuthenticatedIdentityReadModel::class, $before);
         self::assertContains('principal_group_management', array_column($before->siteManagementPolicies(), 'name'));
         $output = $this->update($f, [new PrincipalGroupMembers($f->administrators->principalGroupIdentifier(), [$f->otherAdministrator->principalIdentifier()]),new PrincipalGroupMembers($f->general->principalGroupIdentifier(), [$f->unassigned->principalIdentifier()])]);
         $result = $output->toArray();
@@ -69,6 +71,7 @@ class UpdatePrincipalGroupMembersTest extends TestCase
         self::assertSame([1, 1], array_column($result['principalGroups'], 'memberCount'));
         self::assertArrayNotHasKey('principals', $result);
         $after = $query->process($input);
+        self::assertInstanceOf(AuthenticatedIdentityReadModel::class, $after);
         self::assertNotContains('principal_group_management', array_column($after->siteManagementPolicies(), 'name'));
         $this->assertDatabaseMissing('site_management_principal_group_memberships', ['principal_group_id' => (string)$f->administrators->principalGroupIdentifier(),'principal_id' => (string)$f->administrator->principalIdentifier()]);
         $this->expectException(UnauthorizedException::class);

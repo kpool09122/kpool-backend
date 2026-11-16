@@ -154,7 +154,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AuthenticatedIdentitySummary'
+                anyOf:
+                  - $ref: '#/components/schemas/AuthenticatedIdentitySummary'
+                  - $ref: '#/components/schemas/AuthorizedAccountSelectionSummary'
         '401':
           description: Access is unauthorized.
           content:
@@ -1838,7 +1840,7 @@ paths:
   /oauth/requests/{requestIdentifier}:
     get:
       operationId: OAuthConsent_getAuthorizationRequest
-      description: Read consent-screen details for the Identity and session that created the request. Scope and account candidates are freshly validated. Scope ceilings do not grant business permissions.
+      description: Read consent-screen details for the Identity and session that created the request. Show that the approved scopes apply to every account the user can switch to now or in the future. The selected account and current business permissions apply on every request.
       parameters:
         - name: requestIdentifier
           in: path
@@ -1911,7 +1913,7 @@ paths:
   /oauth/requests/{requestIdentifier}/approve:
     post:
       operationId: OAuthConsent_approveAuthorization
-      description: Revalidate membership, approved delegation pairs, active statuses and switch policy; persist consent and issue code in one DB transaction. Failure rolls back consent and leaves the request retryable. Only server-stored Client/redirect/resource/PKCE/state and an approved subset of stored scopes reach code issuance.
+      description: Revalidate the original account and principal, persist scope consent and issue a code in one DB transaction. Failure rolls back consent and leaves the request retryable. Only server-stored Client/redirect/resource/PKCE/state and an approved subset of stored scopes reach code issuance.
       parameters:
         - name: requestIdentifier
           in: path
@@ -2175,23 +2177,12 @@ components:
       type: object
       required:
         - scopes
-        - targets
-        - initialAccountIdentifier
       properties:
         scopes:
           type: array
           items:
             $ref: '#/components/schemas/ConsentScope'
           description: Nonempty unique subset of the server-stored requested scopes. Scope expansion is rejected. wiki-drafts:write is displayed as Draft Wiki の作成・編集 and excludes automatic creation.
-        targets:
-          type: array
-          items:
-            $ref: '#/components/schemas/AuthorizationTargetChoice'
-          description: Explicit nonempty set. New memberships/delegations never expand existing consent automatically.
-        initialAccountIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Must be included in targets.
     AuthenticateWithPasskeyRequestBody:
       type: object
       required:
@@ -2402,23 +2393,6 @@ components:
             type: string
           description: Social providers linked to the current identity.
       description: Authentication methods available to the current identity without exposing passkey or provider-account details.
-    AuthorizationAccountChoice:
-      type: object
-      required:
-        - accountIdentifier
-        - delegationIdentifier
-        - name
-      properties:
-        accountIdentifier:
-          $ref: '#/components/schemas/KPool.Common.Uuid'
-        delegationIdentifier:
-          type: string
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          nullable: true
-          description: Required for delegated accounts; null only for the original account. The server verifies the exact pair again on approval.
-        name:
-          type: string
     AuthorizationContinuationResult:
       type: object
       required:
@@ -2432,8 +2406,6 @@ components:
       required:
         - clientName
         - scopes
-        - originalAccountIdentifier
-        - accounts
       properties:
         clientName:
           type: string
@@ -2449,29 +2421,72 @@ components:
             required:
               - scope
               - description
-        originalAccountIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Retained for identity/delegation verification only, not automatically added to consent targets.
-        accounts:
-          type: array
-          items:
-            $ref: '#/components/schemas/AuthorizationAccountChoice'
-          description: Original account first; approved, active delegated accounts in delegation identifier order. Only candidates currently permitted by the original principal are returned.
       allOf:
         - $ref: '#/components/schemas/PendingAuthorizationResult'
-    AuthorizationTargetChoice:
+    AuthorizedAccountCandidate:
       type: object
       required:
+        - delegationIdentifier
         - accountIdentifier
+        - account
+        - isCurrent
       properties:
-        accountIdentifier:
-          $ref: '#/components/schemas/KPool.Common.Uuid'
         delegationIdentifier:
           type: string
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
           nullable: true
+        accountIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        account:
+          $ref: '#/components/schemas/AuthenticatedAccountReferenceSummary'
+        isCurrent:
+          type: boolean
+      description: Switchable account for an OAuth connection. Null delegationIdentifier selects the original account.
+    AuthorizedAccountSelectionSummary:
+      type: object
+      required:
+        - identityIdentifier
+        - accountIdentifier
+        - accountPrincipalIdentifier
+        - account
+        - delegationIdentifier
+        - originalAccount
+        - switchableAccounts
+      properties:
+        identityIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        accountIdentifier:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
+        accountPrincipalIdentifier:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
+        account:
+          type: object
+          allOf:
+            - $ref: '#/components/schemas/AuthenticatedAccountReferenceSummary'
+          nullable: true
+        delegationIdentifier:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
+        originalAccount:
+          type: object
+          allOf:
+            - $ref: '#/components/schemas/AuthenticatedAccountReferenceSummary'
+          nullable: true
+          description: Original account reference only when it is explicitly granted and currently usable.
+        switchableAccounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuthorizedAccountCandidate'
+      description: Account selection for an OAuth connection. Available accounts are ordered by accountIdentifier and reflect current membership and delegation permissions. An invalid selection is null, and other available accounts remain switchable.
     CompleteStepUpWithPasskeyRequestBody:
       type: object
       required:
@@ -2673,7 +2688,7 @@ components:
           description: URI reference identifying the specific occurrence.
         code:
           type: string
-          description: 'Machine-readable application error code. Internal API Bearer errors: 401 authentication_required for malformed, expired, revoked, wrong-audience tokens or a missing Identity; 403 insufficient_scope for a missing route scope; 403 oauth_route_not_allowed for non-allowlisted method/route pairs; 403 oauth_api_disabled until Account restrictions are complete. Internal API token configuration failures return 500, not 401. Cookie-only mutations can return 419 csrf_token_mismatch. Authenticated endpoints use authentication_required for a missing or invalid login session, and recent_authentication_required when the current identity and login session lack valid recent authentication. Both return 401; clients must use this code rather than matching detail text. A non-active Principal returns 403 with principal_inactive, distinct from ordinary permission denial. Bulk Principal membership/status saves return 409 with last_active_manager if the final state leaves no reachable active permission manager, or principal_status_change_forbidden if a forbidden lifecycle transition is requested. Neither conflict commits any membership or status changes.'
+          description: 'Machine-readable application error code. Internal API Bearer errors: 401 authentication_required for malformed, expired, revoked, wrong-audience tokens or a missing Identity; 403 insufficient_scope for a missing route scope; 403 oauth_route_not_allowed for non-allowlisted method/route pairs. Internal API token configuration failures return 500, not 401. Cookie-only mutations can return 419 csrf_token_mismatch. Authenticated endpoints use authentication_required for a missing or invalid login session, and recent_authentication_required when the current identity and login session lack valid recent authentication. Both return 401; clients must use this code rather than matching detail text. A non-active Principal returns 403 with principal_inactive, distinct from ordinary permission denial. Bulk Principal membership/status saves return 409 with last_active_manager if the final state leaves no reachable active permission manager, or principal_status_change_forbidden if a forbidden lifecycle transition is requested. Neither conflict commits any membership or status changes.'
       description: RFC 9457 Problem Details payload shared by JSON error responses.
     KPool.Common.Timestamp:
       type: string
@@ -3251,7 +3266,7 @@ components:
     InternalApiBearerAuth:
       type: http
       scheme: Bearer
-      description: 'Short-lived internal API Bearer token, minted server-side from verified MCP authorization. Never send the MCP access token directly to this API. Authorization takes precedence over cookies with no fallback. Each request verifies the token, then checks the method/route scope allowlist and existing business permissions. Verified Bearer does not use a session or CSRF token. HTTP Bearer access stays disabled (403 oauth_api_disabled) until consent-scoped Account restrictions in #890 are complete. Account selection helpers need no extra scope; unregistered routes, including auto-create, consent APIs and authentication management, reject Bearer (403 oauth_route_not_allowed).'
+      description: Short-lived internal API Bearer token, minted server-side from verified MCP authorization. Never send the MCP access token directly to this API. Authorization takes precedence over cookies with no fallback. Each request verifies the token, then checks the method/route scope allowlist and existing business permissions. Verified Bearer does not use a session or CSRF token. Account selection helpers need no extra scope; unregistered routes, including auto-create, consent APIs and authentication management, reject Bearer (403 oauth_route_not_allowed).
 servers:
   - url: /api/v1/identity
     description: Laravel route prefix from bootstrap/app.php.

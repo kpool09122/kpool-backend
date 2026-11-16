@@ -70,7 +70,6 @@ class McpAuthorizationServiceTest extends TestCase
         $new = $verifier->verify($refreshed['access_token']);
         $this->assertEquals($consent->identifier(), $new->consent->identifier());
         $this->assertNotSame($validated->tokenIdentifier, $new->tokenIdentifier);
-        $this->assertEquals($consent->targets(), $new->consent->targets());
         $this->assertTrue(Passport::token()->newQuery()->findOrFail($validated->tokenIdentifier)->revoked);
         $this->assertSame(3600, $tokens['expires_in']);
     }
@@ -228,10 +227,8 @@ class McpAuthorizationServiceTest extends TestCase
             $first->identityIdentifier(),
             $first->clientIdentifier(),
             [AuthorizationScope::WikiRead],
-            $first->targets(),
             $first->originalAccountIdentifier(),
             $first->originalPrincipalIdentifier(),
-            $first->initialAccountIdentifier(),
             $first->resource(),
             new DateTimeImmutable()
         );
@@ -444,10 +441,8 @@ class McpAuthorizationServiceTest extends TestCase
             $first->identityIdentifier(),
             new OAuthClientIdentifier($client->id),
             $first->scopes(),
-            $first->targets(),
             $first->originalAccountIdentifier(),
             $first->originalPrincipalIdentifier(),
-            $first->initialAccountIdentifier(),
             $first->resource(),
             new DateTimeImmutable()
         );

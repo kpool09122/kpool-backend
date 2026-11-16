@@ -16,8 +16,12 @@ use Nyholm\Psr7\ServerRequest;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use RedisException;
+use Source\Account\Account\Application\Service\CurrentAccount;
+use Source\Account\Account\Application\Service\CurrentAccountServiceInterface;
+use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Identity\Application\Exception\InvalidAuthorizationTokenException;
 use Source\Identity\Application\Exception\InvalidInternalApiTokenConfigurationException;
+use Source\Identity\Application\Service\ApiAuthenticationContext;
 use Source\Identity\Application\Service\AuthorizationCodeParameters;
 use Source\Identity\Application\Service\AuthorizationConsentServiceInterface;
 use Source\Identity\Application\Service\AuthorizationTokenVerifierInterface;
@@ -48,8 +52,6 @@ class InternalApiTokenServiceTest extends TestCase
         self::assertEquals($consent->clientIdentifier(), $context->clientIdentifier());
         self::assertSame($source->tokenIdentifier, $context->sourceTokenIdentifier());
         self::assertSame($source->scopes, $context->scopes());
-        self::assertEquals($consent->targets(), $context->targets());
-        self::assertEquals($consent->initialAccountIdentifier(), $context->initialAccountIdentifier());
         self::assertLessThanOrEqual($source->expiresAt, $issued->expiresAt);
         self::assertEquals($issued->expiresAt, $context->expiresAt());
         self::assertLessThanOrEqual(60, $issued->expiresAt->getTimestamp() - now()->getTimestamp());
@@ -91,7 +93,6 @@ class InternalApiTokenServiceTest extends TestCase
             $secondContext = $service->verify($second->reveal());
             self::assertSame([], DB::getQueryLog());
             self::assertSame($firstContext->sourceTokenIdentifier(), $secondContext->sourceTokenIdentifier());
-            self::assertEquals($firstContext->targets(), $secondContext->targets());
             self::assertEquals($second->expiresAt, $secondContext->expiresAt());
         } finally {
             DB::disableQueryLog();
@@ -264,7 +265,12 @@ class InternalApiTokenServiceTest extends TestCase
         $tokens = $this->sourceTokens($consent);
         $service = $this->app()->make(InternalApiTokenServiceInterface::class);
         $oldApi = $service->issue($tokens['access_token']);
-        $service->verify($oldApi->reveal());
+        $oldContext = $service->verify($oldApi->reveal());
+        request()->attributes->set(ApiAuthenticationContext::class, $oldContext);
+        $principal = new PrincipalIdentifier((string) $consent->originalPrincipalIdentifier());
+        $selected = new CurrentAccount($consent->identityIdentifier(), $consent->originalAccountIdentifier(), $principal, $consent->originalAccountIdentifier(), $principal, null);
+        $currentAccountService = $this->app()->make(CurrentAccountServiceInterface::class);
+        $currentAccountService->save($selected);
 
         // Run commit callbacks for the refresh transaction inside the test's outer rollback transaction.
         $connectionName = DB::getDefaultConnection();
@@ -285,7 +291,9 @@ class InternalApiTokenServiceTest extends TestCase
             $context = $service->verify($api->reveal());
             self::assertEquals($consent->identifier(), $context->consentIdentifier());
             self::assertSame([AuthorizationScope::WikiRead], $context->scopes());
-            self::assertEquals($consent->targets(), $context->targets());
+            self::assertNotSame($oldContext->sourceTokenIdentifier(), $context->sourceTokenIdentifier());
+            request()->attributes->set(ApiAuthenticationContext::class, $context);
+            self::assertEquals($selected, $currentAccountService->find($consent->identityIdentifier()));
         }
         $this->expectException(InvalidAuthorizationTokenException::class);
         $service->verify($oldApi->reveal());
@@ -339,19 +347,19 @@ class InternalApiTokenServiceTest extends TestCase
         $this->app()->make(InternalApiTokenServiceInterface::class)->issue($tokens['access_token']);
     }
 
-    public function testAccountsAreResolvedOnlyFromThePersistedConsent(): void
+    public function testOriginalAccountAndPrincipalAreResolvedFromThePersistedConsent(): void
     {
         $consent = CreateAuthorizationConsent::create();
         $tokens = $this->sourceTokens($consent);
         $service = $this->app()->make(InternalApiTokenServiceInterface::class);
         $api = $service->issue($tokens['access_token']);
         $payload = $this->payload($api->reveal());
-        $payload['targets'] = ['other-account'];
-        $payload['initial_account_id'] = 'other-account';
+        $payload['original_account_id'] = 'other-account';
+        $payload['original_principal_id'] = 'other-account';
         $signed = JWT::encode($payload, config()->string('passport.private_key'), 'RS256', null, ['typ' => 'internal-api+jwt']);
         $context = $service->verify($signed);
-        self::assertEquals($consent->targets(), $context->targets());
-        self::assertEquals($consent->initialAccountIdentifier(), $context->initialAccountIdentifier());
+        self::assertEquals($consent->originalAccountIdentifier(), $context->originalAccountIdentifier());
+        self::assertEquals($consent->originalPrincipalIdentifier(), $context->originalPrincipalIdentifier());
     }
 
     public function testNoApiCredentialsArePersistedAsPassportOrRefreshTokens(): void

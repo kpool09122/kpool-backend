@@ -15,6 +15,7 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Source\Account\Account\Application\Exception\AccountNotFoundException;
+use Source\Identity\Application\Service\ApiAuthenticationContext;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Symfony\Component\HttpFoundation\Response;
 use TypeError;
@@ -29,6 +30,11 @@ readonly class EnsurePrincipalActive
 
     public function handle(Request $request, Closure $next): Response
     {
+        if ($request->attributes->get(ApiAuthenticationContext::class) instanceof ApiAuthenticationContext
+            && $request->isMethod('POST') && $request->path() === 'api/v1/account/accounts/switch') {
+            return $next($request);
+        }
+
         try {
             $context = $this->accountResolver->resolve(new IdentityIdentifier((string) Auth::id()));
         } catch (AccountNotFoundException) {

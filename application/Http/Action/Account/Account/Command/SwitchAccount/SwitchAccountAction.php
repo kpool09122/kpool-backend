@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Account\Account\Command\SwitchAccount;
 
-use Application\Http\Context\AccountContext;
+use Application\Http\Context\AccountResolver;
 use Application\Http\Context\ActorContext;
 use Application\Http\Context\AuthContextCache;
 use Application\Http\Exceptions\ForbiddenHttpException;
@@ -15,6 +15,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
+use Source\Account\Account\Application\Exception\AccountNotFoundException;
 use Source\Account\Account\Application\UseCase\Command\SwitchAccount\SwitchAccountInput;
 use Source\Account\Account\Application\UseCase\Command\SwitchAccount\SwitchAccountInterface;
 use Source\Account\Account\Application\UseCase\Command\SwitchAccount\SwitchAccountOutput;
@@ -29,7 +30,7 @@ readonly class SwitchAccountAction
     public function __construct(
         private SwitchAccountInterface $switchAccount,
         private ActorContext $actorContext,
-        private AccountContext $accountContext,
+        private AccountResolver $accountResolver,
         private AuthContextCache $cache,
         private LoggerInterface $logger,
     ) {
@@ -42,12 +43,14 @@ readonly class SwitchAccountAction
                 $delegationIdentifier = $request->delegationIdentifier();
                 $input = new SwitchAccountInput(
                     identityIdentifier: $this->actorContext->identityIdentifier,
-                    originalPrincipalIdentifier: $this->accountContext->originalPrincipalIdentifier(),
+                    originalPrincipalIdentifier: $this->accountResolver->resolveOriginalPrincipalIdentifier($this->actorContext->identityIdentifier),
                     targetDelegationIdentifier: $delegationIdentifier !== null
                         ? new DelegationIdentifier($delegationIdentifier)
                         : null,
                 );
                 $output = new SwitchAccountOutput();
+            } catch (AccountNotFoundException $e) {
+                throw new ForbiddenHttpException(detail: error_message('disallowed_delegation_operation', $request->language()), previous: $e);
             } catch (InvalidArgumentException $e) {
                 throw new UnprocessableEntityHttpException(detail: $e->getMessage(), previous: $e);
             }

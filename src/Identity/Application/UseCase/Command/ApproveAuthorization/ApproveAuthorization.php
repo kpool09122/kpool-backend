@@ -42,29 +42,12 @@ readonly class ApproveAuthorization implements ApproveAuthorizationInterface
                 throw new InvalidAuthorizationConsentException();
             }
         }
-        $selected = [];
-        foreach ($input->targets() as $target) {
-            $account = (string) $target->accountIdentifier;
-            $delegationIdentifier = $target->delegationIdentifier;
-            $allowed = $delegationIdentifier === null
-                ? $account === (string) $originalAccount->accountIdentifier
-                : $this->authorizationAccountService->allowsDelegatedTarget($originalAccount, $target->accountIdentifier, $delegationIdentifier);
-            if (! $allowed || in_array($account, $selected, true)) {
-                throw new InvalidAuthorizationConsentException();
-            }
-            $selected[] = $account;
-        }
-        if (! in_array((string) $input->initialAccountIdentifier(), $selected, true)) {
-            throw new InvalidAuthorizationConsentException();
-        }
         $consent = $this->authorizationConsentFactory->create(
             $input->identityIdentifier(),
             $parameters->clientIdentifier,
             $scopes,
-            $input->targets(),
             $originalAccount->accountIdentifier,
             $originalAccount->principalIdentifier,
-            $input->initialAccountIdentifier(),
             $parameters->resource,
             new DateTimeImmutable(),
         );

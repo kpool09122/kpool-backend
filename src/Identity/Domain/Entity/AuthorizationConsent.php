@@ -9,7 +9,6 @@ use InvalidArgumentException;
 use Source\Identity\Domain\ValueObject\AccountPrincipalIdentifier;
 use Source\Identity\Domain\ValueObject\AuthorizationConsentIdentifier;
 use Source\Identity\Domain\ValueObject\AuthorizationScope;
-use Source\Identity\Domain\ValueObject\AuthorizationTarget;
 use Source\Identity\Domain\ValueObject\OAuthClientIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -18,17 +17,14 @@ class AuthorizationConsent
 {
     /**
      * @param list<AuthorizationScope> $scopes
-     * @param list<AuthorizationTarget> $targets
      */
     public function __construct(
         private readonly AuthorizationConsentIdentifier $identifier,
         private readonly IdentityIdentifier $identityIdentifier,
         private readonly OAuthClientIdentifier $clientIdentifier,
         private readonly array $scopes,
-        private readonly array $targets,
         private readonly AccountIdentifier $originalAccountIdentifier,
         private readonly AccountPrincipalIdentifier $originalPrincipalIdentifier,
-        private readonly AccountIdentifier $initialAccountIdentifier,
         private readonly string $resource,
         private readonly DateTimeImmutable $consentedAt,
         private ?DateTimeImmutable $revokedAt = null,
@@ -36,19 +32,6 @@ class AuthorizationConsent
         $scopeValues = array_map(static fn (AuthorizationScope $scope): string => $scope->value, $scopes);
         if ($resource === '' || $scopes === [] || count(array_unique($scopeValues)) !== count($scopes)) {
             throw new InvalidArgumentException('Invalid authorization consent.');
-        }
-        $accounts = [];
-        foreach ($targets as $target) {
-            $account = (string) $target->accountIdentifier;
-            if (in_array($account, $accounts, true)
-                || ($target->delegationIdentifier === null && $account !== (string) $originalAccountIdentifier)
-                || ($target->delegationIdentifier !== null && $account === (string) $originalAccountIdentifier)) {
-                throw new InvalidArgumentException('Invalid authorization target.');
-            }
-            $accounts[] = $account;
-        }
-        if (! in_array((string) $initialAccountIdentifier, $accounts, true)) {
-            throw new InvalidArgumentException('Initial account is not granted.');
         }
     }
 
@@ -75,14 +58,6 @@ class AuthorizationConsent
         return $this->scopes;
     }
 
-    /**
-     * @return list<AuthorizationTarget>
-     */
-    public function targets(): array
-    {
-        return $this->targets;
-    }
-
     public function originalAccountIdentifier(): AccountIdentifier
     {
         return $this->originalAccountIdentifier;
@@ -91,11 +66,6 @@ class AuthorizationConsent
     public function originalPrincipalIdentifier(): AccountPrincipalIdentifier
     {
         return $this->originalPrincipalIdentifier;
-    }
-
-    public function initialAccountIdentifier(): AccountIdentifier
-    {
-        return $this->initialAccountIdentifier;
     }
 
     public function resource(): string

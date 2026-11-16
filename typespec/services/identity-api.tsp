@@ -172,6 +172,26 @@ model AuthenticatedIdentitySummary extends IdentitySummary {
   authenticationMethods: AuthenticationMethodsSummary;
 }
 
+@doc("Switchable account for an OAuth connection. Null delegationIdentifier selects the original account.")
+model AuthorizedAccountCandidate {
+  delegationIdentifier: Uuid | null;
+  accountIdentifier: Uuid;
+  account: AuthenticatedAccountReferenceSummary;
+  isCurrent: boolean;
+}
+
+@doc("Account selection for an OAuth connection. Available accounts are ordered by accountIdentifier and reflect current membership and delegation permissions. An invalid selection is null, and other available accounts remain switchable.")
+model AuthorizedAccountSelectionSummary {
+  identityIdentifier: Uuid;
+  accountIdentifier: Uuid | null;
+  accountPrincipalIdentifier: Uuid | null;
+  account: AuthenticatedAccountReferenceSummary | null;
+  delegationIdentifier: Uuid | null;
+  @doc("Original account reference only when it is explicitly granted and currently usable.")
+  originalAccount: AuthenticatedAccountReferenceSummary | null;
+  switchableAccounts: AuthorizedAccountCandidate[];
+}
+
 @doc("Public profile fields for a requested identity.")
 model IdentityProfileSummary {
   @doc("Identity identifier.")
@@ -482,7 +502,8 @@ model OkIdentityResponse {
 @doc("Response returned when fetching the current authenticated identity succeeds.")
 model AuthenticatedIdentityResponse {
   @statusCode statusCode: 200;
-  @body body: AuthenticatedIdentitySummary;
+  @doc("Cookie authentication returns the identity summary; OAuth Bearer authentication returns only the account selection for the connection.")
+  @body body: AuthenticatedIdentitySummary | AuthorizedAccountSelectionSummary;
 }
 
 @doc("Response returned when fetching a requested identity profile succeeds.")
@@ -798,34 +819,14 @@ model PendingAuthorizationResult {
   expiresAt: Timestamp;
 }
 
-model AuthorizationAccountChoice {
-  accountIdentifier: Uuid;
-  @doc("Required for delegated accounts; null only for the original account. The server verifies the exact pair again on approval.")
-  delegationIdentifier: Uuid | null;
-  name: string;
-}
-
 model AuthorizationRequestResult extends PendingAuthorizationResult {
   clientName: string;
   scopes: { scope: ConsentScope; description: string; }[];
-  @doc("Retained for identity/delegation verification only, not automatically added to consent targets.")
-  originalAccountIdentifier: Uuid;
-  @doc("Original account first; approved, active delegated accounts in delegation identifier order. Only candidates currently permitted by the original principal are returned.")
-  accounts: AuthorizationAccountChoice[];
-}
-
-model AuthorizationTargetChoice {
-  accountIdentifier: Uuid;
-  delegationIdentifier?: Uuid | null;
 }
 
 model ApproveAuthorizationBody {
   @doc("Nonempty unique subset of the server-stored requested scopes. Scope expansion is rejected. wiki-drafts:write is displayed as Draft Wiki の作成・編集 and excludes automatic creation.")
   scopes: ConsentScope[];
-  @doc("Explicit nonempty set. New memberships/delegations never expand existing consent automatically.")
-  targets: AuthorizationTargetChoice[];
-  @doc("Must be included in targets.")
-  initialAccountIdentifier: Uuid;
 }
 
 @doc("Navigate to this server-generated, registered OAuth client URI. Approval carries code and original state; denial carries error=access_denied and original state. Never expose access or refresh tokens to the consent screen. Invalid requests are local errors and must not redirect to unvalidated input.")
@@ -843,12 +844,12 @@ interface OAuthConsent {
   createAuthorizationRequest(@body body: CreateAuthorizationRequestBody): CreatedAuthorizationRequestResponse | UnauthorizedProblemResponse | BadRequestProblemResponse | NotFoundProblemResponse | UnprocessableEntityProblemResponse | CsrfTokenMismatchProblemResponse | TooManyRequestsProblemResponse | ServiceUnavailableProblemResponse | InternalServerErrorProblemResponse;
 
   @get @route("/{requestIdentifier}")
-  @doc("Read consent-screen details for the Identity and session that created the request. Scope and account candidates are freshly validated. Scope ceilings do not grant business permissions.")
+  @doc("Read consent-screen details for the Identity and session that created the request. Show that the approved scopes apply to every account the user can switch to now or in the future. The selected account and current business permissions apply on every request.")
   @useAuth(SessionCookieAuth)
   getAuthorizationRequest(@path requestIdentifier: string): AuthorizationRequestResponse | UnauthorizedProblemResponse | ForbiddenProblemResponse | BadRequestProblemResponse | ConflictProblemResponse | NotFoundProblemResponse | TooManyRequestsProblemResponse | ServiceUnavailableProblemResponse | InternalServerErrorProblemResponse;
 
   @post @route("/{requestIdentifier}/approve")
-  @doc("Revalidate membership, approved delegation pairs, active statuses and switch policy; persist consent and issue code in one DB transaction. Failure rolls back consent and leaves the request retryable. Only server-stored Client/redirect/resource/PKCE/state and an approved subset of stored scopes reach code issuance.")
+  @doc("Revalidate the original account and principal, persist scope consent and issue a code in one DB transaction. Failure rolls back consent and leaves the request retryable. Only server-stored Client/redirect/resource/PKCE/state and an approved subset of stored scopes reach code issuance.")
   @useAuth(SessionCookieAuth)
   approveAuthorization(@path requestIdentifier: string, @body body: ApproveAuthorizationBody): AuthorizationContinuationResponse | UnauthorizedProblemResponse | ForbiddenProblemResponse | BadRequestProblemResponse | ConflictProblemResponse | NotFoundProblemResponse | UnprocessableEntityProblemResponse | CsrfTokenMismatchProblemResponse | TooManyRequestsProblemResponse | ServiceUnavailableProblemResponse | InternalServerErrorProblemResponse;
 

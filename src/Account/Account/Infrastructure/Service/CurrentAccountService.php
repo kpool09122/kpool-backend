@@ -10,6 +10,7 @@ use Psr\Log\LoggerInterface;
 use Source\Account\Account\Application\Service\CurrentAccount;
 use Source\Account\Account\Application\Service\CurrentAccountServiceInterface;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
+use Source\Identity\Application\Service\ApiAuthenticationContext;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -82,6 +83,10 @@ class CurrentAccountService implements CurrentAccountServiceInterface
     private function key(IdentityIdentifier $identityIdentifier): string
     {
         $request = request();
+        $context = $request->attributes->get(ApiAuthenticationContext::class);
+        if ($context instanceof ApiAuthenticationContext) {
+            return self::KEY_PREFIX . $identityIdentifier . ':consent:' . $context->consentIdentifier();
+        }
         $sessionId = $request->hasSession() ? $request->session()->getId() : 'stateless';
 
         return self::KEY_PREFIX . $identityIdentifier . ':' . $sessionId;

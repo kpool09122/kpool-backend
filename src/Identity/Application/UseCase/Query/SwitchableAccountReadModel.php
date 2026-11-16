@@ -7,7 +7,7 @@ namespace Source\Identity\Application\UseCase\Query;
 readonly class SwitchableAccountReadModel
 {
     public function __construct(
-        private string $delegationIdentifier,
+        private ?string $delegationIdentifier,
         private string $accountIdentifier,
         private AuthenticatedAccountReferenceReadModel $account,
         private bool $isCurrent,
@@ -16,7 +16,7 @@ readonly class SwitchableAccountReadModel
 
     /**
      * @return array{
-     *     delegationIdentifier: string,
+     *     delegationIdentifier: string|null,
      *     accountIdentifier: string,
      *     account: array{accountIdentifier: string, name: string},
      *     isCurrent: bool

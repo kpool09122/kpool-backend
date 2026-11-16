@@ -10,6 +10,7 @@ use Application\Http\Context\ActorContext;
 use Application\Http\Context\AuthContextCache;
 use Closure;
 use Illuminate\Http\Request;
+use Source\Identity\Application\Service\ApiAuthenticationContext;
 use Symfony\Component\HttpFoundation\Response;
 
 class ResolveAccountContext
@@ -22,6 +23,10 @@ class ResolveAccountContext
 
     public function handle(Request $request, Closure $next): Response
     {
+        if ($request->attributes->get(ApiAuthenticationContext::class) instanceof ApiAuthenticationContext
+            && $request->isMethod('POST') && $request->path() === 'api/v1/account/accounts/switch') {
+            return $next($request);
+        }
         /** @var ActorContext $actorContext */
         $actorContext = app(ActorContext::class);
         $verifiedContext = $request->attributes->get(AccountContext::class);

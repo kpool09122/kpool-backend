@@ -10,7 +10,6 @@ use Source\Identity\Domain\Factory\AuthorizationConsentFactoryInterface;
 use Source\Identity\Domain\ValueObject\AccountPrincipalIdentifier;
 use Source\Identity\Domain\ValueObject\AuthorizationConsentIdentifier;
 use Source\Identity\Domain\ValueObject\AuthorizationScope;
-use Source\Identity\Domain\ValueObject\AuthorizationTarget;
 use Source\Identity\Domain\ValueObject\OAuthClientIdentifier;
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
@@ -24,16 +23,13 @@ readonly class AuthorizationConsentFactory implements AuthorizationConsentFactor
 
     /**
      * @param list<AuthorizationScope> $scopes
-     * @param list<AuthorizationTarget> $targets
      */
     public function create(
         IdentityIdentifier $identityIdentifier,
         OAuthClientIdentifier $clientIdentifier,
         array $scopes,
-        array $targets,
         AccountIdentifier $originalAccountIdentifier,
         AccountPrincipalIdentifier $originalPrincipalIdentifier,
-        AccountIdentifier $initialAccountIdentifier,
         string $resource,
         DateTimeImmutable $consentedAt,
     ): AuthorizationConsent {
@@ -42,10 +38,8 @@ readonly class AuthorizationConsentFactory implements AuthorizationConsentFactor
             $identityIdentifier,
             $clientIdentifier,
             $scopes,
-            $targets,
             $originalAccountIdentifier,
             $originalPrincipalIdentifier,
-            $initialAccountIdentifier,
             $resource,
             $consentedAt,
         );

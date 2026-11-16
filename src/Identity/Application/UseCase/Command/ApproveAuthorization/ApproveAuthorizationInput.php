@@ -5,15 +5,12 @@ declare(strict_types=1);
 namespace Source\Identity\Application\UseCase\Command\ApproveAuthorization;
 
 use Source\Identity\Domain\ValueObject\AuthorizationScope;
-use Source\Identity\Domain\ValueObject\AuthorizationTarget;
-use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 
 readonly class ApproveAuthorizationInput implements ApproveAuthorizationInputPort
 {
-    /** @param list<AuthorizationScope> $scopes
-     * @param list<AuthorizationTarget> $targets */
-    public function __construct(private string $requestIdentifier, private IdentityIdentifier $identityIdentifier, private array $scopes, private array $targets, private AccountIdentifier $initialAccountIdentifier)
+    /** @param list<AuthorizationScope> $scopes */
+    public function __construct(private string $requestIdentifier, private IdentityIdentifier $identityIdentifier, private array $scopes)
     {
     }
 
@@ -31,16 +28,5 @@ readonly class ApproveAuthorizationInput implements ApproveAuthorizationInputPor
     public function scopes(): array
     {
         return $this->scopes;
-    }
-
-    /** @return list<AuthorizationTarget> */
-    public function targets(): array
-    {
-        return $this->targets;
-    }
-
-    public function initialAccountIdentifier(): AccountIdentifier
-    {
-        return $this->initialAccountIdentifier;
     }
 }

@@ -8,7 +8,6 @@ use Illuminate\Support\Str;
 use Source\Identity\Application\Service\ValidatedAuthorizationToken;
 use Source\Identity\Domain\ValueObject\AccountPrincipalIdentifier;
 use Source\Identity\Domain\ValueObject\AuthorizationScope;
-use Source\Identity\Domain\ValueObject\AuthorizationTarget;
 use Source\Identity\Domain\ValueObject\OAuthClientIdentifier;
 use Source\Identity\Infrastructure\Factory\AuthorizationConsentFactory;
 use Source\Identity\Infrastructure\Service\InternalApiAuthorizationCache;
@@ -29,10 +28,8 @@ class InternalApiAuthorizationCacheTest extends TestCase
             new IdentityIdentifier('0199f700-0000-7000-8000-000000000003'),
             $client,
             [AuthorizationScope::WikiRead],
-            [new AuthorizationTarget($account)],
             $account,
             new AccountPrincipalIdentifier('0199f700-0000-7000-8000-000000000004'),
-            $account,
             'https://mcp.example/mcp',
             now()->toDateTimeImmutable(),
         );
