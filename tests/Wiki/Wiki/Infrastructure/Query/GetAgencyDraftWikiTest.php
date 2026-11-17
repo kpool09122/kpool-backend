@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace Tests\Wiki\Wiki\Infrastructure\Query;
 
 use PHPUnit\Framework\Attributes\Group;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Application\UseCase\Query\AgencyWikiBasicReadModel;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetAgencyDraftWiki\GetAgencyDraftWikiInput;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetAgencyDraftWiki\GetAgencyDraftWikiInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
+use Tests\Helper\CreateDraftReadPrincipal;
 use Tests\Helper\CreateDraftWiki;
 use Tests\Helper\CreateImage;
 use Tests\Helper\CreateWiki;
@@ -17,6 +19,13 @@ use Tests\TestCase;
 
 class GetAgencyDraftWikiTest extends TestCase
 {
+    private ?PrincipalIdentifier $readPrincipalIdentifier = null;
+
+    private function readPrincipalIdentifier(): PrincipalIdentifier
+    {
+        return $this->readPrincipalIdentifier ??= CreateDraftReadPrincipal::create();
+    }
+
     #[Group('useDb')]
     public function testProcessReturnsDraftAgencyWiki(): void
     {
@@ -90,7 +99,7 @@ class GetAgencyDraftWikiTest extends TestCase
         );
 
         $useCase = $this->app()->make(GetAgencyDraftWikiInterface::class);
-        $readModel = $useCase->process(new GetAgencyDraftWikiInput(new DraftWikiIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f402')));
+        $readModel = $useCase->process(new GetAgencyDraftWikiInput(new DraftWikiIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f402'), $this->readPrincipalIdentifier()));
 
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f402', $readModel->wikiIdentifier());
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f405', $readModel->translationSetIdentifier());
@@ -147,7 +156,7 @@ class GetAgencyDraftWikiTest extends TestCase
         );
 
         $useCase = $this->app()->make(GetAgencyDraftWikiInterface::class);
-        $readModel = $useCase->process(new GetAgencyDraftWikiInput(new DraftWikiIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f502')));
+        $readModel = $useCase->process(new GetAgencyDraftWikiInput(new DraftWikiIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f502'), $this->readPrincipalIdentifier()));
 
         $this->assertNull($readModel->basic()['officialWebsite']);
     }
@@ -159,6 +168,6 @@ class GetAgencyDraftWikiTest extends TestCase
 
         $this->expectException(WikiNotFoundException::class);
 
-        $useCase->process(new GetAgencyDraftWikiInput(new DraftWikiIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217ffff')));
+        $useCase->process(new GetAgencyDraftWikiInput(new DraftWikiIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217ffff'), $this->readPrincipalIdentifier()));
     }
 }

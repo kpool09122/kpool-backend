@@ -6,24 +6,33 @@ namespace Tests\Wiki\Wiki\Infrastructure\Query;
 
 use Database\Seeders\WikiEditorSampleSeeder;
 use PHPUnit\Framework\Attributes\Group;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetGroupDraftWiki\GetGroupDraftWikiInput;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetGroupDraftWiki\GetGroupDraftWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Query\GroupWikiBasicReadModel;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
+use Tests\Helper\CreateDraftReadPrincipal;
 use Tests\Helper\CreateDraftWiki;
 use Tests\Helper\CreateWiki;
 use Tests\TestCase;
 
 class GetGroupDraftWikiTest extends TestCase
 {
+    private ?PrincipalIdentifier $readPrincipalIdentifier = null;
+
+    private function readPrincipalIdentifier(): PrincipalIdentifier
+    {
+        return $this->readPrincipalIdentifier ??= CreateDraftReadPrincipal::create();
+    }
+
     #[Group('useDb')]
     public function testProcessReturnsDraftGroupWikiForSeederData(): void
     {
         $this->seed(WikiEditorSampleSeeder::class);
 
         $useCase = $this->app()->make(GetGroupDraftWikiInterface::class);
-        $readModel = $useCase->process(new GetGroupDraftWikiInput(new DraftWikiIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f002')));
+        $readModel = $useCase->process(new GetGroupDraftWikiInput(new DraftWikiIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f002'), $this->readPrincipalIdentifier()));
 
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f002', $readModel->wikiIdentifier());
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f003', $readModel->translationSetIdentifier());
@@ -74,7 +83,7 @@ class GetGroupDraftWikiTest extends TestCase
         );
 
         $useCase = $this->app()->make(GetGroupDraftWikiInterface::class);
-        $readModel = $useCase->process(new GetGroupDraftWikiInput(new DraftWikiIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f102')));
+        $readModel = $useCase->process(new GetGroupDraftWikiInput(new DraftWikiIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f102'), $this->readPrincipalIdentifier()));
 
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f101', $readModel->basic()['agencyIdentifier']);
         $this->assertSame([
@@ -120,7 +129,7 @@ class GetGroupDraftWikiTest extends TestCase
         );
 
         $useCase = $this->app()->make(GetGroupDraftWikiInterface::class);
-        $readModel = $useCase->process(new GetGroupDraftWikiInput(new DraftWikiIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f204')));
+        $readModel = $useCase->process(new GetGroupDraftWikiInput(new DraftWikiIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f204'), $this->readPrincipalIdentifier()));
 
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f204', $readModel->wikiIdentifier());
         $this->assertSame('Second', $readModel->basic()['name']);
@@ -133,7 +142,7 @@ class GetGroupDraftWikiTest extends TestCase
 
         $this->expectException(WikiNotFoundException::class);
 
-        $useCase->process(new GetGroupDraftWikiInput(new DraftWikiIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217ffff')));
+        $useCase->process(new GetGroupDraftWikiInput(new DraftWikiIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217ffff'), $this->readPrincipalIdentifier()));
     }
 
     #[Group('useDb')]
@@ -145,6 +154,6 @@ class GetGroupDraftWikiTest extends TestCase
 
         $this->expectException(WikiNotFoundException::class);
 
-        $useCase->process(new GetGroupDraftWikiInput(new DraftWikiIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f172')));
+        $useCase->process(new GetGroupDraftWikiInput(new DraftWikiIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f172'), $this->readPrincipalIdentifier()));
     }
 }

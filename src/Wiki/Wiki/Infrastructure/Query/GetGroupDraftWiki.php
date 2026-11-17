@@ -9,6 +9,12 @@ use Application\Models\Wiki\DraftWikiGroupBasic as DraftWikiGroupBasicModel;
 use InvalidArgumentException;
 use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Infrastructure\Support\ImageUrl;
+use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
+use Source\Wiki\Shared\Domain\Exception\DisallowedException;
+use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
+use Source\Wiki\Shared\Domain\ValueObject\Action;
+use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Application\UseCase\Query\DraftWikiReadModel;
@@ -16,25 +22,28 @@ use Source\Wiki\Wiki\Application\UseCase\Query\GetGroupDraftWiki\GetGroupDraftWi
 use Source\Wiki\Wiki\Application\UseCase\Query\GetGroupDraftWiki\GetGroupDraftWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Query\GroupWikiBasicReadModel;
 use Source\Wiki\Wiki\Application\UseCase\Query\OfficialColorReadModelMapper;
-use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 
 readonly class GetGroupDraftWiki implements GetGroupDraftWikiInterface
 {
+    public function __construct(
+        private PrincipalRepositoryInterface $principalRepository,
+        private PolicyEvaluatorInterface $policyEvaluator,
+    ) {
+    }
+
     /**
-     * @param GetGroupDraftWikiInputPort $input
-     * @return DraftWikiReadModel
+     * @throws DisallowedException
+     * @throws PrincipalNotFoundException
      * @throws WikiNotFoundException
      */
     public function process(GetGroupDraftWikiInputPort $input): DraftWikiReadModel
     {
-        return $this->getByIdentifier($input->wikiIdentifier());
-    }
+        $principal = $this->principalRepository->findById($input->principalIdentifier());
+        if ($principal === null) {
+            throw new PrincipalNotFoundException();
+        }
 
-    /**
-     * @throws WikiNotFoundException
-     */
-    private function getByIdentifier(DraftWikiIdentifier $wikiIdentifier): DraftWikiReadModel
-    {
+        $wikiIdentifier = $input->wikiIdentifier();
         $model = DraftWikiModel::query()
             ->select(
                 'draft_wikis.*',
@@ -54,6 +63,18 @@ readonly class GetGroupDraftWiki implements GetGroupDraftWikiInterface
 
         if ($model === null) {
             throw new WikiNotFoundException("Draft group wiki not found for wiki identifier: {$wikiIdentifier}");
+        }
+
+        $basic = $this->groupBasic($model->groupBasic);
+        $resource = new Resource(
+            type: ResourceType::GROUP,
+            agencyId: $basic->agency_identifier,
+            groupIds: [$model->id],
+            editorId: $model->editor_id,
+        );
+
+        if (! $this->policyEvaluator->evaluate($principal, Action::READ, $resource)) {
+            throw new DisallowedException();
         }
 
         return $this->readModel($model);

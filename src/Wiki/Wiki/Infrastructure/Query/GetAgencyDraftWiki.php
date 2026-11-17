@@ -9,29 +9,40 @@ use Application\Models\Wiki\DraftWikiAgencyBasic as DraftWikiAgencyBasicModel;
 use InvalidArgumentException;
 use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Infrastructure\Support\ImageUrl;
+use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
+use Source\Wiki\Shared\Domain\Exception\DisallowedException;
+use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
+use Source\Wiki\Shared\Domain\ValueObject\Action;
+use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Application\UseCase\Query\AgencyWikiBasicReadModel;
 use Source\Wiki\Wiki\Application\UseCase\Query\DraftWikiReadModel;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetAgencyDraftWiki\GetAgencyDraftWikiInputPort;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetAgencyDraftWiki\GetAgencyDraftWikiInterface;
-use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 
 readonly class GetAgencyDraftWiki implements GetAgencyDraftWikiInterface
 {
+    public function __construct(
+        private PrincipalRepositoryInterface $principalRepository,
+        private PolicyEvaluatorInterface $policyEvaluator,
+    ) {
+    }
+
     /**
+     * @throws DisallowedException
+     * @throws PrincipalNotFoundException
      * @throws WikiNotFoundException
      */
     public function process(GetAgencyDraftWikiInputPort $input): DraftWikiReadModel
     {
-        return $this->getByIdentifier($input->wikiIdentifier());
-    }
+        $principal = $this->principalRepository->findById($input->principalIdentifier());
+        if ($principal === null) {
+            throw new PrincipalNotFoundException();
+        }
 
-    /**
-     * @throws WikiNotFoundException
-     */
-    private function getByIdentifier(DraftWikiIdentifier $wikiIdentifier): DraftWikiReadModel
-    {
+        $wikiIdentifier = $input->wikiIdentifier();
         $model = DraftWikiModel::query()
             ->select(
                 'draft_wikis.*',
@@ -51,6 +62,16 @@ readonly class GetAgencyDraftWiki implements GetAgencyDraftWikiInterface
 
         if ($model === null) {
             throw new WikiNotFoundException("Draft agency wiki not found for wiki identifier: {$wikiIdentifier}");
+        }
+
+        $resource = new Resource(
+            type: ResourceType::AGENCY,
+            agencyId: $model->id,
+            editorId: $model->editor_id,
+        );
+
+        if (! $this->policyEvaluator->evaluate($principal, Action::READ, $resource)) {
+            throw new DisallowedException();
         }
 
         return $this->readModel($model);

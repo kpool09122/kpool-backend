@@ -78,10 +78,6 @@ Route::middleware(['auth.api', 'account.active', 'principal.active'])->group(fun
         // Wiki
         Route::get('/wikis/{language}/masters', SearchMasterWikisAction::class);
         Route::get('/wiki-translation-sets/masters', SearchTranslationSetMasterWikisAction::class);
-        Route::get('/wiki/agency/{wikiIdentifier}/draft', GetAgencyDraftWikiAction::class);
-        Route::get('/wiki/group/{wikiIdentifier}/draft', GetGroupDraftWikiAction::class);
-        Route::get('/wiki/song/{wikiIdentifier}/draft', GetSongDraftWikiAction::class);
-        Route::get('/wiki/talent/{wikiIdentifier}/draft', GetTalentDraftWikiAction::class);
 
         // Image
         Route::get('/draft-images', ListDraftImagesAction::class);
@@ -123,6 +119,10 @@ Route::middleware(['auth.api', 'account.active', 'principal.active', 'resolve.ac
         // Wiki
         Route::get('/my/draft-wikis', ListMyDraftWikisAction::class);
         Route::get('/draft-wikis', ListDraftWikisAction::class);
+        Route::get('/wiki/agency/{wikiIdentifier}/draft', GetAgencyDraftWikiAction::class);
+        Route::get('/wiki/group/{wikiIdentifier}/draft', GetGroupDraftWikiAction::class);
+        Route::get('/wiki/song/{wikiIdentifier}/draft', GetSongDraftWikiAction::class);
+        Route::get('/wiki/talent/{wikiIdentifier}/draft', GetTalentDraftWikiAction::class);
         Route::get('/wiki/{language}/agency/{slug}/my/draft', GetMyAgencyDraftWikiAction::class);
         Route::get('/wiki/{language}/group/{slug}/my/draft', GetMyGroupDraftWikiAction::class);
         Route::get('/wiki/{language}/song/{slug}/my/draft', GetMySongDraftWikiAction::class);
