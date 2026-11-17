@@ -53,6 +53,8 @@ use Source\Identity\Application\UseCase\Command\StartPasskeyRecoveryWithSocial\S
 use Source\Identity\Application\UseCase\Command\StartPasskeyRecoveryWithSocial\StartPasskeyRecoveryWithSocialInterface;
 use Source\Identity\Application\UseCase\Command\StartStepUpWithSocial\StartStepUpWithSocial;
 use Source\Identity\Application\UseCase\Command\StartStepUpWithSocial\StartStepUpWithSocialInterface;
+use Source\Identity\Application\UseCase\Command\UpdateAuthorizationScopeSettings\UpdateAuthorizationScopeSettings;
+use Source\Identity\Application\UseCase\Command\UpdateAuthorizationScopeSettings\UpdateAuthorizationScopeSettingsInterface;
 use Source\Identity\Application\UseCase\Command\UpdateIdentity\UpdateIdentity;
 use Source\Identity\Application\UseCase\Command\UpdateIdentity\UpdateIdentityInterface;
 use Source\Identity\Application\UseCase\Command\UpdatePasskey\UpdatePasskey;
@@ -67,11 +69,13 @@ use Source\Identity\Application\UseCase\Command\WithdrawFromService\WithdrawFrom
 use Source\Identity\Application\UseCase\Command\WithdrawFromService\WithdrawFromServiceInterface;
 use Source\Identity\Application\UseCase\Query\GetAuthenticatedIdentity\GetAuthenticatedIdentityInterface;
 use Source\Identity\Application\UseCase\Query\GetAuthorizationRequest\GetAuthorizationRequestInterface;
+use Source\Identity\Application\UseCase\Query\GetAuthorizationScopeSettings\GetAuthorizationScopeSettingsInterface;
 use Source\Identity\Application\UseCase\Query\GetIdentityProfile\GetIdentityProfileInterface;
 use Source\Identity\Application\UseCase\Query\ListAuthorizationConnections\ListAuthorizationConnectionsInterface;
 use Source\Identity\Application\UseCase\Query\ListPasskeys\ListPasskeysInterface;
 use Source\Identity\Infrastructure\Query\GetAuthenticatedIdentity;
 use Source\Identity\Infrastructure\Query\GetAuthorizationRequest;
+use Source\Identity\Infrastructure\Query\GetAuthorizationScopeSettings;
 use Source\Identity\Infrastructure\Query\GetIdentityProfile;
 use Source\Identity\Infrastructure\Query\ListAuthorizationConnections;
 use Source\Identity\Infrastructure\Query\ListPasskeys;
@@ -80,6 +84,8 @@ class UseCaseServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        $this->app->singleton(UpdateAuthorizationScopeSettingsInterface::class, UpdateAuthorizationScopeSettings::class);
+        $this->app->singleton(GetAuthorizationScopeSettingsInterface::class, GetAuthorizationScopeSettings::class);
         $this->app->singleton(RevokeAuthorizationInterface::class, RevokeAuthorization::class);
         $this->app->singleton(CreateAuthorizationRequestInterface::class, CreateAuthorizationRequest::class);
         $this->app->singleton(ApproveAuthorizationInterface::class, ApproveAuthorization::class);

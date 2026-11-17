@@ -821,11 +821,12 @@ model PendingAuthorizationResult {
 
 model AuthorizationRequestResult extends PendingAuthorizationResult {
   clientName: string;
+  @doc("Requested scopes intersected with the Identity-wide allowed scopes, in requested order. Empty means consent is unavailable; disable approval and allow cancellation. Settings are rechecked on final approval.")
   scopes: { scope: ConsentScope; description: string; }[];
 }
 
 model ApproveAuthorizationBody {
-  @doc("Nonempty unique subset of the server-stored requested scopes. Scope expansion is rejected. wiki-drafts:write is displayed as Draft Wiki の作成・編集 and excludes automatic creation.")
+  @doc("Nonempty unique subset of both the server-stored requested scopes and the latest Identity-wide allowed scopes. Expansion or disallowed scopes are rejected with 400, including settings changes after screen display. wiki-drafts:write is displayed as Draft Wiki の作成・編集 and excludes automatic creation.")
   scopes: ConsentScope[];
 }
 
@@ -872,6 +873,30 @@ model AuthorizationConnection {
 model AuthorizationConnectionsResponse {
   @statusCode statusCode: 200;
   @body body: { connections: AuthorizationConnection[]; };
+}
+
+@doc("Identity-wide ceiling for future external client consents. A missing setting allows all currently defined scopes. An explicitly saved empty list disables new consent. Existing connections and tokens are unchanged.")
+model AuthorizationScopeSettings {
+  @doc("Unique defined scopes. Empty is allowed. Applies to all OAuth clients for the authenticated Identity.")
+  @maxItems(6)
+  scopes: ConsentScope[];
+}
+
+model AuthorizationScopeSettingsResponse {
+  @statusCode statusCode: 200;
+  @body body: AuthorizationScopeSettings;
+}
+
+@route("/oauth/scope-settings")
+@useAuth(SessionCookieAuth)
+interface OAuthScopeSettings {
+  @get
+  @doc("Read the authenticated Identity's allowed scopes. No target Identity ID is accepted. Cookie-only, no-store, independent of Account selection/status.")
+  getAuthorizationScopeSettings(): AuthorizationScopeSettingsResponse | UnauthorizedProblemResponse | ForbiddenProblemResponse | TooManyRequestsProblemResponse | ServiceUnavailableProblemResponse | InternalServerErrorProblemResponse;
+
+  @put
+  @doc("Replace the authenticated Identity's allowed scopes. Cookie and CSRF required; no-store. scopes is required, unique and may be empty. Returns an empty JSON array. Does not modify existing consents; applies when subsequent consent is finalized.")
+  updateAuthorizationScopeSettings(@body body: AuthorizationScopeSettings): OkEmptyResponse | UnauthorizedProblemResponse | ForbiddenProblemResponse | BadRequestProblemResponse | UnprocessableEntityProblemResponse | CsrfTokenMismatchProblemResponse | TooManyRequestsProblemResponse | ServiceUnavailableProblemResponse | InternalServerErrorProblemResponse;
 }
 
 @route("/oauth/connections")

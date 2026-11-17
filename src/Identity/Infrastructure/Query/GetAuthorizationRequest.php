@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Source\Identity\Infrastructure\Query;
 
+use Application\Models\Identity\AuthorizationScopeSettings;
 use Source\Identity\Application\Service\AuthorizationAccountServiceInterface;
 use Source\Identity\Application\Service\AuthorizationRequestStorageServiceInterface;
 use Source\Identity\Application\Service\AuthorizationRequestValidatorInterface;
 use Source\Identity\Application\UseCase\Query\GetAuthorizationRequest\AuthorizationRequestReadModel;
 use Source\Identity\Application\UseCase\Query\GetAuthorizationRequest\GetAuthorizationRequestInputPort;
 use Source\Identity\Application\UseCase\Query\GetAuthorizationRequest\GetAuthorizationRequestInterface;
+use Source\Identity\Domain\ValueObject\AuthorizationScope;
 
 readonly class GetAuthorizationRequest implements GetAuthorizationRequestInterface
 {
@@ -27,6 +29,10 @@ readonly class GetAuthorizationRequest implements GetAuthorizationRequestInterfa
         $clientName = $this->authorizationRequestValidator->validate($pending->parameters);
         $this->authorizationAccountService->resolveOriginalAccount($identityIdentifier);
 
-        return new AuthorizationRequestReadModel($pending, $clientName);
+        $settings = AuthorizationScopeSettings::query()->where('identity_id', (string) $identityIdentifier)->first();
+        $allowedScopes = $settings === null ? [] : array_map(AuthorizationScope::from(...), $settings->scopes);
+        $scopes = array_values(array_filter($pending->parameters->requestedScopes, static fn (AuthorizationScope $scope): bool => in_array($scope, $allowedScopes, true)));
+
+        return new AuthorizationRequestReadModel($pending, $clientName, $scopes);
     }
 }

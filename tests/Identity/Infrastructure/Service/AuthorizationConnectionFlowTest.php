@@ -7,6 +7,7 @@ namespace Tests\Identity\Infrastructure\Service;
 use Application\Models\Account\Principal;
 use Application\Models\Identity\AuthorizationConnection;
 use Illuminate\Support\Facades\DB;
+use Laravel\Passport\ClientRepository;
 use Mockery;
 use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -22,10 +23,14 @@ use Source\Identity\Application\UseCase\Command\ApproveAuthorization\ApproveAuth
 use Source\Identity\Application\UseCase\Command\ApproveAuthorization\ApproveAuthorizationInput;
 use Source\Identity\Application\UseCase\Command\ApproveAuthorization\ApproveAuthorizationOutput;
 use Source\Identity\Application\UseCase\Query\GetAuthorizationRequest\GetAuthorizationRequestInput;
+use Source\Identity\Domain\Entity\AuthorizationScopeSettings;
 use Source\Identity\Domain\Factory\AuthorizationConnectionFactoryInterface;
 use Source\Identity\Domain\Repository\AuthorizationConnectionRepositoryInterface;
+use Source\Identity\Domain\Repository\AuthorizationScopeSettingsRepositoryInterface;
 use Source\Identity\Domain\ValueObject\AuthorizationConnectionIdentifier;
 use Source\Identity\Domain\ValueObject\AuthorizationScope;
+use Source\Identity\Domain\ValueObject\AuthorizationScopeSettingsIdentifier;
+use Source\Identity\Domain\ValueObject\OAuthClientIdentifier;
 use Source\Identity\Infrastructure\Query\GetAuthorizationRequest;
 use Tests\Helper\AuthorizationRequestScenario;
 use Tests\TestCase;
@@ -36,6 +41,7 @@ class AuthorizationConnectionFlowTest extends TestCase
     public function testPersistsOnlySelectedScopesAndIssuesRealCodeFromStoredParameters(): void
     {
         $scenario = AuthorizationRequestScenario::create();
+        app(AuthorizationScopeSettingsRepositoryInterface::class)->save(new AuthorizationScopeSettings(new AuthorizationScopeSettingsIdentifier('0199f700-0000-7000-8000-000000000098'), $scenario->base->identityIdentifier(), $scenario->pending->parameters->requestedScopes));
         $output = new ApproveAuthorizationOutput();
         $input = $this->input($scenario);
         $useCase = app(ApproveAuthorization::class);
@@ -58,6 +64,7 @@ class AuthorizationConnectionFlowTest extends TestCase
     public function testCodeFailureRollsBackEarlierConnectionWriteAndAllowsRetry(): void
     {
         $scenario = AuthorizationRequestScenario::create();
+        app(AuthorizationScopeSettingsRepositoryInterface::class)->save(new AuthorizationScopeSettings(new AuthorizationScopeSettingsIdentifier('0199f700-0000-7000-8000-000000000098'), $scenario->base->identityIdentifier(), $scenario->pending->parameters->requestedScopes));
         /** @var AuthorizationConnectionServiceInterface&MockInterface $codes */
         $codes = Mockery::mock(AuthorizationConnectionServiceInterface::class);
         $codes->shouldReceive('issueCode')->once()->andReturnUsing(function (AuthorizationConnectionIdentifier $id, AuthorizationCodeParameters $parameters): never {
@@ -73,6 +80,7 @@ class AuthorizationConnectionFlowTest extends TestCase
             app(AuthorizationConnectionFactoryInterface::class),
             app(AuthorizationConnectionRepositoryInterface::class),
             $codes,
+            app(AuthorizationScopeSettingsRepositoryInterface::class),
         );
 
         try {
@@ -100,6 +108,7 @@ class AuthorizationConnectionFlowTest extends TestCase
     public function testRejectsInvalidScopesWithoutConnection(string $case): void
     {
         $scenario = AuthorizationRequestScenario::create();
+        app(AuthorizationScopeSettingsRepositoryInterface::class)->save(new AuthorizationScopeSettings(new AuthorizationScopeSettingsIdentifier('0199f700-0000-7000-8000-000000000098'), $scenario->base->identityIdentifier(), $scenario->pending->parameters->requestedScopes));
         $scopes = match($case) {
             'emptyScopes' => [], 'duplicateScopes' => [AuthorizationScope::WikiRead, AuthorizationScope::WikiRead], default => [AuthorizationScope::WikiRead]
         };
@@ -124,12 +133,66 @@ class AuthorizationConnectionFlowTest extends TestCase
     public function testRechecksOriginalMembershipAfterScreenWasRead(): void
     {
         $scenario = AuthorizationRequestScenario::create();
+        app(AuthorizationScopeSettingsRepositoryInterface::class)->save(new AuthorizationScopeSettings(new AuthorizationScopeSettingsIdentifier('0199f700-0000-7000-8000-000000000098'), $scenario->base->identityIdentifier(), $scenario->pending->parameters->requestedScopes));
         $query = app(GetAuthorizationRequest::class);
         $query->process(new GetAuthorizationRequestInput($scenario->pending->identifier, $scenario->base->identityIdentifier()));
         Principal::query()->whereKey((string) $scenario->base->originalPrincipalIdentifier())->update(['status' => 'suspended']);
         $this->expectException(AuthorizationAccountUnavailableException::class);
         $useCase = app(ApproveAuthorization::class);
         $useCase->process($this->input($scenario), new ApproveAuthorizationOutput());
+    }
+
+    /** @return array<string, array{list<AuthorizationScope>}> */
+    public static function disallowedSettings(): array
+    {
+        return ['shrunk after display' => [[AuthorizationScope::WikiRead]], 'all disabled' => [[]]];
+    }
+
+    /** @param list<AuthorizationScope> $allowed */
+    #[DataProvider('disallowedSettings')]
+    public function testRechecksLatestAllowedScopesAfterScreenWasRead(array $allowed): void
+    {
+        $scenario = AuthorizationRequestScenario::create();
+        app(AuthorizationScopeSettingsRepositoryInterface::class)->save(new AuthorizationScopeSettings(new AuthorizationScopeSettingsIdentifier('0199f700-0000-7000-8000-000000000098'), $scenario->base->identityIdentifier(), $scenario->pending->parameters->requestedScopes));
+        $identity = $scenario->base->identityIdentifier();
+        app(GetAuthorizationRequest::class)->process(new GetAuthorizationRequestInput($scenario->pending->identifier, $identity));
+        app(AuthorizationScopeSettingsRepositoryInterface::class)->save(new AuthorizationScopeSettings(new AuthorizationScopeSettingsIdentifier('0199f700-0000-7000-8000-000000000098'), $identity, $allowed));
+
+        try {
+            app(ApproveAuthorization::class)->process($this->input($scenario), new ApproveAuthorizationOutput());
+            $this->fail('Disallowed scope accepted.');
+        } catch (InvalidAuthorizationRequestException) {
+            $this->assertSame(0, AuthorizationConnection::query()->count());
+            $this->assertSame(0, DB::table('oauth_auth_codes')->count());
+            $this->assertSame($scenario->pending->identifier, $scenario->authorizationRequestStorageService->requireValid($scenario->pending->identifier, $identity)->identifier);
+        }
+    }
+
+    public function testOneSettingRestrictsMultipleClientsWithoutChangingExistingConsents(): void
+    {
+        $scenario = AuthorizationRequestScenario::create();
+        $identity = $scenario->base->identityIdentifier();
+        $settings = app(AuthorizationScopeSettingsRepositoryInterface::class);
+        $settings->save(new AuthorizationScopeSettings(new AuthorizationScopeSettingsIdentifier('0199f700-0000-7000-8000-000000000098'), $identity, [AuthorizationScope::DraftWrite]));
+        $parameters = $scenario->pending->parameters;
+        $secondClient = app(ClientRepository::class)->createAuthorizationCodeGrantClient('Second client', [$parameters->redirectUri], false);
+        foreach ([$parameters->clientIdentifier, new OAuthClientIdentifier($secondClient->id)] as $client) {
+            $pending = $scenario->authorizationRequestStorageService->store(new AuthorizationCodeParameters($client, $parameters->redirectUri, $parameters->requestedScopes, $parameters->resource, $parameters->codeChallenge, $parameters->state), $identity);
+            $view = app(GetAuthorizationRequest::class)->process(new GetAuthorizationRequestInput($pending->identifier, $identity))->toArray();
+            $this->assertSame(['wiki-drafts:write'], array_column($view['scopes'], 'scope'));
+            $output = new ApproveAuthorizationOutput();
+            $useCase = app(ApproveAuthorization::class);
+            DB::transaction(fn () => $useCase->process(new ApproveAuthorizationInput($pending->identifier, $identity, [AuthorizationScope::DraftWrite]), $output));
+            $this->assertStringContainsString('code=', $output->toArray()['redirectUri']);
+        }
+        $before = AuthorizationConnection::query()->orderBy('id')->get()->toArray();
+        $settings->save(new AuthorizationScopeSettings(new AuthorizationScopeSettingsIdentifier('0199f700-0000-7000-8000-000000000098'), $identity, []));
+        $this->assertSame($before, AuthorizationConnection::query()->orderBy('id')->get()->toArray());
+        $this->assertSame(2, AuthorizationConnection::query()->count());
+        $this->assertSame(2, DB::table('oauth_auth_codes')->count());
+        foreach (AuthorizationConnection::query()->get() as $connection) {
+            $this->assertSame(['wiki-drafts:write'], $connection->scopes);
+        }
     }
 
     private function input(AuthorizationRequestScenario $scenario): ApproveAuthorizationInput

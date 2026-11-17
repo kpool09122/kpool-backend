@@ -33,7 +33,7 @@ class AuthorizationRequestValidatorTest extends TestCase
         $redirect = $case === 'port' ? 'http://127.0.0.1:1234/cb' : CreateAuthorizationConnection::REDIRECT;
         $client = app(ClientRepository::class)->createAuthorizationCodeGrantClient('Client', [$redirect], false);
         $parameters = new AuthorizationCodeParameters(
-            new OAuthClientIdentifier($case === 'client' ? '00000000-0000-0000-0000-000000000000' : $client->id),
+            new OAuthClientIdentifier($case === 'client' ? '0199f700-0000-7000-8000-000000000099' : $client->id),
             match ($case) {
                 'redirect' => 'https://evil.test/cb', 'port' => 'http://127.0.0.1:5678/cb', default => $redirect
             },

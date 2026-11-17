@@ -2204,6 +2204,129 @@ paths:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
       security:
         - SessionCookieAuth: []
+  /oauth/scope-settings:
+    get:
+      operationId: OAuthScopeSettings_getAuthorizationScopeSettings
+      description: Read the authenticated Identity's allowed scopes. No target Identity ID is accepted. Cookie-only, no-store, independent of Account selection/status.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorizationScopeSettings'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      security:
+        - SessionCookieAuth: []
+    put:
+      operationId: OAuthScopeSettings_updateAuthorizationScopeSettings
+      description: Replace the authenticated Identity's allowed scopes. Cookie and CSRF required; no-store. scopes is required, unique and may be empty. Returns an empty JSON array. Does not modify existing consents; applies when subsequent consent is finalized.
+      parameters: []
+      responses:
+        '200':
+          description: Response returned when an endpoint succeeds with an empty JSON array.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyJsonArray'
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '419':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuthorizationScopeSettings'
+      security:
+        - SessionCookieAuth: []
 components:
   schemas:
     AccountEffectivePolicySummary:
@@ -2312,7 +2435,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ConsentScope'
-          description: Nonempty unique subset of the server-stored requested scopes. Scope expansion is rejected. wiki-drafts:write is displayed as Draft Wiki の作成・編集 and excludes automatic creation.
+          description: Nonempty unique subset of both the server-stored requested scopes and the latest Identity-wide allowed scopes. Expansion or disallowed scopes are rejected with 400, including settings changes after screen display. wiki-drafts:write is displayed as Draft Wiki の作成・編集 and excludes automatic creation.
     AuthenticateWithPasskeyRequestBody:
       type: object
       required:
@@ -2579,8 +2702,21 @@ components:
             required:
               - scope
               - description
+          description: Requested scopes intersected with the Identity-wide allowed scopes, in requested order. Empty means consent is unavailable; disable approval and allow cancellation. Settings are rechecked on final approval.
       allOf:
         - $ref: '#/components/schemas/PendingAuthorizationResult'
+    AuthorizationScopeSettings:
+      type: object
+      required:
+        - scopes
+      properties:
+        scopes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConsentScope'
+          maxItems: 6
+          description: Unique defined scopes. Empty is allowed. Applies to all OAuth clients for the authenticated Identity.
+      description: Identity-wide ceiling for future external client consents. A missing setting allows all currently defined scopes. An explicitly saved empty list disables new consent. Existing connections and tokens are unchanged.
     AuthorizedAccountCandidate:
       type: object
       required:

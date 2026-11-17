@@ -22,7 +22,7 @@ class InternalApiAuthorizationCacheTest extends TestCase
     {
         $cache = $this->app()->make(InternalApiAuthorizationCache::class);
         $tokenId = (string) Str::uuid();
-        $client = new OAuthClientIdentifier((string) Str::uuid());
+        $client = new OAuthClientIdentifier((string) Str::uuid7());
         $account = new AccountIdentifier('0199f700-0000-7000-8000-000000000001');
         $connection = new AuthorizationConnectionFactory(new UuidGenerator())->create(
             new IdentityIdentifier('0199f700-0000-7000-8000-000000000003'),

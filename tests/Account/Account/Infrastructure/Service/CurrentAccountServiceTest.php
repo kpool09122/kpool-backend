@@ -34,7 +34,7 @@ class CurrentAccountServiceTest extends TestCase
         $account = new AccountIdentifier('019c9b4c-0000-7000-8000-000000000002');
         $principal = new PrincipalIdentifier('019c9b4c-0000-7000-8000-000000000003');
         $factory = new AuthorizationConnectionFactory(new UuidGenerator());
-        $create = static fn () => $factory->create($identity, new OAuthClientIdentifier('019c9b4c-0000-4000-8000-000000000004'), [AuthorizationScope::WikiRead], $account, new AccountPrincipalIdentifier((string) $principal), 'https://mcp.test/mcp', new DateTimeImmutable());
+        $create = static fn () => $factory->create($identity, new OAuthClientIdentifier('019c9b4c-0000-7000-8000-000000000004'), [AuthorizationScope::WikiRead], $account, new AccountPrincipalIdentifier((string) $principal), 'https://mcp.test/mcp', new DateTimeImmutable());
         $first = $create();
         $second = $create();
         $state = [];

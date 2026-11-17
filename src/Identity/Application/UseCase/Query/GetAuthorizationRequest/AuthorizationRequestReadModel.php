@@ -9,9 +9,11 @@ use Source\Identity\Domain\ValueObject\AuthorizationScope;
 
 readonly class AuthorizationRequestReadModel
 {
+    /** @param list<AuthorizationScope> $scopes */
     public function __construct(
         private PendingAuthorization $pending,
         private string $clientName,
+        private array $scopes,
     ) {
     }
 
@@ -29,7 +31,7 @@ readonly class AuthorizationRequestReadModel
                 AuthorizationScope::DraftSubmit => 'Draft Wiki の提出',
                 AuthorizationScope::ImageRead => 'Wiki 画像の閲覧',
                 AuthorizationScope::ImageWrite => 'Wiki 画像の追加・編集',
-            }], $this->pending->parameters->requestedScopes),
+            }], $this->scopes),
         ];
     }
 }
