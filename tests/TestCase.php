@@ -15,6 +15,7 @@ use Application\Providers\ClientServiceProvider;
 use Application\Providers\Identity\DomainServiceProvider as IdentityDomainServiceProvider;
 use Application\Providers\Identity\EventServiceProvider as IdentityEventServiceProvider;
 use Application\Providers\Identity\UseCaseServiceProvider as IdentityUseCaseServiceProvider;
+use Application\Providers\McpServiceProvider;
 use Application\Providers\Monetization\DomainServiceProvider as MonetizationDomainServiceProvider;
 use Application\Providers\Monetization\UseCaseServiceProvider as MonetizationUseCaseServiceProvider;
 use Application\Providers\SharedServiceProvider;
@@ -60,6 +61,7 @@ abstract class TestCase extends OrchestraTestCase
             DomainServiceProvider::class,
             UseCaseServiceProvider::class,
             EventServiceProvider::class,
+            McpServiceProvider::class,
             SharedServiceProvider::class,
             AnalyzeDomainServiceProvider::class,
             AnalyzeUseCaseServiceProvider::class,
