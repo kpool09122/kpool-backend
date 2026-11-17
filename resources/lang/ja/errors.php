@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'authorization_connection_not_found' => '指定された外部連携が見つかりません。',
     'oauth_invalid_request' => '認可要求が無効です。',
     'oauth_request_expired' => '認可要求の有効期限が切れました。認可を開始し直してください。',
     'oauth_request_completed' => '認可要求は既に完了しています。',

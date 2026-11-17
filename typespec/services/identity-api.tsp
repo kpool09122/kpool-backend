@@ -858,3 +858,30 @@ interface OAuthConsent {
   @useAuth(SessionCookieAuth)
   denyAuthorization(@path requestIdentifier: string): AuthorizationContinuationResponse | UnauthorizedProblemResponse | BadRequestProblemResponse | ConflictProblemResponse | NotFoundProblemResponse | CsrfTokenMismatchProblemResponse | TooManyRequestsProblemResponse | ServiceUnavailableProblemResponse | InternalServerErrorProblemResponse;
 }
+
+@doc("An Identity-owned external authorization connection. Scopes are operation ceilings, not Account permissions. createdAt is the consent timestamp; revokedAt is null while active. Account availability is evaluated on each API call.")
+model AuthorizationConnection {
+  connectionIdentifier: Uuid;
+  clientIdentifier: Uuid;
+  clientName: string;
+  scopes: ConsentScope[];
+  createdAt: Timestamp;
+  revokedAt: Timestamp | null;
+}
+
+model AuthorizationConnectionsResponse {
+  @statusCode statusCode: 200;
+  @body body: { connections: AuthorizationConnection[]; };
+}
+
+@route("/oauth/connections")
+@useAuth(SessionCookieAuth)
+interface OAuthConnections {
+  @get
+  @doc("List only the signed-in Identity's connections, including revoked connections, ordered by consent timestamp ascending then connection ID ascending. Empty results use connections: []. Cookie-only; no-store; independent of selected Account status.")
+  listAuthorizationConnections(): AuthorizationConnectionsResponse | UnauthorizedProblemResponse | ForbiddenProblemResponse | TooManyRequestsProblemResponse | ServiceUnavailableProblemResponse | InternalServerErrorProblemResponse;
+
+  @delete @route("/{connectionIdentifier}")
+  @doc("Revoke only the signed-in Identity's specified connection, its access/refresh tokens and authorization codes. After commit, invalidate all associated internal API authorization caches and this connection's Account selection/context, preserving other connections and browser selections. Repeating revocation succeeds without changing revokedAt. Unknown and foreign IDs both return 404. Cookie and CSRF required. Returns an empty JSON array.")
+  revokeAuthorization(@path connectionIdentifier: Uuid): OkEmptyResponse | UnauthorizedProblemResponse | ForbiddenProblemResponse | NotFoundProblemResponse | UnprocessableEntityProblemResponse | CsrfTokenMismatchProblemResponse | TooManyRequestsProblemResponse | ServiceUnavailableProblemResponse | InternalServerErrorProblemResponse;
+}

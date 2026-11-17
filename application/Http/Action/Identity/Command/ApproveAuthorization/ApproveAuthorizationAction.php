@@ -16,7 +16,7 @@ use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Source\Identity\Application\Exception\AuthorizationAccountUnavailableException;
 use Source\Identity\Application\Exception\AuthorizationRequestUnavailableException;
-use Source\Identity\Application\Exception\InvalidAuthorizationConsentException;
+use Source\Identity\Application\Exception\InvalidAuthorizationRequestException;
 use Source\Identity\Application\UseCase\Command\ApproveAuthorization\ApproveAuthorizationInput;
 use Source\Identity\Application\UseCase\Command\ApproveAuthorization\ApproveAuthorizationInterface;
 use Source\Identity\Application\UseCase\Command\ApproveAuthorization\ApproveAuthorizationOutput;
@@ -42,7 +42,7 @@ readonly class ApproveAuthorizationAction
                 );
                 DB::transaction(fn () => $this->useCase->process($input, $output));
                 $result = $output->toArray();
-            } catch (InvalidAuthorizationConsentException $exception) {
+            } catch (InvalidAuthorizationRequestException $exception) {
                 throw new BadRequestHttpException(detail: error_message('oauth_invalid_request', $this->actorContext->language->value), previous: $exception);
             } catch (InvalidArgumentException|ValueError) {
                 throw new BadRequestHttpException(detail: error_message('oauth_invalid_request', $this->actorContext->language->value));

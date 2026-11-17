@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'authorization_connection_not_found' => '외부 연동을 찾을 수 없습니다.',
     'oauth_invalid_request' => '인증 요청이 유효하지 않습니다.',
     'oauth_request_expired' => '인증 요청이 만료되었습니다. 다시 시작해 주세요.',
     'oauth_request_completed' => '이미 완료된 인증 요청입니다.',

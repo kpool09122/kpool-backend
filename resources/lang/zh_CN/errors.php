@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'authorization_connection_not_found' => '未找到外部授权连接。',
     'oauth_invalid_request' => '授权请求无效。',
     'oauth_request_expired' => '授权请求已过期，请重新开始授权。',
     'oauth_request_completed' => '授权请求已完成。',

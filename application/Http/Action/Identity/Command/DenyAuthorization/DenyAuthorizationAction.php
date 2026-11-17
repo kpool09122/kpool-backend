@@ -13,7 +13,7 @@ use Illuminate\Http\JsonResponse;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Source\Identity\Application\Exception\AuthorizationRequestUnavailableException;
-use Source\Identity\Application\Exception\InvalidAuthorizationConsentException;
+use Source\Identity\Application\Exception\InvalidAuthorizationRequestException;
 use Source\Identity\Application\UseCase\Command\DenyAuthorization\DenyAuthorizationInput;
 use Source\Identity\Application\UseCase\Command\DenyAuthorization\DenyAuthorizationInterface;
 use Source\Identity\Application\UseCase\Command\DenyAuthorization\DenyAuthorizationOutput;
@@ -33,7 +33,7 @@ readonly class DenyAuthorizationAction
                 $output = new DenyAuthorizationOutput();
                 $this->useCase->process(new DenyAuthorizationInput($requestIdentifier, $this->actorContext->identityIdentifier), $output);
                 $result = $output->toArray();
-            } catch (InvalidAuthorizationConsentException $exception) {
+            } catch (InvalidAuthorizationRequestException $exception) {
                 throw new BadRequestHttpException(detail: error_message('oauth_invalid_request', $this->actorContext->language->value), previous: $exception);
             } catch (InvalidArgumentException|ValueError) {
                 throw new BadRequestHttpException(detail: error_message('oauth_invalid_request', $this->actorContext->language->value));

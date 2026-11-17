@@ -22,7 +22,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        Schema::create('identity_authorization_consents', function (Blueprint $table): void {
+        Schema::create('identity_authorization_connections', function (Blueprint $table): void {
             $table->uuid('id')->primary();
             $table->foreignUuid('identity_id')->constrained('identities');
             $table->foreignUuid('client_id')->constrained('oauth_clients');
@@ -43,7 +43,7 @@ return new class extends Migration
             $table->text('scopes')->nullable();
             $table->boolean('revoked');
             $table->dateTime('expires_at')->nullable();
-            $table->foreignUuid('authorization_consent_id')->constrained('identity_authorization_consents');
+            $table->foreignUuid('authorization_connection_id')->constrained('identity_authorization_connections');
         });
 
         Schema::create('oauth_access_tokens', function (Blueprint $table): void {
@@ -55,7 +55,7 @@ return new class extends Migration
             $table->boolean('revoked');
             $table->timestamps();
             $table->dateTime('expires_at')->nullable();
-            $table->foreignUuid('authorization_consent_id')->constrained('identity_authorization_consents');
+            $table->foreignUuid('authorization_connection_id')->constrained('identity_authorization_connections');
         });
 
         Schema::create('oauth_refresh_tokens', function (Blueprint $table): void {
@@ -71,7 +71,7 @@ return new class extends Migration
         Schema::dropIfExists('oauth_refresh_tokens');
         Schema::dropIfExists('oauth_access_tokens');
         Schema::dropIfExists('oauth_auth_codes');
-        Schema::dropIfExists('identity_authorization_consents');
+        Schema::dropIfExists('identity_authorization_connections');
         Schema::dropIfExists('oauth_clients');
     }
 };

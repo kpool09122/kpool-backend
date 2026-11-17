@@ -8,21 +8,21 @@ use DateTimeImmutable;
 use Illuminate\Support\Str;
 use Laravel\Passport\ClientRepository;
 use PHPUnit\Framework\Assert;
-use Source\Identity\Domain\Entity\AuthorizationConsent;
-use Source\Identity\Domain\Factory\AuthorizationConsentFactoryInterface;
-use Source\Identity\Domain\Repository\AuthorizationConsentRepositoryInterface;
+use Source\Identity\Domain\Entity\AuthorizationConnection;
+use Source\Identity\Domain\Factory\AuthorizationConnectionFactoryInterface;
+use Source\Identity\Domain\Repository\AuthorizationConnectionRepositoryInterface;
 use Source\Identity\Domain\ValueObject\AccountPrincipalIdentifier;
 use Source\Identity\Domain\ValueObject\AuthorizationScope;
 use Source\Identity\Domain\ValueObject\OAuthClientIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 
-class CreateAuthorizationConsent
+class CreateAuthorizationConnection
 {
     public const string RESOURCE = 'https://mcp.example.test/mcp';
     public const string REDIRECT = 'https://chatgpt.example.test/callback';
 
-    public static function create(): AuthorizationConsent
+    public static function create(): AuthorizationConnection
     {
         config()->set('mcp_oauth', [
             'issuer' => 'https://auth.example.test', 'resource' => self::RESOURCE,
@@ -39,7 +39,7 @@ class CreateAuthorizationConsent
         CreateIdentity::create($identity, ['email' => Str::uuid7() . '@example.test']);
         $client = app()->make(ClientRepository::class)->createAuthorizationCodeGrantClient('ChatGPT', [self::REDIRECT], false);
         $account = new AccountIdentifier((string) Str::uuid7());
-        $consent = app()->make(AuthorizationConsentFactoryInterface::class)->create(
+        $connection = app()->make(AuthorizationConnectionFactoryInterface::class)->create(
             $identity,
             new OAuthClientIdentifier($client->id),
             [AuthorizationScope::WikiRead, AuthorizationScope::DraftRead],
@@ -48,8 +48,8 @@ class CreateAuthorizationConsent
             self::RESOURCE,
             new DateTimeImmutable()
         );
-        app()->make(AuthorizationConsentRepositoryInterface::class)->save($consent);
+        app()->make(AuthorizationConnectionRepositoryInterface::class)->save($connection);
 
-        return $consent;
+        return $connection;
     }
 }

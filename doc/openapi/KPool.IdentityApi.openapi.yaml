@@ -1763,6 +1763,136 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /oauth/connections:
+    get:
+      operationId: OAuthConnections_listAuthorizationConnections
+      description: "List only the signed-in Identity's connections, including revoked connections, ordered by consent timestamp ascending then connection ID ascending. Empty results use connections: []. Cookie-only; no-store; independent of selected Account status."
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  connections:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AuthorizationConnection'
+                required:
+                  - connections
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      security:
+        - SessionCookieAuth: []
+  /oauth/connections/{connectionIdentifier}:
+    delete:
+      operationId: OAuthConnections_revokeAuthorization
+      description: Revoke only the signed-in Identity's specified connection, its access/refresh tokens and authorization codes. After commit, invalidate all associated internal API authorization caches and this connection's Account selection/context, preserving other connections and browser selections. Repeating revocation succeeds without changing revokedAt. Unknown and foreign IDs both return 404. Cookie and CSRF required. Returns an empty JSON array.
+      parameters:
+        - name: connectionIdentifier
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+      responses:
+        '200':
+          description: Response returned when an endpoint succeeds with an empty JSON array.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmptyJsonArray'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '419':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      security:
+        - SessionCookieAuth: []
   /oauth/requests:
     post:
       operationId: OAuthConsent_createAuthorizationRequest
@@ -2393,6 +2523,34 @@ components:
             type: string
           description: Social providers linked to the current identity.
       description: Authentication methods available to the current identity without exposing passkey or provider-account details.
+    AuthorizationConnection:
+      type: object
+      required:
+        - connectionIdentifier
+        - clientIdentifier
+        - clientName
+        - scopes
+        - createdAt
+        - revokedAt
+      properties:
+        connectionIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        clientIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        clientName:
+          type: string
+        scopes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConsentScope'
+        createdAt:
+          $ref: '#/components/schemas/KPool.Common.Timestamp'
+        revokedAt:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Timestamp'
+          nullable: true
+      description: An Identity-owned external authorization connection. Scopes are operation ceilings, not Account permissions. createdAt is the consent timestamp; revokedAt is null while active. Account availability is evaluated on each API call.
     AuthorizationContinuationResult:
       type: object
       required:

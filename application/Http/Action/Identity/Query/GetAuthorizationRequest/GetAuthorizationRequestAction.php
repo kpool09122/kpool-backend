@@ -15,7 +15,7 @@ use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Source\Identity\Application\Exception\AuthorizationAccountUnavailableException;
 use Source\Identity\Application\Exception\AuthorizationRequestUnavailableException;
-use Source\Identity\Application\Exception\InvalidAuthorizationConsentException;
+use Source\Identity\Application\Exception\InvalidAuthorizationRequestException;
 use Source\Identity\Application\UseCase\Query\GetAuthorizationRequest\GetAuthorizationRequestInput;
 use Source\Identity\Application\UseCase\Query\GetAuthorizationRequest\GetAuthorizationRequestInterface;
 use Throwable;
@@ -32,7 +32,7 @@ readonly class GetAuthorizationRequestAction
         try {
             try {
                 $result = $this->useCase->process(new GetAuthorizationRequestInput($requestIdentifier, $this->actorContext->identityIdentifier))->toArray();
-            } catch (InvalidAuthorizationConsentException $exception) {
+            } catch (InvalidAuthorizationRequestException $exception) {
                 throw new BadRequestHttpException(detail: error_message('oauth_invalid_request', $this->actorContext->language->value), previous: $exception);
             } catch (InvalidArgumentException|ValueError) {
                 throw new BadRequestHttpException(detail: error_message('oauth_invalid_request', $this->actorContext->language->value));

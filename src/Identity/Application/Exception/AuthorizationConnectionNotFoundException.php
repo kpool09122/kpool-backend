@@ -7,10 +7,10 @@ namespace Source\Identity\Application\Exception;
 use RuntimeException;
 use Throwable;
 
-class InvalidAuthorizationConsentException extends RuntimeException
+class AuthorizationConnectionNotFoundException extends RuntimeException
 {
     public function __construct(?Throwable $previous = null)
     {
-        parent::__construct('Invalid authorization consent.', 0, $previous);
+        parent::__construct('Authorization connection not found.', 0, $previous);
     }
 }

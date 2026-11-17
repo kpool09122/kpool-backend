@@ -13,6 +13,7 @@ use Source\Account\Principal\Domain\ValueObject\PrincipalStatus;
 use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier as AccountPrincipalIdentifier;
 use Source\Identity\Application\Service\ApiAuthenticationContext;
+use Source\Identity\Domain\ValueObject\AuthorizationConnectionIdentifier;
 use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
@@ -152,6 +153,11 @@ class AuthContextCache
         }
     }
 
+    public function forgetAccountForAuthorizationConnection(IdentityIdentifier $identityIdentifier, AuthorizationConnectionIdentifier $connectionIdentifier): void
+    {
+        $this->delete(self::ACCOUNT_KEY_PREFIX . $identityIdentifier . ':consent:' . $connectionIdentifier);
+    }
+
     public function forgetCurrentAccount(IdentityIdentifier $identityIdentifier): void
     {
         $this->delete($this->accountKey($identityIdentifier));
@@ -197,7 +203,7 @@ class AuthContextCache
         $request = request();
         $context = $request->attributes->get(ApiAuthenticationContext::class);
         if ($context instanceof ApiAuthenticationContext) {
-            return self::ACCOUNT_KEY_PREFIX . $identityIdentifier . ':consent:' . $context->consentIdentifier();
+            return self::ACCOUNT_KEY_PREFIX . $identityIdentifier . ':consent:' . $context->connectionIdentifier();
         }
         $sessionId = $request->hasSession() ? $request->session()->getId() : 'stateless';
 

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'authorization_connection_not_found' => 'Authorization connection not found.',
     'oauth_invalid_request' => 'The authorization request is invalid.',
     'oauth_request_expired' => 'The authorization request has expired. Start authorization again.',
     'oauth_request_completed' => 'The authorization request has already been completed.',

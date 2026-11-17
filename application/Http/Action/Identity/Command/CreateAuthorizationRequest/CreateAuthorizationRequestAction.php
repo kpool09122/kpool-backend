@@ -10,7 +10,7 @@ use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Illuminate\Http\JsonResponse;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
-use Source\Identity\Application\Exception\InvalidAuthorizationConsentException;
+use Source\Identity\Application\Exception\InvalidAuthorizationRequestException;
 use Source\Identity\Application\UseCase\Command\CreateAuthorizationRequest\CreateAuthorizationRequestInput;
 use Source\Identity\Application\UseCase\Command\CreateAuthorizationRequest\CreateAuthorizationRequestInterface;
 use Source\Identity\Application\UseCase\Command\CreateAuthorizationRequest\CreateAuthorizationRequestOutput;
@@ -41,7 +41,7 @@ readonly class CreateAuthorizationRequestAction
                 );
                 $this->useCase->process($input, $output);
                 $result = $output->toArray();
-            } catch (InvalidAuthorizationConsentException $exception) {
+            } catch (InvalidAuthorizationRequestException $exception) {
                 throw new BadRequestHttpException(detail: error_message('oauth_invalid_request', $request->language()), previous: $exception);
             } catch (InvalidArgumentException|ValueError) {
                 throw new BadRequestHttpException(detail: error_message('oauth_invalid_request', $request->language()));

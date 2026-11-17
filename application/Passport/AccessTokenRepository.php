@@ -12,7 +12,7 @@ use Laravel\Passport\Passport;
 use League\OAuth2\Server\Entities\AccessTokenEntityInterface;
 use League\OAuth2\Server\Entities\ClientEntityInterface;
 use League\OAuth2\Server\Entities\ScopeEntityInterface;
-use Source\Identity\Domain\ValueObject\AuthorizationConsentIdentifier;
+use Source\Identity\Domain\ValueObject\AuthorizationConnectionIdentifier;
 
 class AccessTokenRepository extends PassportAccessTokenRepository
 {
@@ -25,18 +25,18 @@ class AccessTokenRepository extends PassportAccessTokenRepository
 
     public function getNewToken(ClientEntityInterface $clientEntity, array $scopes, ?string $userIdentifier = null): AccessTokenEntityInterface
     {
-        $consent = $this->issuanceContext->requireConsent(
+        $connection = $this->issuanceContext->requireConnection(
             $userIdentifier,
             $clientEntity->getIdentifier(),
             array_map(static fn (ScopeEntityInterface $scope): string => $scope->getIdentifier(), $scopes),
         );
 
-        return new AccessToken((string) $consent->identityIdentifier() ?: null, $scopes, $clientEntity, $consent->resource(), config()->string('mcp_oauth.issuer'));
+        return new AccessToken((string) $connection->identityIdentifier() ?: null, $scopes, $clientEntity, $connection->resource(), config()->string('mcp_oauth.issuer'));
     }
 
     public function persistNewAccessToken(AccessTokenEntityInterface $accessTokenEntity): void
     {
-        $consent = $this->issuanceContext->requireConsent(
+        $connection = $this->issuanceContext->requireConnection(
             $accessTokenEntity->getUserIdentifier(),
             $accessTokenEntity->getClient()->getIdentifier(),
             array_map(static fn (ScopeEntityInterface $scope): string => $scope->getIdentifier(), $accessTokenEntity->getScopes()),
@@ -48,7 +48,7 @@ class AccessTokenRepository extends PassportAccessTokenRepository
             'scopes' => $accessTokenEntity->getScopes(),
             'revoked' => false,
             'expires_at' => $accessTokenEntity->getExpiryDateTime(),
-            'authorization_consent_id' => (string) $consent->identifier(),
+            'authorization_connection_id' => (string) $connection->identifier(),
         ])->save();
         $this->events->dispatch(new AccessTokenCreated($id, $userId, $clientId));
     }
@@ -58,7 +58,7 @@ class AccessTokenRepository extends PassportAccessTokenRepository
         $token = McpAccessToken::query()->find($tokenId);
 
         return $token === null || $token->revoked
-            || ! $this->issuanceContext->load(new AuthorizationConsentIdentifier($token->authorization_consent_id));
+            || ! $this->issuanceContext->load(new AuthorizationConnectionIdentifier($token->authorization_connection_id));
     }
 
     public function revokeAccessToken(string $tokenId): void

@@ -6,7 +6,7 @@ namespace Source\Identity\Application\Service;
 
 use DateTimeImmutable;
 use Source\Identity\Domain\ValueObject\AccountPrincipalIdentifier;
-use Source\Identity\Domain\ValueObject\AuthorizationConsentIdentifier;
+use Source\Identity\Domain\ValueObject\AuthorizationConnectionIdentifier;
 use Source\Identity\Domain\ValueObject\AuthorizationScope;
 use Source\Identity\Domain\ValueObject\OAuthClientIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
@@ -16,7 +16,7 @@ use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 readonly class ApiAuthenticationContext
 {
     private string $sourceTokenIdentifier;
-    private AuthorizationConsentIdentifier $consentIdentifier;
+    private AuthorizationConnectionIdentifier $connectionIdentifier;
     private IdentityIdentifier $identityIdentifier;
     private OAuthClientIdentifier $clientIdentifier;
     /** @var list<AuthorizationScope> */
@@ -26,14 +26,14 @@ readonly class ApiAuthenticationContext
 
     public function __construct(ValidatedAuthorizationToken $authorizationToken, private DateTimeImmutable $expiresAt)
     {
-        $consent = $authorizationToken->consent;
+        $connection = $authorizationToken->connection;
         $this->sourceTokenIdentifier = $authorizationToken->tokenIdentifier;
-        $this->consentIdentifier = $consent->identifier();
-        $this->identityIdentifier = $consent->identityIdentifier();
-        $this->clientIdentifier = $consent->clientIdentifier();
+        $this->connectionIdentifier = $connection->identifier();
+        $this->identityIdentifier = $connection->identityIdentifier();
+        $this->clientIdentifier = $connection->clientIdentifier();
         $this->scopes = $authorizationToken->scopes;
-        $this->originalAccountIdentifier = $consent->originalAccountIdentifier();
-        $this->originalPrincipalIdentifier = $consent->originalPrincipalIdentifier();
+        $this->originalAccountIdentifier = $connection->originalAccountIdentifier();
+        $this->originalPrincipalIdentifier = $connection->originalPrincipalIdentifier();
     }
 
     public function sourceTokenIdentifier(): string
@@ -41,9 +41,9 @@ readonly class ApiAuthenticationContext
         return $this->sourceTokenIdentifier;
     }
 
-    public function consentIdentifier(): AuthorizationConsentIdentifier
+    public function connectionIdentifier(): AuthorizationConnectionIdentifier
     {
-        return $this->consentIdentifier;
+        return $this->connectionIdentifier;
     }
 
     public function identityIdentifier(): IdentityIdentifier

@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'authorization_connection_not_found' => 'No se encontró la conexión de autorización.',
     'oauth_invalid_request' => 'La solicitud de autorización no es válida.',
     'oauth_request_expired' => 'La solicitud de autorización ha caducado. Inicie de nuevo la autorización.',
     'oauth_request_completed' => 'La solicitud de autorización ya se ha completado.',

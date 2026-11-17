@@ -7,7 +7,7 @@ namespace Application\Models\Identity;
 use Laravel\Passport\AuthCode;
 
 /**
- * @property string $authorization_consent_id
+ * @property string $authorization_connection_id
  */
 class McpAuthCode extends AuthCode
 {

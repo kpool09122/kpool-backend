@@ -28,20 +28,20 @@ use Nyholm\Psr7\ServerRequest;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
-use Source\Identity\Application\Exception\InvalidAuthorizationConsentException;
+use Source\Identity\Application\Exception\InvalidAuthorizationRequestException;
 use Source\Identity\Application\Service\AuthorizationCodeParameters;
-use Source\Identity\Application\Service\AuthorizationConsentServiceInterface;
+use Source\Identity\Application\Service\AuthorizationConnectionServiceInterface;
 use Source\Identity\Application\Service\InternalApiTokenServiceInterface;
-use Source\Identity\Domain\Repository\AuthorizationConsentRepositoryInterface;
-use Source\Identity\Domain\ValueObject\AuthorizationConsentIdentifier;
+use Source\Identity\Domain\Repository\AuthorizationConnectionRepositoryInterface;
+use Source\Identity\Domain\ValueObject\AuthorizationConnectionIdentifier;
 use Source\Identity\Domain\ValueObject\AuthorizationScope;
 use Throwable;
 
 /** Passport adapter for trusted consent completion and token issuance. */
-readonly class McpAuthorizationService implements AuthorizationConsentServiceInterface
+readonly class McpAuthorizationService implements AuthorizationConnectionServiceInterface
 {
     public function __construct(
-        private AuthorizationConsentRepositoryInterface $authorizationConsentRepository,
+        private AuthorizationConnectionRepositoryInterface $authorizationConnectionRepository,
         private PassportClientRepository $passportClientRepository,
         private ClientRepository $clientRepository,
         private Dispatcher $dispatcher,
@@ -51,11 +51,11 @@ readonly class McpAuthorizationService implements AuthorizationConsentServiceInt
     ) {
     }
 
-    /** @throws InvalidAuthorizationConsentException */
-    public function issueCode(AuthorizationConsentIdentifier $consentIdentifier, AuthorizationCodeParameters $authorizationCodeParameters): string
+    /** @throws InvalidAuthorizationRequestException */
+    public function issueCode(AuthorizationConnectionIdentifier $connectionIdentifier, AuthorizationCodeParameters $authorizationCodeParameters): string
     {
         try {
-            $response = $this->authorize($consentIdentifier, (new ServerRequest('GET', '/oauth/authorize'))->withQueryParams([
+            $response = $this->authorize($connectionIdentifier, (new ServerRequest('GET', '/oauth/authorize'))->withQueryParams([
                 'client_id' => (string) $authorizationCodeParameters->clientIdentifier,
                 'response_type' => 'code',
                 'redirect_uri' => $authorizationCodeParameters->redirectUri,
@@ -68,15 +68,15 @@ readonly class McpAuthorizationService implements AuthorizationConsentServiceInt
 
             return $response->getHeaderLine('Location');
         } catch (OAuthServerException $exception) {
-            throw new InvalidAuthorizationConsentException($exception);
+            throw new InvalidAuthorizationRequestException($exception);
         }
     }
 
     /**
      * Trusted server-side completion, NOT an unauthenticated HTTP entry point.
-     * The caller owns the DB transaction containing consent creation and code issuance.
+     * The caller owns the DB transaction containing connection creation and code issuance.
      */
-    public function authorize(AuthorizationConsentIdentifier $consentIdentifier, ServerRequestInterface $request): ResponseInterface
+    public function authorize(AuthorizationConnectionIdentifier $connectionIdentifier, ServerRequestInterface $request): ResponseInterface
     {
         $parameters = $request->getQueryParams();
         $resource = $parameters['resource'] ?? null;
@@ -85,11 +85,11 @@ readonly class McpAuthorizationService implements AuthorizationConsentServiceInt
             || ! isset($parameters['code_challenge']) || ! isset($parameters['redirect_uri'])) {
             throw OAuthServerException::invalidRequest('code_challenge_method');
         }
-        $context = new IssuanceContext($this->authorizationConsentRepository, $resource);
-        if (! $context->load($consentIdentifier) || $context->consent === null) {
-            throw OAuthServerException::invalidGrant('Inactive authorization consent.');
+        $context = new IssuanceContext($this->authorizationConnectionRepository, $resource);
+        if (! $context->load($connectionIdentifier) || $context->connection === null) {
+            throw OAuthServerException::invalidGrant('Inactive authorization connection.');
         }
-        $client = McpClient::query()->find((string) $context->consent->clientIdentifier());
+        $client = McpClient::query()->find((string) $context->connection->clientIdentifier());
         if ($client === null || ! is_string($parameters['redirect_uri'])
             || ! in_array($parameters['redirect_uri'], $client->redirect_uris, true)) {
             throw OAuthServerException::invalidRequest('redirect_uri');
@@ -100,12 +100,12 @@ readonly class McpAuthorizationService implements AuthorizationConsentServiceInt
         if (is_string($parameters['state'] ?? null)) {
             $authorization->setState($parameters['state']);
         }
-        $context->requireConsent(
-            (string) $context->consent->identityIdentifier(),
+        $context->requireConnection(
+            (string) $context->connection->identityIdentifier(),
             $authorization->getClient()->getIdentifier(),
             array_map(static fn ($scope): string => $scope->getIdentifier(), $authorization->getScopes()),
         );
-        $authorization->setUser(new User((string) $context->consent->identityIdentifier() ?: throw OAuthServerException::invalidGrant()));
+        $authorization->setUser(new User((string) $context->connection->identityIdentifier() ?: throw OAuthServerException::invalidGrant()));
         $authorization->setAuthorizationApproved(true);
 
         return $server->completeAuthorizationRequest($authorization, new Response());
@@ -125,7 +125,7 @@ readonly class McpAuthorizationService implements AuthorizationConsentServiceInt
         if ($grant === 'authorization_code' && array_key_exists('scope', $parameters)) {
             throw OAuthServerException::invalidRequest('scope');
         }
-        foreach (['authorization_consent_id', 'connection_id', 'authorization_connection_id', 'identity_id', 'user_id', 'account_id', 'targets'] as $parameter) {
+        foreach (['authorization_connection_id', 'connection_id', 'authorization_consent_id', 'identity_id', 'user_id', 'account_id', 'targets'] as $parameter) {
             if (array_key_exists($parameter, $parameters)) {
                 throw OAuthServerException::invalidRequest($parameter);
             }
@@ -134,7 +134,7 @@ readonly class McpAuthorizationService implements AuthorizationConsentServiceInt
         if ($grant === 'authorization_code' || array_key_exists('resource', $parameters)) {
             $resource = $this->assertResource($resource);
         }
-        $context = new IssuanceContext($this->authorizationConsentRepository, is_string($resource) ? $resource : null);
+        $context = new IssuanceContext($this->authorizationConnectionRepository, is_string($resource) ? $resource : null);
         $accessTokenRepository = new AccessTokenRepository($this->dispatcher, $context);
         $response = $this->server($context, $accessTokenRepository)->respondToAccessTokenRequest($request, new Response());
 

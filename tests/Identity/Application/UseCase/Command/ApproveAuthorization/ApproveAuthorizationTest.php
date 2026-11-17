@@ -8,19 +8,19 @@ use DateTimeImmutable;
 use Illuminate\Support\Str;
 use Mockery;
 use Mockery\MockInterface;
-use Source\Identity\Application\Exception\InvalidAuthorizationConsentException;
+use Source\Identity\Application\Exception\InvalidAuthorizationRequestException;
 use Source\Identity\Application\Service\AuthorizationAccount;
 use Source\Identity\Application\Service\AuthorizationAccountServiceInterface;
 use Source\Identity\Application\Service\AuthorizationCodeParameters;
-use Source\Identity\Application\Service\AuthorizationConsentServiceInterface;
+use Source\Identity\Application\Service\AuthorizationConnectionServiceInterface;
 use Source\Identity\Application\Service\AuthorizationRequestStorageServiceInterface;
 use Source\Identity\Application\Service\AuthorizationRequestValidatorInterface;
 use Source\Identity\Application\Service\PendingAuthorization;
 use Source\Identity\Application\UseCase\Command\ApproveAuthorization\ApproveAuthorization;
 use Source\Identity\Application\UseCase\Command\ApproveAuthorization\ApproveAuthorizationInput;
 use Source\Identity\Application\UseCase\Command\ApproveAuthorization\ApproveAuthorizationOutput;
-use Source\Identity\Domain\Factory\AuthorizationConsentFactoryInterface;
-use Source\Identity\Domain\Repository\AuthorizationConsentRepositoryInterface;
+use Source\Identity\Domain\Factory\AuthorizationConnectionFactoryInterface;
+use Source\Identity\Domain\Repository\AuthorizationConnectionRepositoryInterface;
 use Source\Identity\Domain\ValueObject\AccountPrincipalIdentifier;
 use Source\Identity\Domain\ValueObject\AuthorizationScope;
 use Source\Identity\Domain\ValueObject\OAuthClientIdentifier;
@@ -45,17 +45,17 @@ class ApproveAuthorizationTest extends TestCase
         $accounts = Mockery::mock(AuthorizationAccountServiceInterface::class);
         $originalAccount = new AuthorizationAccount($identity, $account, new AccountPrincipalIdentifier((string) Str::uuid7()), 'Original');
         $accounts->shouldReceive('resolveOriginalAccount')->once()->with($identity)->andReturn($originalAccount);
-        /** @var AuthorizationConsentRepositoryInterface&MockInterface $repository */
-        $repository = Mockery::mock(AuthorizationConsentRepositoryInterface::class);
+        /** @var AuthorizationConnectionRepositoryInterface&MockInterface $repository */
+        $repository = Mockery::mock(AuthorizationConnectionRepositoryInterface::class);
         $repository->shouldNotReceive('save');
-        /** @var AuthorizationConsentFactoryInterface&MockInterface $factory */
-        $factory = Mockery::mock(AuthorizationConsentFactoryInterface::class);
+        /** @var AuthorizationConnectionFactoryInterface&MockInterface $factory */
+        $factory = Mockery::mock(AuthorizationConnectionFactoryInterface::class);
         $factory->shouldNotReceive('create');
-        /** @var AuthorizationConsentServiceInterface&MockInterface $codes */
-        $codes = Mockery::mock(AuthorizationConsentServiceInterface::class);
+        /** @var AuthorizationConnectionServiceInterface&MockInterface $codes */
+        $codes = Mockery::mock(AuthorizationConnectionServiceInterface::class);
         $codes->shouldNotReceive('issueCode');
         $useCase = new ApproveAuthorization($storage, $validator, $accounts, $factory, $repository, $codes);
-        $this->expectException(InvalidAuthorizationConsentException::class);
+        $this->expectException(InvalidAuthorizationRequestException::class);
         $useCase->process(new ApproveAuthorizationInput('request', $identity, [AuthorizationScope::DraftWrite]), new ApproveAuthorizationOutput());
     }
 }

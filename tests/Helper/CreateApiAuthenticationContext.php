@@ -7,29 +7,29 @@ namespace Tests\Helper;
 use DateTimeImmutable;
 use Source\Identity\Application\Service\ApiAuthenticationContext;
 use Source\Identity\Application\Service\ValidatedAuthorizationToken;
-use Source\Identity\Domain\Entity\AuthorizationConsent;
+use Source\Identity\Domain\Entity\AuthorizationConnection;
 use Source\Identity\Domain\ValueObject\AccountPrincipalIdentifier;
 use Source\Identity\Domain\ValueObject\AuthorizationScope;
 use Source\Identity\Domain\ValueObject\OAuthClientIdentifier;
-use Source\Identity\Infrastructure\Factory\AuthorizationConsentFactory;
+use Source\Identity\Infrastructure\Factory\AuthorizationConnectionFactory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Infrastructure\Service\Uuid\UuidGenerator;
 
 class CreateApiAuthenticationContext
 {
-    public static function fromConsent(AuthorizationConsent $consent, string $tokenIdentifier = 'source-token'): ApiAuthenticationContext
+    public static function fromConnection(AuthorizationConnection $connection, string $tokenIdentifier = 'source-token'): ApiAuthenticationContext
     {
         $expires = new DateTimeImmutable('+1 hour');
 
-        return new ApiAuthenticationContext(new ValidatedAuthorizationToken($tokenIdentifier, $consent, $consent->scopes(), $expires), $expires);
+        return new ApiAuthenticationContext(new ValidatedAuthorizationToken($tokenIdentifier, $connection, $connection->scopes(), $expires), $expires);
     }
 
     /** @param list<AuthorizationScope> $scopes */
     public static function create(array $scopes = [AuthorizationScope::WikiRead]): ApiAuthenticationContext
     {
         $account = new AccountIdentifier('0199f700-0000-7000-8000-000000000001');
-        $consent = new AuthorizationConsentFactory(new UuidGenerator())->create(
+        $connection = new AuthorizationConnectionFactory(new UuidGenerator())->create(
             new IdentityIdentifier('0199f700-0000-7000-8000-000000000003'),
             new OAuthClientIdentifier('0199f700-0000-4000-8000-000000000010'),
             $scopes,
@@ -40,6 +40,6 @@ class CreateApiAuthenticationContext
         );
         $expires = new DateTimeImmutable('+60 seconds');
 
-        return new ApiAuthenticationContext(new ValidatedAuthorizationToken('source', $consent, $scopes, $expires), $expires);
+        return new ApiAuthenticationContext(new ValidatedAuthorizationToken('source', $connection, $scopes, $expires), $expires);
     }
 }

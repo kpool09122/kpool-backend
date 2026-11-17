@@ -5,17 +5,17 @@ declare(strict_types=1);
 namespace Source\Identity\Infrastructure\Factory;
 
 use DateTimeImmutable;
-use Source\Identity\Domain\Entity\AuthorizationConsent;
-use Source\Identity\Domain\Factory\AuthorizationConsentFactoryInterface;
+use Source\Identity\Domain\Entity\AuthorizationConnection;
+use Source\Identity\Domain\Factory\AuthorizationConnectionFactoryInterface;
 use Source\Identity\Domain\ValueObject\AccountPrincipalIdentifier;
-use Source\Identity\Domain\ValueObject\AuthorizationConsentIdentifier;
+use Source\Identity\Domain\ValueObject\AuthorizationConnectionIdentifier;
 use Source\Identity\Domain\ValueObject\AuthorizationScope;
 use Source\Identity\Domain\ValueObject\OAuthClientIdentifier;
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 
-readonly class AuthorizationConsentFactory implements AuthorizationConsentFactoryInterface
+readonly class AuthorizationConnectionFactory implements AuthorizationConnectionFactoryInterface
 {
     public function __construct(private UuidGeneratorInterface $uuidGenerator)
     {
@@ -32,9 +32,9 @@ readonly class AuthorizationConsentFactory implements AuthorizationConsentFactor
         AccountPrincipalIdentifier $originalPrincipalIdentifier,
         string $resource,
         DateTimeImmutable $consentedAt,
-    ): AuthorizationConsent {
-        return new AuthorizationConsent(
-            new AuthorizationConsentIdentifier($this->uuidGenerator->generate()),
+    ): AuthorizationConnection {
+        return new AuthorizationConnection(
+            new AuthorizationConnectionIdentifier($this->uuidGenerator->generate()),
             $identityIdentifier,
             $clientIdentifier,
             $scopes,

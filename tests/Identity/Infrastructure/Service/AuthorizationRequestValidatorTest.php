@@ -8,12 +8,12 @@ use Application\Models\Identity\McpClient;
 use Laravel\Passport\ClientRepository;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
-use Source\Identity\Application\Exception\InvalidAuthorizationConsentException;
+use Source\Identity\Application\Exception\InvalidAuthorizationRequestException;
 use Source\Identity\Application\Service\AuthorizationCodeParameters;
 use Source\Identity\Domain\ValueObject\AuthorizationScope;
 use Source\Identity\Domain\ValueObject\OAuthClientIdentifier;
 use Source\Identity\Infrastructure\Service\AuthorizationRequestValidator;
-use Tests\Helper\CreateAuthorizationConsent;
+use Tests\Helper\CreateAuthorizationConnection;
 use Tests\TestCase;
 
 #[Group('useDb')]
@@ -28,9 +28,9 @@ class AuthorizationRequestValidatorTest extends TestCase
     #[DataProvider('invalidRequests')]
     public function testRejectsInvalidAuthorizationRequest(string $case): void
     {
-        config()->set('mcp_oauth.resource', CreateAuthorizationConsent::RESOURCE);
+        config()->set('mcp_oauth.resource', CreateAuthorizationConnection::RESOURCE);
         config()->set('mcp_oauth.issuer', 'https://auth.example.test');
-        $redirect = $case === 'port' ? 'http://127.0.0.1:1234/cb' : CreateAuthorizationConsent::REDIRECT;
+        $redirect = $case === 'port' ? 'http://127.0.0.1:1234/cb' : CreateAuthorizationConnection::REDIRECT;
         $client = app(ClientRepository::class)->createAuthorizationCodeGrantClient('Client', [$redirect], false);
         $parameters = new AuthorizationCodeParameters(
             new OAuthClientIdentifier($case === 'client' ? '00000000-0000-0000-0000-000000000000' : $client->id),
@@ -40,24 +40,24 @@ class AuthorizationRequestValidatorTest extends TestCase
             match ($case) {
                 'scopes' => [], 'duplicates' => [AuthorizationScope::WikiRead, AuthorizationScope::WikiRead], default => [AuthorizationScope::WikiRead]
             },
-            $case === 'resource' ? 'https://evil.test/mcp' : CreateAuthorizationConsent::RESOURCE,
+            $case === 'resource' ? 'https://evil.test/mcp' : CreateAuthorizationConnection::RESOURCE,
             $case === 'challenge' ? 'invalid' : str_repeat('a', 43),
             $case === 'state' ? str_repeat('a', 2049) : 'state',
         );
-        $this->expectException(InvalidAuthorizationConsentException::class);
+        $this->expectException(InvalidAuthorizationRequestException::class);
         app(AuthorizationRequestValidator::class)->validate($parameters);
     }
 
     public function testValidatesRegisteredClientAndExactRequest(): void
     {
-        config()->set('mcp_oauth.resource', CreateAuthorizationConsent::RESOURCE);
+        config()->set('mcp_oauth.resource', CreateAuthorizationConnection::RESOURCE);
         config()->set('mcp_oauth.issuer', 'https://auth.example.test');
-        $client = app(ClientRepository::class)->createAuthorizationCodeGrantClient('ChatGPT', [CreateAuthorizationConsent::REDIRECT], false);
-        $parameters = new AuthorizationCodeParameters(new OAuthClientIdentifier($client->id), CreateAuthorizationConsent::REDIRECT, [AuthorizationScope::DraftWrite], CreateAuthorizationConsent::RESOURCE, str_repeat('a', 43), 'state');
+        $client = app(ClientRepository::class)->createAuthorizationCodeGrantClient('ChatGPT', [CreateAuthorizationConnection::REDIRECT], false);
+        $parameters = new AuthorizationCodeParameters(new OAuthClientIdentifier($client->id), CreateAuthorizationConnection::REDIRECT, [AuthorizationScope::DraftWrite], CreateAuthorizationConnection::RESOURCE, str_repeat('a', 43), 'state');
         $validator = app(AuthorizationRequestValidator::class);
         $this->assertSame('ChatGPT', $validator->validate($parameters));
         McpClient::query()->whereKey($client->id)->update(['revoked' => true]);
-        $this->expectException(InvalidAuthorizationConsentException::class);
+        $this->expectException(InvalidAuthorizationRequestException::class);
         $validator->validate($parameters);
     }
 }

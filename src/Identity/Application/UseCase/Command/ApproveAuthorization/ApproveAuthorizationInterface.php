@@ -6,10 +6,10 @@ namespace Source\Identity\Application\UseCase\Command\ApproveAuthorization;
 
 use Source\Identity\Application\Exception\AuthorizationAccountUnavailableException;
 use Source\Identity\Application\Exception\AuthorizationRequestUnavailableException;
-use Source\Identity\Application\Exception\InvalidAuthorizationConsentException;
+use Source\Identity\Application\Exception\InvalidAuthorizationRequestException;
 
 interface ApproveAuthorizationInterface
 {
-    /** @throws AuthorizationAccountUnavailableException|AuthorizationRequestUnavailableException|InvalidAuthorizationConsentException */
+    /** @throws AuthorizationAccountUnavailableException|AuthorizationRequestUnavailableException|InvalidAuthorizationRequestException */
     public function process(ApproveAuthorizationInputPort $input, ApproveAuthorizationOutputPort $output): void;
 }

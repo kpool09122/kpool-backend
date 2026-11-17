@@ -7,6 +7,7 @@ namespace Application\Models\Identity;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
 use Override;
 
@@ -19,6 +20,7 @@ use Override;
  * @property string $original_principal_id
  * @property string $resource
  * @property Carbon $consented_at
+ * @property-read ?McpClient $client
  * @property ?Carbon $revoked_at
  */
 #[Fillable([
@@ -32,11 +34,17 @@ use Override;
     'consented_at',
     'revoked_at',
 ])]
-#[Table(name: 'identity_authorization_consents', keyType: 'string')]
-class AuthorizationConsent extends Model
+#[Table(name: 'identity_authorization_connections', keyType: 'string')]
+class AuthorizationConnection extends Model
 {
     #[Override]
     public $incrementing = false;
+
+    /** @return BelongsTo<McpClient, $this> */
+    public function client(): BelongsTo
+    {
+        return $this->belongsTo(McpClient::class, 'client_id');
+    }
 
     #[Override]
     protected function casts(): array

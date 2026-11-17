@@ -37,6 +37,8 @@ use Source\Identity\Application\UseCase\Command\RecoverPasskey\RecoverPasskey;
 use Source\Identity\Application\UseCase\Command\RecoverPasskey\RecoverPasskeyInterface;
 use Source\Identity\Application\UseCase\Command\RegisterWithPasskey\RegisterWithPasskey;
 use Source\Identity\Application\UseCase\Command\RegisterWithPasskey\RegisterWithPasskeyInterface;
+use Source\Identity\Application\UseCase\Command\RevokeAuthorization\RevokeAuthorization;
+use Source\Identity\Application\UseCase\Command\RevokeAuthorization\RevokeAuthorizationInterface;
 use Source\Identity\Application\UseCase\Command\SendAuthCode\SendAuthCode;
 use Source\Identity\Application\UseCase\Command\SendAuthCode\SendAuthCodeInterface;
 use Source\Identity\Application\UseCase\Command\SendPasskeyRecoveryEmail\SendPasskeyRecoveryEmail;
@@ -66,16 +68,19 @@ use Source\Identity\Application\UseCase\Command\WithdrawFromService\WithdrawFrom
 use Source\Identity\Application\UseCase\Query\GetAuthenticatedIdentity\GetAuthenticatedIdentityInterface;
 use Source\Identity\Application\UseCase\Query\GetAuthorizationRequest\GetAuthorizationRequestInterface;
 use Source\Identity\Application\UseCase\Query\GetIdentityProfile\GetIdentityProfileInterface;
+use Source\Identity\Application\UseCase\Query\ListAuthorizationConnections\ListAuthorizationConnectionsInterface;
 use Source\Identity\Application\UseCase\Query\ListPasskeys\ListPasskeysInterface;
 use Source\Identity\Infrastructure\Query\GetAuthenticatedIdentity;
 use Source\Identity\Infrastructure\Query\GetAuthorizationRequest;
 use Source\Identity\Infrastructure\Query\GetIdentityProfile;
+use Source\Identity\Infrastructure\Query\ListAuthorizationConnections;
 use Source\Identity\Infrastructure\Query\ListPasskeys;
 
 class UseCaseServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        $this->app->singleton(RevokeAuthorizationInterface::class, RevokeAuthorization::class);
         $this->app->singleton(CreateAuthorizationRequestInterface::class, CreateAuthorizationRequest::class);
         $this->app->singleton(ApproveAuthorizationInterface::class, ApproveAuthorization::class);
         $this->app->singleton(DenyAuthorizationInterface::class, DenyAuthorization::class);
@@ -117,5 +122,6 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(GetAuthenticatedIdentityInterface::class, GetAuthenticatedIdentity::class);
         $this->app->singleton(GetIdentityProfileInterface::class, GetIdentityProfile::class);
         $this->app->singleton(ListPasskeysInterface::class, ListPasskeys::class);
+        $this->app->singleton(ListAuthorizationConnectionsInterface::class, ListAuthorizationConnections::class);
     }
 }

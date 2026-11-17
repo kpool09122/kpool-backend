@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Source\Identity\Domain\Factory;
 
 use DateTimeImmutable;
-use Source\Identity\Domain\Entity\AuthorizationConsent;
+use Source\Identity\Domain\Entity\AuthorizationConnection;
 use Source\Identity\Domain\ValueObject\AccountPrincipalIdentifier;
 use Source\Identity\Domain\ValueObject\AuthorizationScope;
 use Source\Identity\Domain\ValueObject\OAuthClientIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 
-interface AuthorizationConsentFactoryInterface
+interface AuthorizationConnectionFactoryInterface
 {
     /**
      * @param list<AuthorizationScope> $scopes
@@ -25,5 +25,5 @@ interface AuthorizationConsentFactoryInterface
         AccountPrincipalIdentifier $originalPrincipalIdentifier,
         string $resource,
         DateTimeImmutable $consentedAt,
-    ): AuthorizationConsent;
+    ): AuthorizationConnection;
 }

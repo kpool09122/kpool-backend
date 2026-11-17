@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Identity\Application\UseCase\Command\WithdrawFromService;
 
 use Source\Identity\Application\Service\ActorContextServiceInterface;
+use Source\Identity\Application\Service\AuthorizationRevocationServiceInterface;
 use Source\Identity\Application\Service\IdentitySessionServiceInterface;
 use Source\Identity\Application\Service\StepUpAuthenticationStorageServiceInterface;
 use Source\Identity\Domain\Event\IdentityWithdrawing;
@@ -28,6 +29,7 @@ readonly class WithdrawFromService implements WithdrawFromServiceInterface
         private ArchivedIdentityFactoryInterface $archivedIdentityFactory,
         private ArchivedIdentityRepositoryInterface $archivedIdentityRepository,
         private ImageServiceInterface $imageService,
+        private AuthorizationRevocationServiceInterface $authorizationRevocationService,
     ) {
     }
 
@@ -51,6 +53,7 @@ readonly class WithdrawFromService implements WithdrawFromServiceInterface
         );
         $this->archivedIdentityRepository->save($archivedIdentity);
         $this->eventDispatcher->dispatch(new IdentityWithdrawing($identityIdentifier));
+        $this->authorizationRevocationService->revokeAndDeleteForIdentity($identityIdentifier);
         $profileImage = $identity->profileImage();
         $this->identityRepository->delete($identityIdentifier);
         $this->actorContextService->forget($identityIdentifier);

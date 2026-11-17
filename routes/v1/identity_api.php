@@ -17,6 +17,7 @@ use Application\Http\Action\Identity\Command\DenyAuthorization\DenyAuthorization
 use Application\Http\Action\Identity\Command\Logout\LogoutAction;
 use Application\Http\Action\Identity\Command\RecoverPasskey\RecoverPasskeyAction;
 use Application\Http\Action\Identity\Command\RegisterWithPasskey\RegisterWithPasskeyAction;
+use Application\Http\Action\Identity\Command\RevokeAuthorization\RevokeAuthorizationAction;
 use Application\Http\Action\Identity\Command\SendAuthCode\SendAuthCodeAction;
 use Application\Http\Action\Identity\Command\SendPasskeyRecoveryEmail\SendPasskeyRecoveryEmailAction;
 use Application\Http\Action\Identity\Command\SendSocialLinkingEmail\SendSocialLinkingEmailAction;
@@ -35,6 +36,7 @@ use Application\Http\Action\Identity\Query\GetAuthorizationRequest\GetAuthorizat
 use Application\Http\Action\Identity\Query\GetCsrfToken\GetCsrfTokenAction;
 use Application\Http\Action\Identity\Query\GetSocialLinking\GetSocialLinkingAction;
 use Application\Http\Action\Identity\Query\GetWithdrawalEligibility\GetWithdrawalEligibilityAction;
+use Application\Http\Action\Identity\Query\ListAuthorizationConnections\ListAuthorizationConnectionsAction;
 use Application\Http\Action\Identity\Query\ListPasskeys\ListPasskeysAction;
 use Illuminate\Support\Facades\Route;
 
@@ -73,6 +75,7 @@ Route::middleware(['auth.api', 'resolve.actor'])->group(function () {
     Route::middleware('rate-limit:screen,query')->group(function () {
         Route::get('/auth/me', GetAuthenticatedIdentityAction::class);
         Route::get('/auth/passkeys', ListPasskeysAction::class);
+        Route::get('/oauth/connections', ListAuthorizationConnectionsAction::class);
         // Disabled by #605: Route::get('/auth/identities/{identityIdentifier}/profile', GetIdentityProfileAction::class);
         Route::get('/identities/me/withdrawal-eligibility', GetWithdrawalEligibilityAction::class);
         Route::get('/oauth/requests/{requestIdentifier}', GetAuthorizationRequestAction::class);
@@ -87,6 +90,7 @@ Route::middleware(['auth.api', 'resolve.actor'])->group(function () {
         Route::patch('/auth/passkeys/{passkeyIdentifier}', UpdatePasskeyAction::class);
         Route::delete('/auth/passkeys/{passkeyIdentifier}', DeletePasskeyAction::class);
         Route::post('/auth/logout', LogoutAction::class);
+        Route::delete('/oauth/connections/{connectionIdentifier}', RevokeAuthorizationAction::class);
         Route::patch('/identities/me', UpdateIdentityAction::class);
         Route::delete('/identities/me', WithdrawFromServiceAction::class);
         Route::post('/oauth/requests', CreateAuthorizationRequestAction::class);

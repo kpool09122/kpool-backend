@@ -16,7 +16,7 @@ use Source\Identity\Application\Service\ApiAuthenticationContext;
 use Source\Identity\Domain\ValueObject\AccountPrincipalIdentifier;
 use Source\Identity\Domain\ValueObject\AuthorizationScope;
 use Source\Identity\Domain\ValueObject\OAuthClientIdentifier;
-use Source\Identity\Infrastructure\Factory\AuthorizationConsentFactory;
+use Source\Identity\Infrastructure\Factory\AuthorizationConnectionFactory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -45,7 +45,7 @@ class CreateDelegatedApiAuthenticationContext
         DB::table('account_role_policy_attachments')->insert(['role_id' => $role, 'policy_id' => $policy]);
         DB::table('account_principal_group_role_attachments')->insert(['principal_group_id' => $group, 'role_id' => $role]);
         $delegation = Delegation::query()->create(['id' => StrTestHelper::generateUuid(), 'affiliation_id' => StrTestHelper::generateUuid(), 'delegate_account_id' => (string) $original, 'delegator_account_id' => (string) $target, 'requested_by_account_id' => (string) $original, 'status' => 'approved', 'direction' => 'from_agency', 'requested_at' => now(), 'approved_at' => now()]);
-        $consent = new AuthorizationConsentFactory(new UuidGenerator())->create(
+        $connection = new AuthorizationConnectionFactory(new UuidGenerator())->create(
             $identity,
             new OAuthClientIdentifier(StrTestHelper::generateUuid()),
             [AuthorizationScope::WikiRead],
@@ -55,7 +55,7 @@ class CreateDelegatedApiAuthenticationContext
             new DateTimeImmutable(),
         );
 
-        return [CreateApiAuthenticationContext::fromConsent($consent), $delegation];
+        return [CreateApiAuthenticationContext::fromConnection($connection), $delegation];
     }
 
     public static function switchTo(ApiAuthenticationContext $context, ?DelegationIdentifier $delegationIdentifier): void

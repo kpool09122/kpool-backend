@@ -7,6 +7,7 @@ namespace Application\Providers\Account;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Support\ServiceProvider;
 use Source\Account\Account\Application\EventHandler\AccountCategoryChangedNotificationHandler;
+use Source\Account\Account\Application\EventHandler\AuthorizationConnectionRevokedHandler;
 use Source\Account\Account\Application\EventHandler\IdentityCreatedHandler;
 use Source\Account\Account\Application\EventHandler\IdentityWithdrawingHandler;
 use Source\Account\Account\Domain\Event\AccountCategoryChanged;
@@ -16,6 +17,7 @@ use Source\Account\Invitation\Application\EventHandler\IdentityCreatedViaInvitat
 use Source\Account\Invitation\Application\EventHandler\InvitationCreatedHandler;
 use Source\Account\Invitation\Domain\Event\InvitationCreated;
 use Source\Account\Notification\Application\EventHandler\AccountRequestApprovedHandler;
+use Source\Identity\Domain\Event\AuthorizationConnectionRevoked;
 use Source\Identity\Domain\Event\IdentityCreated;
 use Source\Identity\Domain\Event\IdentityCreatedViaInvitation;
 use Source\Identity\Domain\Event\IdentityWithdrawing;
@@ -36,6 +38,7 @@ class EventServiceProvider extends ServiceProvider
         $events->listen(DelegationApproved::class, [AccountRequestApprovedHandler::class, 'handleDelegation']);
 
         $events->listen(IdentityWithdrawing::class, [IdentityWithdrawingHandler::class, 'handle']);
+        $events->listen(AuthorizationConnectionRevoked::class, [AuthorizationConnectionRevokedHandler::class, 'handle']);
 
         $events->listen(
             IdentityCreated::class,

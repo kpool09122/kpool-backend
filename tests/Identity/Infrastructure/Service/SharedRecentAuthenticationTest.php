@@ -13,6 +13,7 @@ use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Identity\Application\Service\ActorContextServiceInterface;
+use Source\Identity\Application\Service\AuthorizationRevocationServiceInterface;
 use Source\Identity\Application\Service\IdentitySessionServiceInterface;
 use Source\Identity\Application\Service\StepUpAuthenticationStorageServiceInterface;
 use Source\Identity\Application\UseCase\Command\WithdrawFromService\WithdrawFromService;
@@ -77,7 +78,17 @@ class SharedRecentAuthenticationTest extends TestCase
         $listPasskeys = new ListPasskeys($storage);
 
         $this->assertSame([], $listPasskeys->process(new ListPasskeysInput($identityIdentifier)));
-        (new WithdrawFromService($storage, $actorContextService, $eventDispatcher, $identitySessionService, $this->app()->make(IdentityRepositoryInterface::class), $this->app()->make(ArchivedIdentityFactoryInterface::class), $this->app()->make(ArchivedIdentityRepositoryInterface::class), $this->app()->make(ImageServiceInterface::class)))->process(new WithdrawFromServiceInput($identityIdentifier, 'test-identity'), new WithdrawFromServiceOutput());
+        (new WithdrawFromService(
+            $storage,
+            $actorContextService,
+            $eventDispatcher,
+            $identitySessionService,
+            $this->app()->make(IdentityRepositoryInterface::class),
+            $this->app()->make(ArchivedIdentityFactoryInterface::class),
+            $this->app()->make(ArchivedIdentityRepositoryInterface::class),
+            $this->app()->make(ImageServiceInterface::class),
+            $this->app()->make(AuthorizationRevocationServiceInterface::class),
+        ))->process(new WithdrawFromServiceInput($identityIdentifier, 'test-identity'), new WithdrawFromServiceOutput());
         $this->assertSame([], $listPasskeys->process(new ListPasskeysInput($identityIdentifier)));
 
         $this->assertSame($original, Redis::get($key));
@@ -120,6 +131,16 @@ class SharedRecentAuthenticationTest extends TestCase
         $identitySessionService->shouldNotReceive('terminate');
 
         $this->expectException(StepUpAuthenticationRequiredException::class);
-        (new WithdrawFromService($storage, $actorContextService, $eventDispatcher, $identitySessionService, $this->app()->make(IdentityRepositoryInterface::class), $this->app()->make(ArchivedIdentityFactoryInterface::class), $this->app()->make(ArchivedIdentityRepositoryInterface::class), $this->app()->make(ImageServiceInterface::class)))->process(new WithdrawFromServiceInput($identityIdentifier, 'test-identity'), new WithdrawFromServiceOutput());
+        (new WithdrawFromService(
+            $storage,
+            $actorContextService,
+            $eventDispatcher,
+            $identitySessionService,
+            $this->app()->make(IdentityRepositoryInterface::class),
+            $this->app()->make(ArchivedIdentityFactoryInterface::class),
+            $this->app()->make(ArchivedIdentityRepositoryInterface::class),
+            $this->app()->make(ImageServiceInterface::class),
+            $this->app()->make(AuthorizationRevocationServiceInterface::class),
+        ))->process(new WithdrawFromServiceInput($identityIdentifier, 'test-identity'), new WithdrawFromServiceOutput());
     }
 }

@@ -11,6 +11,7 @@ use Source\Account\Account\Application\Service\CurrentAccount;
 use Source\Account\Account\Application\Service\CurrentAccountServiceInterface;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Identity\Application\Service\ApiAuthenticationContext;
+use Source\Identity\Domain\ValueObject\AuthorizationConnectionIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\DelegationIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -80,12 +81,18 @@ class CurrentAccountService implements CurrentAccountServiceInterface
         $forget();
     }
 
+    public function forgetForAuthorizationConnection(IdentityIdentifier $identityIdentifier, AuthorizationConnectionIdentifier $connectionIdentifier): void
+    {
+        $key = self::KEY_PREFIX . $identityIdentifier . ':consent:' . $connectionIdentifier;
+        DB::afterCommit(static fn () => Redis::command('del', [$key]));
+    }
+
     private function key(IdentityIdentifier $identityIdentifier): string
     {
         $request = request();
         $context = $request->attributes->get(ApiAuthenticationContext::class);
         if ($context instanceof ApiAuthenticationContext) {
-            return self::KEY_PREFIX . $identityIdentifier . ':consent:' . $context->consentIdentifier();
+            return self::KEY_PREFIX . $identityIdentifier . ':consent:' . $context->connectionIdentifier();
         }
         $sessionId = $request->hasSession() ? $request->session()->getId() : 'stateless';
 

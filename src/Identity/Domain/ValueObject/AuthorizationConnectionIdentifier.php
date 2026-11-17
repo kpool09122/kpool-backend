@@ -8,12 +8,12 @@ use InvalidArgumentException;
 use Source\Shared\Domain\ValueObject\Foundation\StringBaseValue;
 use Symfony\Component\Uid\Uuid;
 
-final class AuthorizationConsentIdentifier extends StringBaseValue
+final class AuthorizationConnectionIdentifier extends StringBaseValue
 {
     protected function validate(string $value): void
     {
         if (! Uuid::isValid($value)) {
-            throw new InvalidArgumentException('Authorization consent identifier must be a valid UUID.');
+            throw new InvalidArgumentException('Authorization connection identifier must be a valid UUID.');
         }
     }
 }

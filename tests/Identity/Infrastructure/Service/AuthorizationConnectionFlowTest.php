@@ -5,42 +5,42 @@ declare(strict_types=1);
 namespace Tests\Identity\Infrastructure\Service;
 
 use Application\Models\Account\Principal;
-use Application\Models\Identity\AuthorizationConsent;
+use Application\Models\Identity\AuthorizationConnection;
 use Illuminate\Support\Facades\DB;
 use Mockery;
 use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Identity\Application\Exception\AuthorizationAccountUnavailableException;
-use Source\Identity\Application\Exception\InvalidAuthorizationConsentException;
+use Source\Identity\Application\Exception\InvalidAuthorizationRequestException;
 use Source\Identity\Application\Service\AuthorizationAccountServiceInterface;
 use Source\Identity\Application\Service\AuthorizationCodeParameters;
-use Source\Identity\Application\Service\AuthorizationConsentServiceInterface;
+use Source\Identity\Application\Service\AuthorizationConnectionServiceInterface;
 use Source\Identity\Application\Service\AuthorizationRequestValidatorInterface;
 use Source\Identity\Application\Service\PendingAuthorization;
-use Source\Identity\Application\UseCase\Command\ApproveAuthorization\ApproveAuthorization as ApproveConsent;
+use Source\Identity\Application\UseCase\Command\ApproveAuthorization\ApproveAuthorization;
 use Source\Identity\Application\UseCase\Command\ApproveAuthorization\ApproveAuthorizationInput;
 use Source\Identity\Application\UseCase\Command\ApproveAuthorization\ApproveAuthorizationOutput;
 use Source\Identity\Application\UseCase\Query\GetAuthorizationRequest\GetAuthorizationRequestInput;
-use Source\Identity\Domain\Factory\AuthorizationConsentFactoryInterface;
-use Source\Identity\Domain\Repository\AuthorizationConsentRepositoryInterface;
-use Source\Identity\Domain\ValueObject\AuthorizationConsentIdentifier;
+use Source\Identity\Domain\Factory\AuthorizationConnectionFactoryInterface;
+use Source\Identity\Domain\Repository\AuthorizationConnectionRepositoryInterface;
+use Source\Identity\Domain\ValueObject\AuthorizationConnectionIdentifier;
 use Source\Identity\Domain\ValueObject\AuthorizationScope;
 use Source\Identity\Infrastructure\Query\GetAuthorizationRequest;
 use Tests\Helper\AuthorizationRequestScenario;
 use Tests\TestCase;
 
 #[Group('useDb')]
-class AuthorizationConsentFlowTest extends TestCase
+class AuthorizationConnectionFlowTest extends TestCase
 {
     public function testPersistsOnlySelectedScopesAndIssuesRealCodeFromStoredParameters(): void
     {
         $scenario = AuthorizationRequestScenario::create();
         $output = new ApproveAuthorizationOutput();
         $input = $this->input($scenario);
-        $useCase = app(ApproveConsent::class);
+        $useCase = app(ApproveAuthorization::class);
         DB::transaction(fn () => $useCase->process($input, $output));
-        $model = AuthorizationConsent::query()->sole();
+        $model = AuthorizationConnection::query()->sole();
         $this->assertSame(['wiki-drafts:write'], $model->scopes);
         $this->assertSame((string) $scenario->base->originalAccountIdentifier(), $model->original_account_id);
         $this->assertSame((string) $scenario->base->originalPrincipalIdentifier(), $model->original_principal_id);
@@ -52,41 +52,41 @@ class AuthorizationConsentFlowTest extends TestCase
         $this->assertSame(' original state & value ', $query['state']);
         $this->assertIsString($query['code']);
         $this->assertArrayNotHasKey('access_token', $query);
-        $this->assertSame(1, DB::table('oauth_auth_codes')->where('authorization_consent_id', $model->id)->count());
+        $this->assertSame(1, DB::table('oauth_auth_codes')->where('authorization_connection_id', $model->id)->count());
     }
 
-    public function testCodeFailureRollsBackEarlierConsentWriteAndAllowsRetry(): void
+    public function testCodeFailureRollsBackEarlierConnectionWriteAndAllowsRetry(): void
     {
         $scenario = AuthorizationRequestScenario::create();
-        /** @var AuthorizationConsentServiceInterface&MockInterface $codes */
-        $codes = Mockery::mock(AuthorizationConsentServiceInterface::class);
-        $codes->shouldReceive('issueCode')->once()->andReturnUsing(function (AuthorizationConsentIdentifier $id, AuthorizationCodeParameters $parameters): never {
-            $this->assertTrue(AuthorizationConsent::query()->whereKey((string) $id)->exists());
+        /** @var AuthorizationConnectionServiceInterface&MockInterface $codes */
+        $codes = Mockery::mock(AuthorizationConnectionServiceInterface::class);
+        $codes->shouldReceive('issueCode')->once()->andReturnUsing(function (AuthorizationConnectionIdentifier $id, AuthorizationCodeParameters $parameters): never {
+            $this->assertTrue(AuthorizationConnection::query()->whereKey((string) $id)->exists());
             $this->assertSame(' original state & value ', $parameters->state);
 
-            throw new InvalidAuthorizationConsentException();
+            throw new InvalidAuthorizationRequestException();
         });
-        $useCase = new ApproveConsent(
+        $useCase = new ApproveAuthorization(
             $scenario->authorizationRequestStorageService,
             app(AuthorizationRequestValidatorInterface::class),
             app(AuthorizationAccountServiceInterface::class),
-            app(AuthorizationConsentFactoryInterface::class),
-            app(AuthorizationConsentRepositoryInterface::class),
+            app(AuthorizationConnectionFactoryInterface::class),
+            app(AuthorizationConnectionRepositoryInterface::class),
             $codes,
         );
 
         try {
             DB::transaction(fn () => $useCase->process($this->input($scenario), new ApproveAuthorizationOutput()));
             $this->fail('Expected code failure.');
-        } catch (InvalidAuthorizationConsentException) {
-            $this->assertSame(0, AuthorizationConsent::query()->count());
+        } catch (InvalidAuthorizationRequestException) {
+            $this->assertSame(0, AuthorizationConnection::query()->count());
             $this->assertSame(0, DB::table('oauth_auth_codes')->count());
         }
         $this->assertSame($scenario->pending->identifier, $scenario->authorizationRequestStorageService->requireValid($scenario->pending->identifier, $scenario->base->identityIdentifier())->identifier);
         $output = new ApproveAuthorizationOutput();
-        $useCase = app(ApproveConsent::class);
+        $useCase = app(ApproveAuthorization::class);
         DB::transaction(fn () => $useCase->process($this->input($scenario), $output));
-        $this->assertSame(1, AuthorizationConsent::query()->count());
+        $this->assertSame(1, AuthorizationConnection::query()->count());
         $this->assertStringContainsString('code=', $output->toArray()['redirectUri']);
     }
 
@@ -97,7 +97,7 @@ class AuthorizationConsentFlowTest extends TestCase
     }
 
     #[DataProvider('invalidScopes')]
-    public function testRejectsInvalidScopesWithoutConsent(string $case): void
+    public function testRejectsInvalidScopesWithoutConnection(string $case): void
     {
         $scenario = AuthorizationRequestScenario::create();
         $scopes = match($case) {
@@ -112,11 +112,11 @@ class AuthorizationConsentFlowTest extends TestCase
         $input = new ApproveAuthorizationInput($scenario->pending->identifier, $scenario->base->identityIdentifier(), $scopes);
 
         try {
-            $useCase = app(ApproveConsent::class);
+            $useCase = app(ApproveAuthorization::class);
             $useCase->process($input, new ApproveAuthorizationOutput());
-            $this->fail('Invalid consent was accepted.');
-        } catch (InvalidAuthorizationConsentException) {
-            $this->assertSame(0, AuthorizationConsent::query()->count());
+            $this->fail('Invalid authorization request was accepted.');
+        } catch (InvalidAuthorizationRequestException) {
+            $this->assertSame(0, AuthorizationConnection::query()->count());
             $this->assertSame(0, DB::table('oauth_auth_codes')->count());
         }
     }
@@ -128,7 +128,7 @@ class AuthorizationConsentFlowTest extends TestCase
         $query->process(new GetAuthorizationRequestInput($scenario->pending->identifier, $scenario->base->identityIdentifier()));
         Principal::query()->whereKey((string) $scenario->base->originalPrincipalIdentifier())->update(['status' => 'suspended']);
         $this->expectException(AuthorizationAccountUnavailableException::class);
-        $useCase = app(ApproveConsent::class);
+        $useCase = app(ApproveAuthorization::class);
         $useCase->process($this->input($scenario), new ApproveAuthorizationOutput());
     }
 
