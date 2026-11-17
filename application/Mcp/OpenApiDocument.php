@@ -74,9 +74,9 @@ final readonly class OpenApiDocument
     /** Convert OpenAPI 3.0 schemas to self-contained JSON Schema input definitions.
      * @param array<string, mixed> $schema
      * @param list<string> $seen
-     * @return array<string, mixed>
+     * @return array<string, mixed>|stdClass
      */
-    public function schema(array $schema, array $seen = []): array
+    public function schema(array $schema, array $seen = []): array|stdClass
     {
         if (isset($schema['$ref'])) {
             $ref = self::string($schema['$ref']);
@@ -94,7 +94,7 @@ final readonly class OpenApiDocument
         unset($schema['nullable'], $schema['example'], $schema['readOnly'], $schema['writeOnly']);
         foreach (['allOf', 'anyOf', 'oneOf'] as $keyword) {
             if (isset($schema[$keyword])) {
-                $schema[$keyword] = array_map(fn (mixed $part): array => $this->schema(self::map($part), $seen), self::items($schema[$keyword]));
+                $schema[$keyword] = array_map(fn (mixed $part): array|stdClass => $this->schema(self::map($part), $seen), self::items($schema[$keyword]));
             }
         }
         foreach (['items', 'not'] as $keyword) {
@@ -135,7 +135,9 @@ final readonly class OpenApiDocument
             }
         }
 
-        return $nullable ? ['anyOf' => [$schema, ['type' => 'null']]] : $schema;
+        $result = $schema === [] ? new stdClass() : $schema;
+
+        return $nullable ? ['anyOf' => [$result, ['type' => 'null']]] : $result;
     }
 
     /** @return array<string, mixed> */

@@ -88,12 +88,25 @@ paths:
       operationId: DraftWikiListOperations_listDraftWikis
       description: 'List draft wikis with read policy authorization. Internal API Bearer scope: wiki-drafts:read.'
       parameters:
+        - name: page
+          in: query
+          required: false
+          description: Page number; default 1. Uses the existing Laravel paginator.
+          schema:
+            type: integer
+            format: int32
+            nullable: true
+            minimum: 1
+          explode: false
         - name: perPage
           in: query
           required: false
           schema:
             type: integer
             format: int32
+            nullable: true
+            minimum: 1
+            maximum: 100
           explode: false
         - name: translationSetIdentifier
           in: query
@@ -108,6 +121,7 @@ paths:
             type: array
             items:
               $ref: '#/components/schemas/DraftWikiStatus'
+            minItems: 1
           explode: false
         - name: resourceType
           in: query
@@ -1151,12 +1165,25 @@ paths:
       operationId: MyDraftWikiListOperations_listMyDraftWikis
       description: 'List draft wikis edited by the current principal. Internal API Bearer scope: wiki-drafts:read.'
       parameters:
+        - name: page
+          in: query
+          required: false
+          description: Page number; default 1. Uses the existing Laravel paginator.
+          schema:
+            type: integer
+            format: int32
+            nullable: true
+            minimum: 1
+          explode: false
         - name: perPage
           in: query
           required: false
           schema:
             type: integer
             format: int32
+            nullable: true
+            minimum: 1
+            maximum: 100
           explode: false
         - name: translationSetIdentifier
           in: query
@@ -1171,6 +1198,7 @@ paths:
             type: array
             items:
               $ref: '#/components/schemas/DraftWikiStatus'
+            minItems: 1
           explode: false
         - name: resourceType
           in: query
@@ -6088,12 +6116,25 @@ paths:
           required: true
           schema:
             type: string
+        - name: page
+          in: query
+          required: false
+          description: Page number; default 1. Uses the existing Laravel paginator.
+          schema:
+            type: integer
+            format: int32
+            nullable: true
+            minimum: 1
+          explode: false
         - name: perPage
           in: query
           required: false
           schema:
             type: integer
             format: int32
+            nullable: true
+            minimum: 1
+            maximum: 100
           explode: false
         - name: resourceType
           in: query
@@ -6433,6 +6474,48 @@ components:
           items: {}
           description: Section content payloads.
       description: Detailed agency draft wiki payload used by the editor.
+    AgencyWikiBasicInput:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          description: Display name of the agency.
+        normalizedName:
+          type: string
+          description: Normalized name of the agency.
+        ceo:
+          type: string
+          description: Chief executive officer of the agency.
+        normalizedCeo:
+          type: string
+          description: Normalized chief executive officer name.
+        foundedIn:
+          type: string
+          format: date
+          nullable: true
+          description: Date when the agency was founded.
+        parentAgencyIdentifier:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
+          description: Parent agency identifier.
+        status:
+          type: string
+          nullable: true
+          description: Current activity status of the agency.
+        officialWebsite:
+          type: string
+          nullable: true
+          description: Official website of the agency.
+        socialLinks:
+          type: array
+          items:
+            type: string
+          description: Social links of the agency.
+      description: Agency basic input. Only name is required on creation; omitted fields use existing API defaults. For editing, retain all current values.
     AgencyWikiDetail:
       type: object
       required:
@@ -6720,14 +6803,24 @@ components:
       properties:
         resourceType:
           type: string
+          enum:
+            - agency
+            - group
+            - talent
+            - song
           description: Resource type that the wiki belongs to.
         language:
           type: string
           description: Language of the wiki.
         slug:
           type: string
-          description: Slug must be unique within the resource type among published wikis, regardless of language. When branching from a published wiki, its translation set is excluded.
+          minLength: 3
+          maxLength: 80
+          pattern: ^(ag|gr|tl|sg)-[a-z0-9]+(-[a-z0-9]+)*$
+          description: Use the resource prefix ag-, gr-, tl-, or sg-, followed by lowercase letters, digits and single hyphens. Unique within the resource type among published wikis, regardless of language; branching excludes its translation set.
         basic:
+          allOf:
+            - $ref: '#/components/schemas/WikiBasicInput'
           description: Basic wiki content payload.
         imageIdentifier:
           type: string
@@ -6737,7 +6830,9 @@ components:
           description: Representative image identifier for the wiki.
         sections:
           type: array
-          items: {}
+          items:
+            $ref: '#/components/schemas/WikiContentInput'
+          nullable: true
           description: Section content payloads.
         themeColor:
           type: string
@@ -6770,8 +6865,10 @@ components:
           maxItems: 5
           description: SEO keywords for the wiki.
         publishedWikiIdentifier:
+          type: string
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
           description: Published wiki identifier to branch from.
       allOf:
         - $ref: '#/components/schemas/WikiAssociationTargets'
@@ -7419,6 +7516,64 @@ components:
           type: string
           description: Representative symbol of the group.
       description: Basic payload for a group draft wiki.
+    GroupWikiBasicInput:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          description: Display name of the group.
+        normalizedName:
+          type: string
+          description: Normalized name of the group.
+        agencyIdentifier:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
+          description: Associated agency identifier.
+        groupType:
+          type: string
+          enum:
+            - boy_group
+            - girl_group
+            - co_ed
+          nullable: true
+          description: Group type.
+        status:
+          type: string
+          nullable: true
+          description: Current activity status of the group.
+        generation:
+          type: string
+          nullable: true
+          description: Generation label of the group.
+        debutDate:
+          type: string
+          format: date
+          nullable: true
+          description: Debut date of the group.
+        disbandDate:
+          type: string
+          format: date
+          nullable: true
+          description: Disband date of the group.
+        fandomName:
+          type: string
+          description: Fandom name of the group.
+        officialColors:
+          type: array
+          items:
+            $ref: '#/components/schemas/OfficialColor'
+          description: Official colors of the group.
+        emoji:
+          type: string
+          description: Representative emoji of the group.
+        representativeSymbol:
+          type: string
+          description: Representative symbol of the group.
+      description: Group basic input. Only name is required on creation; omitted fields use existing API defaults. For editing, retain all current values.
     ImageDeletionApprovalSummary:
       type: object
       required:
@@ -9262,6 +9417,77 @@ components:
           type: string
           description: Fandom name of the talent.
       description: Summary of a published talent linked from a song draft wiki.
+    SongWikiBasicInput:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          description: Display name of the song.
+        normalizedName:
+          type: string
+          description: Normalized name of the song.
+        songType:
+          type: string
+          enum:
+            - title_track
+            - b_side
+            - ost
+            - solo
+            - collaboration
+            - pre_release
+          nullable: true
+          description: Song type.
+        genres:
+          type: array
+          items:
+            type: string
+          description: Genres associated with the song.
+        agencyIdentifier:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
+          description: Associated agency identifier.
+        releaseDate:
+          type: string
+          format: date
+          nullable: true
+          description: Release date of the song.
+        albumName:
+          type: string
+          nullable: true
+          description: Album name.
+        lyricist:
+          type: string
+          description: Lyricist name.
+        normalizedLyricist:
+          type: string
+          description: Normalized lyricist name.
+        composer:
+          type: string
+          description: Composer name.
+        normalizedComposer:
+          type: string
+          description: Normalized composer name.
+        arranger:
+          type: string
+          description: Arranger name.
+        normalizedArranger:
+          type: string
+          description: Normalized arranger name.
+        groupIdentifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Published group wiki identifiers; map groups[].wikiIdentifier from detail responses.
+        talentIdentifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Published talent wiki identifiers; map talents[].wikiIdentifier from detail responses.
+      description: Song basic input. Only name is required on creation; omitted fields use existing API defaults. For editing, retain all current values.
     SongWikiDetail:
       type: object
       required:
@@ -9636,6 +9862,116 @@ components:
           type: string
           description: Representative symbol of the group.
       description: Summary of a published group linked from a talent draft wiki.
+    TalentWikiBasicInput:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          description: Display name of the talent.
+        normalizedName:
+          type: string
+          description: Normalized name of the talent.
+        realName:
+          type: string
+          description: Real name of the talent.
+        normalizedRealName:
+          type: string
+          description: Normalized real name of the talent.
+        birthday:
+          type: string
+          format: date
+          nullable: true
+          description: Birthday of the talent.
+        agencyIdentifier:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
+          description: Associated agency identifier.
+        emoji:
+          type: string
+          description: Emoji representing the talent.
+        representativeSymbol:
+          type: string
+          description: Representative symbol of the talent.
+        position:
+          type: string
+          description: Position of the talent.
+        mbti:
+          type: string
+          enum:
+            - INTJ
+            - INTP
+            - ENTJ
+            - ENTP
+            - INFJ
+            - INFP
+            - ENFJ
+            - ENFP
+            - ISTJ
+            - ISFJ
+            - ESTJ
+            - ESFJ
+            - ISTP
+            - ISFP
+            - ESTP
+            - ESFP
+          nullable: true
+          description: MBTI of the talent.
+        zodiacSign:
+          type: string
+          enum:
+            - aries
+            - taurus
+            - gemini
+            - cancer
+            - leo
+            - virgo
+            - libra
+            - scorpio
+            - sagittarius
+            - capricorn
+            - aquarius
+            - pisces
+          nullable: true
+          description: Zodiac sign of the talent.
+        englishLevel:
+          type: string
+          enum:
+            - native
+            - fluent
+            - conversational
+            - basic
+            - none
+          nullable: true
+          description: English proficiency level of the talent.
+        height:
+          anyOf:
+            - type: integer
+              format: int32
+            - type: string
+          nullable: true
+          description: Height of the talent in centimeters.
+        bloodType:
+          type: string
+          enum:
+            - A
+            - B
+            - O
+            - AB
+          nullable: true
+          description: Blood type of the talent.
+        fandomName:
+          type: string
+          description: Fandom name of the talent.
+        groupIdentifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Published group wiki identifiers; map groups[].wikiIdentifier from detail responses.
+      description: Talent basic input. Only name is required on creation; omitted fields use existing API defaults. For editing, retain all current values.
     TalentWikiDetail:
       type: object
       required:
@@ -9887,8 +10223,15 @@ components:
       properties:
         resourceType:
           type: string
+          enum:
+            - agency
+            - group
+            - talent
+            - song
           description: Resource type that the wiki belongs to.
         basic:
+          allOf:
+            - $ref: '#/components/schemas/WikiBasicInput'
           description: Basic wiki content payload.
         imageIdentifier:
           type: string
@@ -9898,7 +10241,9 @@ components:
           description: Representative image identifier for the wiki.
         sections:
           type: array
-          items: {}
+          items:
+            $ref: '#/components/schemas/WikiContentInput'
+          nullable: true
           description: Section content payloads.
         themeColor:
           type: string
@@ -10290,6 +10635,104 @@ components:
             $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Associated talent identifiers.
       description: Association targets that link a wiki to related agencies, groups, or talents.
+    WikiBasicInput:
+      anyOf:
+        - $ref: '#/components/schemas/AgencyWikiBasicInput'
+        - $ref: '#/components/schemas/GroupWikiBasicInput'
+        - $ref: '#/components/schemas/TalentWikiBasicInput'
+        - $ref: '#/components/schemas/SongWikiBasicInput'
+      description: Choose the basic shape matching resourceType. Related summaries in GET responses must be converted to identifier arrays.
+    WikiContentInput:
+      type: object
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          enum:
+            - section
+            - text
+            - image
+            - image_gallery
+            - embed
+            - quote
+            - list
+            - history
+            - table
+            - profile_card_list
+        displayOrder:
+          type: integer
+          format: int32
+        title:
+          type: string
+          nullable: true
+        contents:
+          type: array
+          items: {}
+        content:
+          type: string
+        imageIdentifier:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
+        imageIdentifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+        imageWidth:
+          type: integer
+          format: int32
+          nullable: true
+        caption:
+          type: string
+          nullable: true
+        alt:
+          type: string
+          nullable: true
+        provider:
+          type: string
+          nullable: true
+        embedId:
+          type: string
+        source:
+          type: string
+          nullable: true
+        listType:
+          type: string
+          enum:
+            - bullet
+            - numbered
+        items:
+          type: array
+          items:
+            type: string
+        entries:
+          type: array
+          items:
+            $ref: '#/components/schemas/WikiHistoryEntryInput'
+        headerCells:
+          type: array
+          items:
+            type: string
+          nullable: true
+        rowCells:
+          type: array
+          items:
+            type: array
+            items:
+              type: string
+        tableWidth:
+          type: string
+          nullable: true
+        wikiIdentifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+        cardShape:
+          type: string
+          nullable: true
+      description: Content node. Use type=section with title/contents for a section, or a block type with its corresponding fields. contents contains nodes of this same shape; nested nodes remain arbitrary JSON to avoid a depth limit. Preserve existing nodes and displayOrder when editing. The existing API validates block-specific rules.
     WikiDetail:
       type: object
       required:
@@ -10485,6 +10928,20 @@ components:
       maxLength: 7
       pattern: ^#[0-9a-f]{6}$
       description: 'Lowercase HEX color code in #rrggbb format.'
+    WikiHistoryEntryInput:
+      type: object
+      required:
+        - year
+        - title
+      properties:
+        year:
+          type: integer
+          format: int32
+        title:
+          type: string
+        detail:
+          type: string
+          nullable: true
     WikiListItem:
       type: object
       required:
@@ -10621,6 +11078,11 @@ components:
       properties:
         resourceType:
           type: string
+          enum:
+            - agency
+            - group
+            - talent
+            - song
           description: Resource type that the wiki belongs to.
       allOf:
         - $ref: '#/components/schemas/WikiAssociationTargets'

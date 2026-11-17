@@ -59,10 +59,37 @@ class McpTransportTest extends TestCase
             'originalAccount' => null, 'switchableAccounts' => [], 'access_token' => 'hidden-secret',
         ])]);
         $list = $this->send(['jsonrpc' => '2.0', 'id' => 1, 'method' => 'tools/list']);
-        (new AssertableJsonString((string) $list->getContent()))->assertPath('result.tools.2.name', 'additional_reader');
+        (new AssertableJsonString((string) $list->getContent()))->assertPath('result.tools.20.name', 'additional_reader');
         $response = $this->send(['jsonrpc' => '2.0', 'id' => 2, 'method' => 'tools/call', 'params' => ['name' => 'additional_reader']], issueToken: true);
         (new AssertableJsonString((string) $response->getContent()))->assertPath('result.isError', false);
         self::assertStringNotContainsString('hidden-secret', (string) $response->getContent());
+        Http::assertSentCount(1);
+    }
+
+    public function testWikiWriteDoesNotPermitSubmissionAndReadDoesNotPermitCreation(): void
+    {
+        Http::preventStrayRequests();
+        foreach ([['create_wiki_draft', ['resourceType' => 'agency', 'language' => 'ja', 'slug' => 'ag-test', 'basic' => ['name' => 'Test']], AuthorizationScope::WikiRead],
+            ['submit_wiki_draft', ['wikiId' => '019a8fa0-3f20-7000-8000-000000000001', 'resourceType' => 'agency'], AuthorizationScope::DraftWrite]] as [$name, $arguments, $scope]) {
+            $response = $this->send(['jsonrpc' => '2.0', 'id' => 1, 'method' => 'tools/call', 'params' => ['name' => $name, 'arguments' => $arguments]], scopes: [$scope]);
+            self::assertSame(403, $response->getStatusCode());
+            self::assertStringContainsString('insufficient_scope', (string) $response->headers->get('WWW-Authenticate'));
+        }
+        Http::assertNothingSent();
+    }
+
+    public function testNormalCreateRunsThroughHttpAndReturnsDraftIdentifier(): void
+    {
+        Http::preventStrayRequests();
+        Http::fake([
+            'https://api.example.test/api/v1/wiki/wiki/create' => Http::response(['wikiIdentifier' => 'created-draft', 'status' => 'pending'], 201),
+        ]);
+        $response = $this->send(['jsonrpc' => '2.0', 'id' => 1, 'method' => 'tools/call', 'params' => ['name' => 'create_wiki_draft',
+            'arguments' => ['resourceType' => 'agency', 'language' => 'ja', 'slug' => 'ag-test', 'basic' => ['name' => 'Test'], 'agencyIdentifier' => null]]], issueToken: true, scopes: [AuthorizationScope::DraftWrite]);
+        (new AssertableJsonString((string) $response->getContent()))->assertPath('result.structuredContent.wikiIdentifier', 'created-draft');
+        Http::assertSent(fn (ClientRequest $request): bool => $request->method() === 'POST'
+            && $request->url() === 'https://api.example.test/api/v1/wiki/wiki/create'
+            && $request['basic'] === ['name' => 'Test'] && $request['agencyIdentifier'] === null);
         Http::assertSentCount(1);
     }
 
@@ -189,8 +216,9 @@ class McpTransportTest extends TestCase
 
     /** @param array<string, mixed> $message
      * @param array<string, string> $server
+     * @param list<AuthorizationScope> $scopes
      */
-    private function send(array $message, array $server = [], string $method = 'POST', bool $issueToken = false, ?string $raw = null): Response
+    private function send(array $message, array $server = [], string $method = 'POST', bool $issueToken = false, ?string $raw = null, array $scopes = [AuthorizationScope::WikiRead]): Response
     {
         config()->set('mcp_server.enabled', true);
         config()->set('mcp_oauth.issuer', 'https://auth.example.test');
@@ -198,7 +226,7 @@ class McpTransportTest extends TestCase
         config()->set('mcp_server.api_base_url', 'https://api.example.test');
         /** @var AuthorizationTokenVerifierInterface&MockInterface $verifier */
         $verifier = Mockery::mock(AuthorizationTokenVerifierInterface::class);
-        $verifier->shouldReceive('verify')->with('valid-token')->andReturn($this->verifiedToken());
+        $verifier->shouldReceive('verify')->with('valid-token')->andReturn($this->verifiedToken($scopes));
         /** @var InternalApiTokenServiceInterface&MockInterface $internalApiTokenService */
         $internalApiTokenService = Mockery::mock(InternalApiTokenServiceInterface::class);
         if ($issueToken) {
@@ -209,12 +237,13 @@ class McpTransportTest extends TestCase
         return $transport->handle(Request::create('/mcp', $method, server: $server + ['HTTP_AUTHORIZATION' => 'Bearer valid-token', 'CONTENT_TYPE' => 'application/json', 'HTTP_ACCEPT' => 'application/json, text/event-stream'], content: $raw ?? json_encode($message, JSON_THROW_ON_ERROR)));
     }
 
-    private function verifiedToken(): ValidatedAuthorizationToken
+    /** @param list<AuthorizationScope> $scopes */
+    private function verifiedToken(array $scopes = [AuthorizationScope::WikiRead]): ValidatedAuthorizationToken
     {
         $uuid = (string) Str::uuid7();
-        $connection = new AuthorizationConnection(new AuthorizationConnectionIdentifier($uuid), new IdentityIdentifier($uuid), new OAuthClientIdentifier($uuid), [AuthorizationScope::WikiRead, AuthorizationScope::DraftRead], new AccountIdentifier($uuid), new AccountPrincipalIdentifier($uuid), 'https://auth.example.test/mcp', new DateTimeImmutable());
+        $connection = new AuthorizationConnection(new AuthorizationConnectionIdentifier($uuid), new IdentityIdentifier($uuid), new OAuthClientIdentifier($uuid), AuthorizationScope::cases(), new AccountIdentifier($uuid), new AccountPrincipalIdentifier($uuid), 'https://auth.example.test/mcp', new DateTimeImmutable());
 
-        return new ValidatedAuthorizationToken('source-id', $connection, [AuthorizationScope::WikiRead], new DateTimeImmutable('+1 hour'));
+        return new ValidatedAuthorizationToken('source-id', $connection, $scopes, new DateTimeImmutable('+1 hour'));
     }
 
     public function testInvalidTokenHasDiscoveryChallengeWithoutLeakingCredentials(): void

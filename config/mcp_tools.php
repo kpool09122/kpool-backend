@@ -2,12 +2,9 @@
 
 declare(strict_types=1);
 
-// Explicit allowlist. Input fields and API descriptions come from OpenAPI.
-// Scopes are explicit because internal HTTP Bearer security does not encode OAuth scopes.
-// The API must also be allowed by AuthenticateApiRequest; registration does not grant permissions.
-// Supports OpenAPI 3.0 JSON object bodies and scalar path/query parameters. Unsupported shapes fail closed.
-// Without resultProjector, the API JSON object is returned as-is; select a projector when filtering is needed.
-// Definitions are cached per container lifetime. Regenerate OpenAPI and restart workers after changing it.
+// Explicit allowlist; input schemas and descriptions come from deployed OpenAPI.
+// Registration never grants business permissions. Restart long-lived workers after schema changes.
+// Managed visitor headers are omitted because MCP has no trusted visitor-location source.
 return [
     'get_account_context' => [
         'document' => __DIR__ . '/../doc/openapi/KPool.IdentityApi.openapi.yaml',
@@ -27,5 +24,158 @@ return [
         'requireExplicitArguments' => ['delegationIdentifier'],
         'annotations' => ['readOnlyHint' => false, 'destructiveHint' => false, 'idempotentHint' => true, 'openWorldHint' => false],
         'resultProjector' => 'account_switched',
+    ],
+    'list_wikis' => [
+        'document' => __DIR__ . '/../doc/openapi/KPool.WikiApi.openapi.yaml',
+        'method' => 'GET',
+        'path' => '/wikis/{language}',
+        'scopes' => ['wiki:read'],
+        'instructions' => 'Returns the existing API response. Check the Account using get_account_context when starting work or after switching Accounts. For paginated lists use current_page/last_page and page to continue. Draft identifiers are distinct from published identifiers.',
+        'annotations' => ['readOnlyHint' => true, 'destructiveHint' => false, 'openWorldHint' => false],
+    ],
+    'list_wiki_drafts' => [
+        'document' => __DIR__ . '/../doc/openapi/KPool.WikiApi.openapi.yaml',
+        'method' => 'GET',
+        'path' => '/draft-wikis',
+        'scopes' => ['wiki-drafts:read'],
+        'instructions' => 'Returns the existing API response. Check the Account using get_account_context when starting work or after switching Accounts. For paginated lists use current_page/last_page and page to continue. Draft identifiers are distinct from published identifiers.',
+        'annotations' => ['readOnlyHint' => true, 'destructiveHint' => false, 'openWorldHint' => false],
+    ],
+    'list_my_wiki_drafts' => [
+        'document' => __DIR__ . '/../doc/openapi/KPool.WikiApi.openapi.yaml',
+        'method' => 'GET',
+        'path' => '/my/draft-wikis',
+        'scopes' => ['wiki-drafts:read'],
+        'instructions' => 'Returns the existing API response. Check the Account using get_account_context when starting work or after switching Accounts. For paginated lists use current_page/last_page and page to continue. Draft identifiers are distinct from published identifiers.',
+        'annotations' => ['readOnlyHint' => true, 'destructiveHint' => false, 'openWorldHint' => false],
+    ],
+    'get_agency_wiki' => [
+        'document' => __DIR__ . '/../doc/openapi/KPool.WikiApi.openapi.yaml',
+        'method' => 'GET',
+        'path' => '/wiki/{language}/agency/{slug}',
+        'scopes' => ['wiki:read'],
+        'instructions' => 'Returns the existing API response. Check the Account using get_account_context when starting work or after switching Accounts. For paginated lists use current_page/last_page and page to continue. Draft identifiers are distinct from published identifiers.',
+        'annotations' => ['readOnlyHint' => true, 'destructiveHint' => false, 'openWorldHint' => false],
+    ],
+    'get_agency_wiki_draft' => [
+        'document' => __DIR__ . '/../doc/openapi/KPool.WikiApi.openapi.yaml',
+        'method' => 'GET',
+        'path' => '/wiki/agency/{wikiIdentifier}/draft',
+        'scopes' => ['wiki-drafts:read'],
+        'instructions' => 'Returns the existing API response. Check the Account using get_account_context when starting work or after switching Accounts. For paginated lists use current_page/last_page and page to continue. Draft identifiers are distinct from published identifiers.',
+        'annotations' => ['readOnlyHint' => true, 'destructiveHint' => false, 'openWorldHint' => false],
+    ],
+    'get_my_agency_wiki_draft' => [
+        'document' => __DIR__ . '/../doc/openapi/KPool.WikiApi.openapi.yaml',
+        'method' => 'GET',
+        'path' => '/wiki/{language}/agency/{slug}/my/draft',
+        'scopes' => ['wiki-drafts:read'],
+        'instructions' => 'Returns the existing API response. Check the Account using get_account_context when starting work or after switching Accounts. For paginated lists use current_page/last_page and page to continue. Draft identifiers are distinct from published identifiers.',
+        'annotations' => ['readOnlyHint' => true, 'destructiveHint' => false, 'openWorldHint' => false],
+    ],
+    'get_group_wiki' => [
+        'document' => __DIR__ . '/../doc/openapi/KPool.WikiApi.openapi.yaml',
+        'method' => 'GET',
+        'path' => '/wiki/{language}/group/{slug}',
+        'scopes' => ['wiki:read'],
+        'instructions' => 'Returns the existing API response. Check the Account using get_account_context when starting work or after switching Accounts. For paginated lists use current_page/last_page and page to continue. Draft identifiers are distinct from published identifiers.',
+        'annotations' => ['readOnlyHint' => true, 'destructiveHint' => false, 'openWorldHint' => false],
+    ],
+    'get_group_wiki_draft' => [
+        'document' => __DIR__ . '/../doc/openapi/KPool.WikiApi.openapi.yaml',
+        'method' => 'GET',
+        'path' => '/wiki/group/{wikiIdentifier}/draft',
+        'scopes' => ['wiki-drafts:read'],
+        'instructions' => 'Returns the existing API response. Check the Account using get_account_context when starting work or after switching Accounts. For paginated lists use current_page/last_page and page to continue. Draft identifiers are distinct from published identifiers.',
+        'annotations' => ['readOnlyHint' => true, 'destructiveHint' => false, 'openWorldHint' => false],
+    ],
+    'get_my_group_wiki_draft' => [
+        'document' => __DIR__ . '/../doc/openapi/KPool.WikiApi.openapi.yaml',
+        'method' => 'GET',
+        'path' => '/wiki/{language}/group/{slug}/my/draft',
+        'scopes' => ['wiki-drafts:read'],
+        'instructions' => 'Returns the existing API response. Check the Account using get_account_context when starting work or after switching Accounts. For paginated lists use current_page/last_page and page to continue. Draft identifiers are distinct from published identifiers.',
+        'annotations' => ['readOnlyHint' => true, 'destructiveHint' => false, 'openWorldHint' => false],
+    ],
+    'get_talent_wiki' => [
+        'document' => __DIR__ . '/../doc/openapi/KPool.WikiApi.openapi.yaml',
+        'method' => 'GET',
+        'path' => '/wiki/{language}/talent/{slug}',
+        'scopes' => ['wiki:read'],
+        'instructions' => 'Returns the existing API response. Check the Account using get_account_context when starting work or after switching Accounts. For paginated lists use current_page/last_page and page to continue. Draft identifiers are distinct from published identifiers.',
+        'annotations' => ['readOnlyHint' => true, 'destructiveHint' => false, 'openWorldHint' => false],
+    ],
+    'get_talent_wiki_draft' => [
+        'document' => __DIR__ . '/../doc/openapi/KPool.WikiApi.openapi.yaml',
+        'method' => 'GET',
+        'path' => '/wiki/talent/{wikiIdentifier}/draft',
+        'scopes' => ['wiki-drafts:read'],
+        'instructions' => 'Returns the existing API response. Check the Account using get_account_context when starting work or after switching Accounts. For paginated lists use current_page/last_page and page to continue. Draft identifiers are distinct from published identifiers.',
+        'annotations' => ['readOnlyHint' => true, 'destructiveHint' => false, 'openWorldHint' => false],
+    ],
+    'get_my_talent_wiki_draft' => [
+        'document' => __DIR__ . '/../doc/openapi/KPool.WikiApi.openapi.yaml',
+        'method' => 'GET',
+        'path' => '/wiki/{language}/talent/{slug}/my/draft',
+        'scopes' => ['wiki-drafts:read'],
+        'instructions' => 'Returns the existing API response. Check the Account using get_account_context when starting work or after switching Accounts. For paginated lists use current_page/last_page and page to continue. Draft identifiers are distinct from published identifiers.',
+        'annotations' => ['readOnlyHint' => true, 'destructiveHint' => false, 'openWorldHint' => false],
+    ],
+    'get_song_wiki' => [
+        'document' => __DIR__ . '/../doc/openapi/KPool.WikiApi.openapi.yaml',
+        'method' => 'GET',
+        'path' => '/wiki/{language}/song/{slug}',
+        'scopes' => ['wiki:read'],
+        'instructions' => 'Returns the existing API response. Check the Account using get_account_context when starting work or after switching Accounts. For paginated lists use current_page/last_page and page to continue. Draft identifiers are distinct from published identifiers.',
+        'annotations' => ['readOnlyHint' => true, 'destructiveHint' => false, 'openWorldHint' => false],
+    ],
+    'get_song_wiki_draft' => [
+        'document' => __DIR__ . '/../doc/openapi/KPool.WikiApi.openapi.yaml',
+        'method' => 'GET',
+        'path' => '/wiki/song/{wikiIdentifier}/draft',
+        'scopes' => ['wiki-drafts:read'],
+        'instructions' => 'Returns the existing API response. Check the Account using get_account_context when starting work or after switching Accounts. For paginated lists use current_page/last_page and page to continue. Draft identifiers are distinct from published identifiers.',
+        'annotations' => ['readOnlyHint' => true, 'destructiveHint' => false, 'openWorldHint' => false],
+    ],
+    'get_my_song_wiki_draft' => [
+        'document' => __DIR__ . '/../doc/openapi/KPool.WikiApi.openapi.yaml',
+        'method' => 'GET',
+        'path' => '/wiki/{language}/song/{slug}/my/draft',
+        'scopes' => ['wiki-drafts:read'],
+        'instructions' => 'Returns the existing API response. Check the Account using get_account_context when starting work or after switching Accounts. For paginated lists use current_page/last_page and page to continue. Draft identifiers are distinct from published identifiers.',
+        'annotations' => ['readOnlyHint' => true, 'destructiveHint' => false, 'openWorldHint' => false],
+    ],
+    'create_wiki_draft' => [
+        'document' => __DIR__ . '/../doc/openapi/KPool.WikiApi.openapi.yaml',
+        'method' => 'POST',
+        'path' => '/wiki/create',
+        'objectVariants' => ['basic' => ['discriminator' => 'resourceType', 'schemas' => [
+            'agency' => 'AgencyWikiBasicInput', 'group' => 'GroupWikiBasicInput', 'talent' => 'TalentWikiBasicInput', 'song' => 'SongWikiBasicInput',
+        ]]],
+        'scopes' => ['wiki-drafts:write'],
+        'instructions' => 'Create a normal draft, not an AI auto-create. Use resourceType agency/group/talent/song and the matching basic shape. Returns wikiIdentifier for subsequent draft reads, edits and submission. Check the Account using get_account_context when starting work or after switching Accounts.',
+        'annotations' => ['readOnlyHint' => false, 'destructiveHint' => false, 'openWorldHint' => false],
+    ],
+    'edit_wiki_draft' => [
+        'document' => __DIR__ . '/../doc/openapi/KPool.WikiApi.openapi.yaml',
+        'method' => 'POST',
+        'path' => '/wiki/{wikiId}/edit',
+        'objectVariants' => ['basic' => ['discriminator' => 'resourceType', 'schemas' => [
+            'agency' => 'AgencyWikiBasicInput', 'group' => 'GroupWikiBasicInput', 'talent' => 'TalentWikiBasicInput', 'song' => 'SongWikiBasicInput',
+        ]]],
+        'scopes' => ['wiki-drafts:write'],
+        'instructions' => 'This is a full replacement, NOT a PATCH. First fetch the latest draft of the matching resource type. Copy its complete basic and sections, themeColor, fontStyle, title, metaDescription and keywords. Map heroImage.imageIdentifier to imageIdentifier; map basic.groups/talents summaries to groupIdentifiers/talentIdentifiers and retain agencyIdentifier. Supply association targets at the root too (null/[] when absent). Apply only the requested changes. Explicit null/[] clears values; omission is rejected. Remove read-only agency/groups/talents summaries from basic. Check the Account using get_account_context when starting work or after switching Accounts.',
+        'requireExplicitArguments' => ['sections', 'themeColor', 'fontStyle', 'title', 'metaDescription', 'keywords', 'imageIdentifier', 'agencyIdentifier', 'groupIdentifiers', 'talentIdentifiers'],
+        'requireCompleteObjects' => ['basic'],
+        'annotations' => ['readOnlyHint' => false, 'destructiveHint' => true, 'openWorldHint' => false],
+    ],
+    'submit_wiki_draft' => [
+        'document' => __DIR__ . '/../doc/openapi/KPool.WikiApi.openapi.yaml',
+        'method' => 'POST',
+        'path' => '/wiki/{wikiId}/submit',
+        'scopes' => ['wiki-drafts:submit'],
+        'managedHeaders' => ['X-Kpool-Visitor-Country', 'X-Kpool-Visitor-Region', 'X-Kpool-Visitor-Timestamp', 'X-Kpool-Visitor-Signature'],
+        'instructions' => 'Submitting is separate from creating or editing; obtain the user intention to submit. No trusted visitor location is available over MCP, so managed visitor headers are omitted and the API records unknown location. Check the Account using get_account_context when starting work or after switching Accounts.',
+        'annotations' => ['readOnlyHint' => false, 'destructiveHint' => false, 'openWorldHint' => false],
     ],
 ];
