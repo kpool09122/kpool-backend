@@ -7,7 +7,9 @@ namespace Tests\Mcp;
 use Application\Mcp\AccountResultProjector;
 use Application\Mcp\McpApiClient;
 use Application\Mcp\McpToolExecutor;
+use Application\Mcp\McpToolVisibility;
 use Application\Mcp\McpTransport;
+use Application\Mcp\OpenApiDocument;
 use Application\Mcp\OpenApiToolRegistry;
 use DateTimeImmutable;
 use Illuminate\Http\Client\Request as ClientRequest;
@@ -35,6 +37,71 @@ use Tests\TestCase;
 
 class McpTransportTest extends TestCase
 {
+    public function testManagedImageListAndMetadataEditPreserveUnchangedFieldsThroughHttp(): void
+    {
+        $id = '019a8fa0-3f20-7000-8000-000000000001';
+        $metadata = ['sourceUrl' => 'https://example.test/source', 'sourceName' => 'Original source', 'author' => 'Original author', 'license' => 'CC-BY-4.0', 'altText' => 'Original alt', 'displayOrder' => 7];
+        $page = ['images' => [['imageIdentifier' => $id] + $metadata], 'current_page' => 2, 'last_page' => 3, 'per_page' => 10, 'total' => 21];
+        Http::preventStrayRequests();
+        Http::fake([
+            'https://api.example.test/api/v1/wiki/managed-images*' => Http::response($page),
+            'https://api.example.test/api/v1/wiki/image/*/metadata' => Http::response(['imageIdentifier' => $id]),
+        ]);
+        $list = $this->send(['jsonrpc' => '2.0', 'id' => 1, 'method' => 'tools/call', 'params' => ['name' => 'list_managed_wiki_images',
+            'arguments' => ['status' => 'approved', 'page' => 2, 'perPage' => 10, 'license' => null, 'authorMissing' => false, 'licenseMissing' => true]]], issueToken: true, scopes: [AuthorizationScope::ImageRead]);
+        $json = new AssertableJsonString((string) $list->getContent());
+        $json->assertPath('result.structuredContent', $page);
+        $current = OpenApiDocument::map(data_get(json_decode((string) $list->getContent(), true, flags: JSON_THROW_ON_ERROR), 'result.structuredContent.images.0'));
+        $arguments = ['imageId' => $current['imageIdentifier']] + array_intersect_key($current, $metadata);
+        $arguments['altText'] = 'Changed alt';
+        $edit = $this->send(['jsonrpc' => '2.0', 'id' => 2, 'method' => 'tools/call', 'params' => ['name' => 'update_wiki_image_metadata', 'arguments' => $arguments]], issueToken: true, scopes: [AuthorizationScope::ImageWrite]);
+        (new AssertableJsonString((string) $edit->getContent()))->assertPath('result.structuredContent.imageIdentifier', $id);
+        Http::assertSent(function (ClientRequest $request): bool {
+            parse_str((string) parse_url($request->url(), PHP_URL_QUERY), $query);
+
+            return $request->method() === 'GET' && $query === ['status' => 'approved', 'page' => '2', 'perPage' => '10', 'license' => '', 'authorMissing' => 'false', 'licenseMissing' => 'true'];
+        });
+        Http::assertSent(fn (ClientRequest $request): bool => $request->method() === 'PATCH'
+            && $request->url() === 'https://api.example.test/api/v1/wiki/image/' . $id . '/metadata'
+            && $request->data() === array_replace($metadata, ['altText' => 'Changed alt'])
+            && $request->hasHeader('Authorization', 'Bearer internal-secret'));
+        Http::assertSentCount(2);
+    }
+
+    public function testManagedImageScopesAndUnknownArgumentsFailBeforeCallingApi(): void
+    {
+        Http::preventStrayRequests();
+        $args = ['imageId' => '019a8fa0-3f20-7000-8000-000000000001', 'sourceUrl' => null, 'sourceName' => 'Source', 'author' => 'Author', 'license' => 'CC0-1.0', 'altText' => null, 'displayOrder' => 0];
+        foreach ([['list_managed_wiki_images', ['status' => 'approved'], AuthorizationScope::ImageWrite], ['update_wiki_image_metadata', $args, AuthorizationScope::ImageRead]] as [$name, $arguments, $scope]) {
+            $response = $this->send(['jsonrpc' => '2.0', 'id' => 1, 'method' => 'tools/call', 'params' => ['name' => $name, 'arguments' => $arguments]], scopes: [$scope]);
+            self::assertSame(403, $response->getStatusCode());
+            self::assertStringContainsString('insufficient_scope', (string) $response->headers->get('WWW-Authenticate'));
+        }
+        foreach ([$args + ['base64EncodedImage' => 'forbidden'], array_diff_key($args, ['sourceUrl' => true]), array_replace($args, ['imageId' => 'bad'])] as $invalid) {
+            $response = $this->send(['jsonrpc' => '2.0', 'id' => 2, 'method' => 'tools/call', 'params' => ['name' => 'update_wiki_image_metadata', 'arguments' => $invalid]], scopes: [AuthorizationScope::ImageWrite]);
+            (new AssertableJsonString((string) $response->getContent()))->assertPath('error.code', -32602);
+        }
+        Http::assertNothingSent();
+    }
+
+    public function testManagedImageApiPolicyValidationAndRateLimitErrorsArePreservedSafely(): void
+    {
+        Http::preventStrayRequests();
+        Http::fake(['https://api.example.test/api/v1/wiki/managed-images*' => Http::sequence()
+            ->push(['detail' => 'private upstream detail'], 403)
+            ->push(['detail' => 'private upstream detail'], 422)
+            ->push(['detail' => 'private upstream detail'], 429, ['Retry-After' => '30'])]);
+        foreach ([[403, 'forbidden'], [422, 'validation_failed'], [429, 'rate_limited']] as [$status, $code]) {
+            $response = $this->send(['jsonrpc' => '2.0', 'id' => 1, 'method' => 'tools/call', 'params' => ['name' => 'list_managed_wiki_images', 'arguments' => ['status' => 'approved']]], issueToken: true, scopes: [AuthorizationScope::ImageRead]);
+            $json = new AssertableJsonString((string) $response->getContent());
+            $json->assertPath('result.isError', true);
+            $json->assertPath('result.structuredContent.code', $code);
+            $json->assertPath('result.structuredContent.status', $status);
+            self::assertStringNotContainsString('private upstream detail', (string) $response->getContent());
+        }
+        Http::assertSentCount(3);
+    }
+
     public function testSwitchAccountAndOriginalSelectionGoThroughHttpWithoutReturningTokens(): void
     {
         Http::preventStrayRequests();
@@ -59,7 +126,7 @@ class McpTransportTest extends TestCase
             'originalAccount' => null, 'switchableAccounts' => [], 'access_token' => 'hidden-secret',
         ])]);
         $list = $this->send(['jsonrpc' => '2.0', 'id' => 1, 'method' => 'tools/list']);
-        (new AssertableJsonString((string) $list->getContent()))->assertPath('result.tools.20.name', 'additional_reader');
+        (new AssertableJsonString((string) $list->getContent()))->assertFragment(['name' => 'additional_reader']);
         $response = $this->send(['jsonrpc' => '2.0', 'id' => 2, 'method' => 'tools/call', 'params' => ['name' => 'additional_reader']], issueToken: true);
         (new AssertableJsonString((string) $response->getContent()))->assertPath('result.isError', false);
         self::assertStringNotContainsString('hidden-secret', (string) $response->getContent());
@@ -169,7 +236,7 @@ class McpTransportTest extends TestCase
         /** @var InternalApiTokenServiceInterface&MockInterface $internalApiTokenService */
         $internalApiTokenService = Mockery::mock(InternalApiTokenServiceInterface::class);
         $internalApiTokenService->shouldNotReceive('issue');
-        $transport = new McpTransport($verifier, app(OpenApiToolRegistry::class), new McpToolExecutor(new McpApiClient($internalApiTokenService), new AccountResultProjector()));
+        $transport = new McpTransport($verifier, app(OpenApiToolRegistry::class), new McpToolExecutor(new McpApiClient($internalApiTokenService), new AccountResultProjector()), $this->visibility());
         $request = Request::create('/mcp', 'POST', server: ['HTTP_AUTHORIZATION' => 'Bearer valid-token', 'CONTENT_TYPE' => 'application/json', 'HTTP_ACCEPT' => 'application/json, text/event-stream'], content: '{"jsonrpc":"2.0","id":1,"method":"tools/list"}');
         self::assertSame(200, $transport->handle($request)->getStatusCode());
         self::assertSame(401, $transport->handle($request)->getStatusCode());
@@ -192,6 +259,8 @@ class McpTransportTest extends TestCase
         $body = new AssertableJsonString((string) $list->getContent());
         $body->assertPath('result.tools.0.name', 'get_account_context');
         $body->assertPath('result.tools.1.name', 'switch_account');
+        self::assertStringNotContainsString('list_managed_wiki_images', (string) $list->getContent());
+        self::assertStringNotContainsString('update_wiki_image_metadata', (string) $list->getContent());
         $body->assertPath('result.tools.0.securitySchemes', [['type' => 'oauth2', 'scopes' => []]]);
         self::assertSame(202, $this->send(['jsonrpc' => '2.0', 'method' => 'notifications/initialized'])->getStatusCode());
         self::assertSame(200, $this->send(['jsonrpc' => '2.0', 'id' => 2, 'method' => 'ping'])->getStatusCode());
@@ -232,9 +301,17 @@ class McpTransportTest extends TestCase
         if ($issueToken) {
             $internalApiTokenService->shouldReceive('issue')->once()->with('valid-token')->andReturn(new InternalApiToken('internal-secret', new DateTimeImmutable('+1 minute')));
         }
-        $transport = new McpTransport($verifier, app(OpenApiToolRegistry::class), new McpToolExecutor(new McpApiClient($internalApiTokenService), new AccountResultProjector()));
+        $transport = new McpTransport($verifier, app(OpenApiToolRegistry::class), new McpToolExecutor(new McpApiClient($internalApiTokenService), new AccountResultProjector()), $this->visibility());
 
         return $transport->handle(Request::create('/mcp', $method, server: $server + ['HTTP_AUTHORIZATION' => 'Bearer valid-token', 'CONTENT_TYPE' => 'application/json', 'HTTP_ACCEPT' => 'application/json, text/event-stream'], content: $raw ?? json_encode($message, JSON_THROW_ON_ERROR)));
+    }
+
+    private function visibility(): McpToolVisibility
+    {
+        $visibility = $this->createStub(McpToolVisibility::class);
+        $visibility->method('filter')->willReturnCallback(static fn (array $definitions): array => array_values(array_filter($definitions, static fn (mixed $definition): bool => is_array($definition) && ! in_array($definition['name'], ['list_managed_wiki_images', 'update_wiki_image_metadata'], true))));
+
+        return $visibility;
     }
 
     /** @param list<AuthorizationScope> $scopes */
@@ -256,7 +333,7 @@ class McpTransportTest extends TestCase
         $verifier->shouldReceive('verify')->once()->with('invalid-secret')->andThrow(new InvalidAuthorizationTokenException());
         /** @var InternalApiTokenServiceInterface&MockInterface $internalApiTokenService */
         $internalApiTokenService = Mockery::mock(InternalApiTokenServiceInterface::class);
-        $transport = new McpTransport($verifier, app(OpenApiToolRegistry::class), new McpToolExecutor(new McpApiClient($internalApiTokenService), new AccountResultProjector()));
+        $transport = new McpTransport($verifier, app(OpenApiToolRegistry::class), new McpToolExecutor(new McpApiClient($internalApiTokenService), new AccountResultProjector()), $this->visibility());
         $request = Request::create('/mcp', 'POST', server: ['HTTP_AUTHORIZATION' => 'Bearer invalid-secret', 'CONTENT_TYPE' => 'application/json', 'HTTP_ACCEPT' => 'application/json, text/event-stream'], content: '{"jsonrpc":"2.0","id":1,"method":"tools/list"}');
         $response = $transport->handle($request);
         self::assertSame(401, $response->getStatusCode());

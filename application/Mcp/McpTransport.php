@@ -22,6 +22,7 @@ readonly class McpTransport
         private AuthorizationTokenVerifierInterface $authorizationTokenVerifier,
         private OpenApiToolRegistry $openApiToolRegistry,
         private McpToolExecutor $mcpToolExecutor,
+        private McpToolVisibility $mcpToolVisibility,
     ) {
     }
 
@@ -96,7 +97,7 @@ readonly class McpTransport
             case 'ping':
                 return $this->rpcResult($id, new stdClass());
             case 'tools/list':
-                return $this->rpcResult($id, ['tools' => $this->openApiToolRegistry->definitions()]);
+                return $this->rpcResult($id, ['tools' => $this->mcpToolVisibility->filter($this->openApiToolRegistry->definitions(), $validated)]);
             case 'tools/call':
                 return $this->callTool($id, $params, $matches[1], $validated);
             default:
