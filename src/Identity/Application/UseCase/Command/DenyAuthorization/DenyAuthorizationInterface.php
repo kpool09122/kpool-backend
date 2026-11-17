@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Source\Identity\Application\UseCase\Command\DenyAuthorization;
 
 use Source\Identity\Application\Exception\AuthorizationRequestUnavailableException;
-use Source\Identity\Application\Exception\InvalidAuthorizationConsentException;
+use Source\Identity\Application\Exception\InvalidAuthorizationRequestException;
 
 interface DenyAuthorizationInterface
 {
-    /** @throws AuthorizationRequestUnavailableException|InvalidAuthorizationConsentException */
+    /** @throws AuthorizationRequestUnavailableException|InvalidAuthorizationRequestException */
     public function process(DenyAuthorizationInputPort $input, DenyAuthorizationOutputPort $output): void;
 }

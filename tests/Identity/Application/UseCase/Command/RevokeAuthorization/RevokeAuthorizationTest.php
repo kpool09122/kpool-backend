@@ -15,11 +15,11 @@ use Source\Identity\Application\Service\AuthorizationTokenLifecycleServiceInterf
 use Source\Identity\Application\UseCase\Command\RevokeAuthorization\RevokeAuthorization;
 use Source\Identity\Application\UseCase\Command\RevokeAuthorization\RevokeAuthorizationInput;
 use Source\Identity\Application\UseCase\Command\RevokeAuthorization\RevokeAuthorizationOutput;
-use Source\Identity\Domain\Entity\AuthorizationConsent;
-use Source\Identity\Domain\Event\AuthorizationConsentRevoked;
-use Source\Identity\Domain\Repository\AuthorizationConsentRepositoryInterface;
+use Source\Identity\Domain\Entity\AuthorizationConnection;
+use Source\Identity\Domain\Event\AuthorizationConnectionRevoked;
+use Source\Identity\Domain\Repository\AuthorizationConnectionRepositoryInterface;
 use Source\Identity\Domain\ValueObject\AccountPrincipalIdentifier;
-use Source\Identity\Domain\ValueObject\AuthorizationConsentIdentifier;
+use Source\Identity\Domain\ValueObject\AuthorizationConnectionIdentifier;
 use Source\Identity\Domain\ValueObject\AuthorizationScope;
 use Source\Identity\Domain\ValueObject\OAuthClientIdentifier;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;
@@ -45,8 +45,8 @@ class RevokeAuthorizationTest extends TestCase
     public function testOwnershipIsCheckedBeforeAnyMutation(string $outcome): void
     {
         $identity = new IdentityIdentifier(StrTestHelper::generateUuid());
-        $id = new AuthorizationConsentIdentifier(StrTestHelper::generateUuid());
-        $consent = new AuthorizationConsent(
+        $id = new AuthorizationConnectionIdentifier(StrTestHelper::generateUuid());
+        $connection = new AuthorizationConnection(
             $id,
             $outcome === 'foreign' ? new IdentityIdentifier(StrTestHelper::generateUuid()) : $identity,
             new OAuthClientIdentifier(StrTestHelper::generateUuid()),
@@ -56,27 +56,27 @@ class RevokeAuthorizationTest extends TestCase
             'https://mcp.example.test/mcp',
             new DateTimeImmutable(),
         );
-        /** @var AuthorizationConsentRepositoryInterface&MockInterface $authorizationConsentRepository */
-        $authorizationConsentRepository = Mockery::mock(AuthorizationConsentRepositoryInterface::class);
-        $authorizationConsentRepository->shouldReceive('find')->once()->with($id)->andReturn($outcome === 'unknown' ? null : $consent);
+        /** @var AuthorizationConnectionRepositoryInterface&MockInterface $authorizationConnectionRepository */
+        $authorizationConnectionRepository = Mockery::mock(AuthorizationConnectionRepositoryInterface::class);
+        $authorizationConnectionRepository->shouldReceive('find')->once()->with($id)->andReturn($outcome === 'unknown' ? null : $connection);
         /** @var AuthorizationTokenLifecycleServiceInterface&MockInterface $authorizationTokenLifecycleService */
         $authorizationTokenLifecycleService = Mockery::mock(AuthorizationTokenLifecycleServiceInterface::class);
         /** @var EventDispatcherInterface&MockInterface $eventDispatcher */
         $eventDispatcher = Mockery::mock(EventDispatcherInterface::class);
         if ($outcome === 'owned') {
-            $authorizationConsentRepository->shouldReceive('save')->once()->with($consent);
+            $authorizationConnectionRepository->shouldReceive('save')->once()->with($connection);
             $authorizationTokenLifecycleService->shouldReceive('revoke')->once()->with($id);
-            $eventDispatcher->shouldReceive('dispatch')->once()->with(Mockery::on(static fn (object $event): bool => $event instanceof AuthorizationConsentRevoked
-                && $event->identityIdentifier === $identity && $event->consentIdentifier === $id));
+            $eventDispatcher->shouldReceive('dispatch')->once()->with(Mockery::on(static fn (object $event): bool => $event instanceof AuthorizationConnectionRevoked
+                && $event->identityIdentifier === $identity && $event->connectionIdentifier === $id));
         } else {
-            $authorizationConsentRepository->shouldNotReceive('save');
+            $authorizationConnectionRepository->shouldNotReceive('save');
             $authorizationTokenLifecycleService->shouldNotReceive('revoke');
             $eventDispatcher->shouldNotReceive('dispatch');
             $this->expectException(AuthorizationConnectionNotFoundException::class);
         }
-        $authorizationRevocationService = new AuthorizationRevocationService($authorizationConsentRepository, $authorizationTokenLifecycleService, $eventDispatcher);
-        (new RevokeAuthorization($authorizationConsentRepository, $authorizationRevocationService))
+        $authorizationRevocationService = new AuthorizationRevocationService($authorizationConnectionRepository, $authorizationTokenLifecycleService, $eventDispatcher);
+        (new RevokeAuthorization($authorizationConnectionRepository, $authorizationRevocationService))
             ->process(new RevokeAuthorizationInput($identity, $id), new RevokeAuthorizationOutput());
-        self::assertNotNull($consent->revokedAt());
+        self::assertNotNull($connection->revokedAt());
     }
 }

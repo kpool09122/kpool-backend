@@ -7,19 +7,19 @@ namespace Source\Identity\Domain\Entity;
 use DateTimeImmutable;
 use InvalidArgumentException;
 use Source\Identity\Domain\ValueObject\AccountPrincipalIdentifier;
-use Source\Identity\Domain\ValueObject\AuthorizationConsentIdentifier;
+use Source\Identity\Domain\ValueObject\AuthorizationConnectionIdentifier;
 use Source\Identity\Domain\ValueObject\AuthorizationScope;
 use Source\Identity\Domain\ValueObject\OAuthClientIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 
-class AuthorizationConsent
+class AuthorizationConnection
 {
     /**
      * @param list<AuthorizationScope> $scopes
      */
     public function __construct(
-        private readonly AuthorizationConsentIdentifier $identifier,
+        private readonly AuthorizationConnectionIdentifier $identifier,
         private readonly IdentityIdentifier $identityIdentifier,
         private readonly OAuthClientIdentifier $clientIdentifier,
         private readonly array $scopes,
@@ -31,11 +31,11 @@ class AuthorizationConsent
     ) {
         $scopeValues = array_map(static fn (AuthorizationScope $scope): string => $scope->value, $scopes);
         if ($resource === '' || $scopes === [] || count(array_unique($scopeValues)) !== count($scopes)) {
-            throw new InvalidArgumentException('Invalid authorization consent.');
+            throw new InvalidArgumentException('Invalid authorization connection.');
         }
     }
 
-    public function identifier(): AuthorizationConsentIdentifier
+    public function identifier(): AuthorizationConnectionIdentifier
     {
         return $this->identifier;
     }

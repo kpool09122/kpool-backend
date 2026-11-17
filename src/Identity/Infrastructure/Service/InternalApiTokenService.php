@@ -28,8 +28,8 @@ use Source\Identity\Application\Service\AuthorizationTokenVerifierInterface;
 use Source\Identity\Application\Service\InternalApiToken;
 use Source\Identity\Application\Service\InternalApiTokenServiceInterface;
 use Source\Identity\Application\Service\ValidatedAuthorizationToken;
-use Source\Identity\Domain\Repository\AuthorizationConsentRepositoryInterface;
-use Source\Identity\Domain\ValueObject\AuthorizationConsentIdentifier;
+use Source\Identity\Domain\Repository\AuthorizationConnectionRepositoryInterface;
+use Source\Identity\Domain\ValueObject\AuthorizationConnectionIdentifier;
 use Source\Identity\Domain\ValueObject\AuthorizationScope;
 use TypeError;
 use ValueError;
@@ -38,7 +38,7 @@ readonly class InternalApiTokenService implements InternalApiTokenServiceInterfa
 {
     public function __construct(
         private AuthorizationTokenVerifierInterface $authorizationTokenVerifier,
-        private AuthorizationConsentRepositoryInterface $authorizationConsentRepository,
+        private AuthorizationConnectionRepositoryInterface $authorizationConnectionRepository,
         private InternalApiAuthorizationCache $internalApiAuthorizationCache,
     ) {
     }
@@ -66,9 +66,9 @@ readonly class InternalApiTokenService implements InternalApiTokenServiceInterfa
         if ($expiresAt <= $now) {
             throw new InvalidAuthorizationTokenException();
         }
-        $consent = $source->consent;
+        $connection = $source->connection;
         $issuer = config()->string('mcp_oauth.issuer');
-        $subject = (string) $consent->identityIdentifier();
+        $subject = (string) $connection->identityIdentifier();
         if ($issuer === '' || $subject === '') {
             throw new InvalidAuthorizationTokenException();
         }
@@ -80,8 +80,8 @@ readonly class InternalApiTokenService implements InternalApiTokenServiceInterfa
             ->relatedTo($subject)
             ->issuedAt($now)->canOnlyBeUsedAfter($now)->expiresAt($expiresAt)
             ->withClaim('source_token_id', $source->tokenIdentifier)
-            ->withClaim('authorization_consent_id', (string) $consent->identifier())
-            ->withClaim('client_id', (string) $consent->clientIdentifier())
+            ->withClaim('authorization_connection_id', (string) $connection->identifier())
+            ->withClaim('client_id', (string) $connection->clientIdentifier())
             ->withClaim('scopes', array_map(static fn (AuthorizationScope $scope): string => $scope->value, $source->scopes))
             ->getToken(new Sha256(), InMemory::plainText(SigningKeys::load('private')->getKeyContents() ?: throw new InvalidInternalApiTokenConfigurationException('Missing signing key.')));
 
@@ -118,9 +118,9 @@ readonly class InternalApiTokenService implements InternalApiTokenServiceInterfa
                 throw new InvalidAuthorizationTokenException();
             }
             $sourceId = $claims->get('source_token_id');
-            $consentId = $claims->get('authorization_consent_id');
+            $connectionId = $claims->get('authorization_connection_id', $claims->get('authorization_consent_id'));
             $clientId = $claims->get('client_id');
-            if (! is_string($sourceId) || $sourceId === '' || ! is_string($consentId) || ! is_string($clientId)) {
+            if (! is_string($sourceId) || $sourceId === '' || ! is_string($connectionId) || ! is_string($clientId)) {
                 throw new InvalidAuthorizationTokenException();
             }
 
@@ -128,12 +128,12 @@ readonly class InternalApiTokenService implements InternalApiTokenServiceInterfa
                 $sourceId,
                 fn (): ValidatedAuthorizationToken => $this->loadAuthorizationToken($sourceId, $now),
             );
-            $consent = $validated->consent;
+            $connection = $validated->connection;
             if ($validated->expiresAt <= $now || $expiresAt > $validated->expiresAt
-                || $consent->resource() !== config()->string('mcp_oauth.resource')
-                || $consentId !== (string) $consent->identifier()
-                || $clientId !== (string) $consent->clientIdentifier()
-                || $claims->get('sub') !== (string) $consent->identityIdentifier()
+                || $connection->resource() !== config()->string('mcp_oauth.resource')
+                || $connectionId !== (string) $connection->identifier()
+                || $clientId !== (string) $connection->clientIdentifier()
+                || $claims->get('sub') !== (string) $connection->identityIdentifier()
                 || $claims->get('scopes') !== array_map(static fn (AuthorizationScope $scope): string => $scope->value, $validated->scopes)) {
                 throw new InvalidAuthorizationTokenException();
             }
@@ -158,15 +158,15 @@ readonly class InternalApiTokenService implements InternalApiTokenServiceInterfa
             throw new InvalidAuthorizationTokenException();
         }
 
-        $context = new IssuanceContext($this->authorizationConsentRepository, null);
-        if (! $context->load(new AuthorizationConsentIdentifier($token->authorization_consent_id))) {
+        $context = new IssuanceContext($this->authorizationConnectionRepository, null);
+        if (! $context->load(new AuthorizationConnectionIdentifier($token->authorization_connection_id))) {
             throw new InvalidAuthorizationTokenException();
         }
-        $consent = $context->requireConsent($token->user_id, $token->client_id, $token->scopes);
+        $connection = $context->requireConnection($token->user_id, $token->client_id, $token->scopes);
 
         return new ValidatedAuthorizationToken(
             $sourceId,
-            $consent,
+            $connection,
             array_map(AuthorizationScope::from(...), $token->scopes),
             $token->expires_at->toDateTimeImmutable(),
         );

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Identity\Infrastructure\Query;
 
-use Application\Models\Identity\AuthorizationConsent;
+use Application\Models\Identity\AuthorizationConnection;
 use LogicException;
 use Source\Identity\Application\UseCase\Query\ListAuthorizationConnections\AuthorizationConnectionReadModel;
 use Source\Identity\Application\UseCase\Query\ListAuthorizationConnections\ListAuthorizationConnectionsInputPort;
@@ -14,18 +14,18 @@ readonly class ListAuthorizationConnections implements ListAuthorizationConnecti
 {
     public function process(ListAuthorizationConnectionsInputPort $input): array
     {
-        return array_values(AuthorizationConsent::query()
+        return array_values(AuthorizationConnection::query()
             ->with('client:id,name')
             ->where('identity_id', (string) $input->identityIdentifier())
             ->orderBy('consented_at')->orderBy('id')
             ->get()
-            ->map(static fn (AuthorizationConsent $consent): AuthorizationConnectionReadModel => new AuthorizationConnectionReadModel(
-                $consent->id,
-                $consent->client_id,
-                ($consent->client ?? throw new LogicException('Authorization client missing.'))->name,
-                $consent->scopes,
-                $consent->consented_at->toIso8601String(),
-                $consent->revoked_at?->toIso8601String(),
+            ->map(static fn (AuthorizationConnection $connection): AuthorizationConnectionReadModel => new AuthorizationConnectionReadModel(
+                $connection->id,
+                $connection->client_id,
+                ($connection->client ?? throw new LogicException('Authorization client missing.'))->name,
+                $connection->scopes,
+                $connection->consented_at->toIso8601String(),
+                $connection->revoked_at?->toIso8601String(),
             ))->all());
     }
 }

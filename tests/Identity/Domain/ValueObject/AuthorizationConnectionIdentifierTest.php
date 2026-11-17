@@ -6,10 +6,10 @@ namespace Tests\Identity\Domain\ValueObject;
 
 use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\DataProvider;
-use Source\Identity\Domain\ValueObject\AuthorizationConsentIdentifier;
+use Source\Identity\Domain\ValueObject\AuthorizationConnectionIdentifier;
 use Tests\TestCase;
 
-class AuthorizationConsentIdentifierTest extends TestCase
+class AuthorizationConnectionIdentifierTest extends TestCase
 {
     /** @return array<string, array{string}> */
     public static function validIdentifiers(): array
@@ -23,7 +23,7 @@ class AuthorizationConsentIdentifierTest extends TestCase
     #[DataProvider('validIdentifiers')]
     public function testItAcceptsAUuid(string $value): void
     {
-        $this->assertSame($value, (string) new AuthorizationConsentIdentifier($value));
+        $this->assertSame($value, (string) new AuthorizationConnectionIdentifier($value));
     }
 
     #[DataProvider('invalidIdentifiers')]
@@ -31,7 +31,7 @@ class AuthorizationConsentIdentifierTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        new AuthorizationConsentIdentifier($value);
+        new AuthorizationConnectionIdentifier($value);
     }
 
     /** @return array<string, array{string}> */

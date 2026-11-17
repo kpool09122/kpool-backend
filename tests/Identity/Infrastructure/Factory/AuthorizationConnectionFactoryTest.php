@@ -6,7 +6,7 @@ namespace Tests\Identity\Infrastructure\Factory;
 
 use DateTimeImmutable;
 use Mockery;
-use Source\Identity\Domain\Factory\AuthorizationConsentFactoryInterface;
+use Source\Identity\Domain\Factory\AuthorizationConnectionFactoryInterface;
 use Source\Identity\Domain\ValueObject\AccountPrincipalIdentifier;
 use Source\Identity\Domain\ValueObject\AuthorizationScope;
 use Source\Identity\Domain\ValueObject\OAuthClientIdentifier;
@@ -15,19 +15,19 @@ use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Tests\TestCase;
 
-class AuthorizationConsentFactoryTest extends TestCase
+class AuthorizationConnectionFactoryTest extends TestCase
 {
-    public function testItCreatesConsentWithAGeneratedIdentifier(): void
+    public function testItCreatesConnectionWithAGeneratedIdentifier(): void
     {
         $uuid = '0199f700-0000-7000-8000-000000000001';
         $uuidGenerator = Mockery::mock(UuidGeneratorInterface::class);
         $uuidGenerator->shouldReceive('generate')->once()->andReturn($uuid);
         $this->app()->instance(UuidGeneratorInterface::class, $uuidGenerator);
-        $authorizationConsentFactory = $this->app()->make(AuthorizationConsentFactoryInterface::class);
+        $authorizationConnectionFactory = $this->app()->make(AuthorizationConnectionFactoryInterface::class);
 
         $account = new AccountIdentifier('0199f700-0000-7000-8000-000000000002');
         $consentedAt = new DateTimeImmutable('2026-11-14T12:00:00+00:00');
-        $consent = $authorizationConsentFactory->create(
+        $connection = $authorizationConnectionFactory->create(
             new IdentityIdentifier('0199f700-0000-7000-8000-000000000003'),
             new OAuthClientIdentifier('0199f700-0000-7000-8000-000000000004'),
             [AuthorizationScope::WikiRead],
@@ -36,8 +36,8 @@ class AuthorizationConsentFactoryTest extends TestCase
             'https://mcp.example.test/mcp',
             $consentedAt,
         );
-        self::assertSame($uuid, (string) $consent->identifier());
-        self::assertSame($consentedAt, $consent->consentedAt());
-        self::assertNull($consent->revokedAt());
+        self::assertSame($uuid, (string) $connection->identifier());
+        self::assertSame($consentedAt, $connection->consentedAt());
+        self::assertNull($connection->revokedAt());
     }
 }

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Source\Identity\Application\UseCase\Command\RevokeAuthorization;
 
-use Source\Identity\Domain\ValueObject\AuthorizationConsentIdentifier;
+use Source\Identity\Domain\ValueObject\AuthorizationConnectionIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 
 readonly class RevokeAuthorizationInput implements RevokeAuthorizationInputPort
 {
-    public function __construct(private IdentityIdentifier $identityIdentifier, private AuthorizationConsentIdentifier $consentIdentifier)
+    public function __construct(private IdentityIdentifier $identityIdentifier, private AuthorizationConnectionIdentifier $connectionIdentifier)
     {
     }
 
@@ -18,8 +18,8 @@ readonly class RevokeAuthorizationInput implements RevokeAuthorizationInputPort
         return $this->identityIdentifier;
     }
 
-    public function consentIdentifier(): AuthorizationConsentIdentifier
+    public function connectionIdentifier(): AuthorizationConnectionIdentifier
     {
-        return $this->consentIdentifier;
+        return $this->connectionIdentifier;
     }
 }

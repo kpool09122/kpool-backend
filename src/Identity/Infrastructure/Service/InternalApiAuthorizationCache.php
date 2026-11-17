@@ -11,7 +11,7 @@ use Throwable;
 readonly class InternalApiAuthorizationCache
 {
     private const int TTL_SECONDS = 60;
-    private const string KEY_PREFIX = 'internal-api-authorization:context:';
+    private const string KEY_PREFIX = 'internal-api-authorization:context:v2:';
 
     /** @param callable(): ValidatedAuthorizationToken $loadFromDatabase */
     public function resolve(string $tokenIdentifier, callable $loadFromDatabase): ValidatedAuthorizationToken

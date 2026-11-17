@@ -17,7 +17,7 @@ use Source\Identity\Application\Service\AffiliationRequestNotificationServiceInt
 use Source\Identity\Application\Service\AuthCodeSendingRateLimitServiceInterface;
 use Source\Identity\Application\Service\AuthCodeSessionStorageServiceInterface;
 use Source\Identity\Application\Service\AuthorizationAccountServiceInterface;
-use Source\Identity\Application\Service\AuthorizationConsentServiceInterface;
+use Source\Identity\Application\Service\AuthorizationConnectionServiceInterface;
 use Source\Identity\Application\Service\AuthorizationRequestStorageServiceInterface;
 use Source\Identity\Application\Service\AuthorizationRequestValidatorInterface;
 use Source\Identity\Application\Service\AuthorizationRevocationService;
@@ -40,12 +40,12 @@ use Source\Identity\Application\Service\StepUpAuthenticationStorageServiceInterf
 use Source\Identity\Application\Service\StepUpOAuthSessionStorageServiceInterface;
 use Source\Identity\Application\Service\WebAuthnServiceInterface;
 use Source\Identity\Domain\Factory\ArchivedIdentityFactoryInterface;
-use Source\Identity\Domain\Factory\AuthorizationConsentFactoryInterface;
+use Source\Identity\Domain\Factory\AuthorizationConnectionFactoryInterface;
 use Source\Identity\Domain\Factory\IdentityFactoryInterface;
 use Source\Identity\Domain\Factory\PasskeyCredentialFactoryInterface;
 use Source\Identity\Domain\Factory\PasskeyUserFactoryInterface;
 use Source\Identity\Domain\Repository\ArchivedIdentityRepositoryInterface;
-use Source\Identity\Domain\Repository\AuthorizationConsentRepositoryInterface;
+use Source\Identity\Domain\Repository\AuthorizationConnectionRepositoryInterface;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Identity\Domain\Repository\PasskeyCredentialRepositoryInterface;
 use Source\Identity\Domain\Repository\PasskeyUserRepositoryInterface;
@@ -56,12 +56,12 @@ use Source\Identity\Domain\Service\SocialOAuthServiceInterface;
 use Source\Identity\Domain\Service\WebAuthnChallengeGeneratorInterface;
 use Source\Identity\Domain\ValueObject\AuthorizationScope;
 use Source\Identity\Infrastructure\Factory\ArchivedIdentityFactory;
-use Source\Identity\Infrastructure\Factory\AuthorizationConsentFactory;
+use Source\Identity\Infrastructure\Factory\AuthorizationConnectionFactory;
 use Source\Identity\Infrastructure\Factory\IdentityFactory;
 use Source\Identity\Infrastructure\Factory\PasskeyCredentialFactory;
 use Source\Identity\Infrastructure\Factory\PasskeyUserFactory;
 use Source\Identity\Infrastructure\Repository\ArchivedIdentityRepository;
-use Source\Identity\Infrastructure\Repository\AuthorizationConsentRepository;
+use Source\Identity\Infrastructure\Repository\AuthorizationConnectionRepository;
 use Source\Identity\Infrastructure\Repository\IdentityRepository;
 use Source\Identity\Infrastructure\Repository\PasskeyCredentialRepository;
 use Source\Identity\Infrastructure\Repository\PasskeyUserRepository;
@@ -111,11 +111,11 @@ class DomainServiceProvider extends ServiceProvider
         Passport::useTokenModel(McpAccessToken::class);
         Passport::useAuthCodeModel(McpAuthCode::class);
         Passport::useClientModel(McpClient::class);
-        $this->app->singleton(AuthorizationConsentFactoryInterface::class, AuthorizationConsentFactory::class);
-        $this->app->singleton(AuthorizationConsentRepositoryInterface::class, AuthorizationConsentRepository::class);
+        $this->app->singleton(AuthorizationConnectionFactoryInterface::class, AuthorizationConnectionFactory::class);
+        $this->app->singleton(AuthorizationConnectionRepositoryInterface::class, AuthorizationConnectionRepository::class);
         $this->app->singleton(AuthorizationTokenVerifierInterface::class, McpAuthorizationTokenVerifier::class);
         $this->app->singleton(InternalApiTokenServiceInterface::class, InternalApiTokenService::class);
-        $this->app->singleton(AuthorizationConsentServiceInterface::class, McpAuthorizationService::class);
+        $this->app->singleton(AuthorizationConnectionServiceInterface::class, McpAuthorizationService::class);
         $this->app->singleton(McpAuthorizationService::class);
     }
 

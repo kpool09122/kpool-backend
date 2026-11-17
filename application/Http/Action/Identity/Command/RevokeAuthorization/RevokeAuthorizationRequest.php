@@ -15,7 +15,7 @@ class RevokeAuthorizationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'consentIdentifier' => ['required', 'uuid'],
+            'connectionIdentifier' => ['required', 'uuid'],
         ];
     }
 
@@ -24,12 +24,12 @@ class RevokeAuthorizationRequest extends FormRequest
     {
         return [
             ...parent::validationData(),
-            'consentIdentifier' => $this->route('consentIdentifier'),
+            'connectionIdentifier' => $this->route('connectionIdentifier'),
         ];
     }
 
-    public function consentIdentifier(): string
+    public function connectionIdentifier(): string
     {
-        return (string) $this->route('consentIdentifier');
+        return (string) $this->route('connectionIdentifier');
     }
 }

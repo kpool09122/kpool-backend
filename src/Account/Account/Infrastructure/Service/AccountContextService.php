@@ -8,7 +8,7 @@ use Application\Http\Context\AuthContextCache;
 use Application\Models\Account\Principal as PrincipalEloquent;
 use Illuminate\Support\Facades\DB;
 use Source\Account\Account\Application\Service\AccountContextServiceInterface;
-use Source\Identity\Domain\ValueObject\AuthorizationConsentIdentifier;
+use Source\Identity\Domain\ValueObject\AuthorizationConnectionIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 
@@ -18,9 +18,9 @@ readonly class AccountContextService implements AccountContextServiceInterface
     {
     }
 
-    public function forgetForAuthorizationConsent(IdentityIdentifier $identityIdentifier, AuthorizationConsentIdentifier $consentIdentifier): void
+    public function forgetForAuthorizationConnection(IdentityIdentifier $identityIdentifier, AuthorizationConnectionIdentifier $connectionIdentifier): void
     {
-        DB::afterCommit(fn () => $this->authContextCache->forgetAccountForAuthorizationConsent($identityIdentifier, $consentIdentifier));
+        DB::afterCommit(fn () => $this->authContextCache->forgetAccountForAuthorizationConnection($identityIdentifier, $connectionIdentifier));
     }
 
     public function forgetByIdentityIdentifier(IdentityIdentifier $identityIdentifier): void

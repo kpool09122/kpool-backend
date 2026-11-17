@@ -11,7 +11,7 @@ use Source\Identity\Domain\ValueObject\OAuthClientIdentifier;
 
 class AuthorizationCodeParametersTest extends TestCase
 {
-    public function testItPreservesTheRequestedParametersSeparatelyFromConsent(): void
+    public function testItPreservesTheRequestedParametersSeparatelyFromConnection(): void
     {
         $clientIdentifier = new OAuthClientIdentifier('0199f700-0000-4000-8000-000000000010');
         $parameters = new AuthorizationCodeParameters($clientIdentifier, 'https://client.example/callback', [AuthorizationScope::WikiRead], 'https://mcp.example/mcp', 'challenge', 'state');

@@ -8,7 +8,7 @@ readonly class AuthorizationConnectionReadModel
 {
     /** @param list<string> $scopes */
     public function __construct(
-        public string $consentIdentifier,
+        public string $connectionIdentifier,
         public string $clientIdentifier,
         public string $clientName,
         public array $scopes,
@@ -17,11 +17,11 @@ readonly class AuthorizationConnectionReadModel
     ) {
     }
 
-    /** @return array{consentIdentifier: string, clientIdentifier: string, clientName: string, scopes: list<string>, createdAt: string, revokedAt: ?string} */
+    /** @return array{connectionIdentifier: string, clientIdentifier: string, clientName: string, scopes: list<string>, createdAt: string, revokedAt: ?string} */
     public function toArray(): array
     {
         return [
-            'consentIdentifier' => $this->consentIdentifier,
+            'connectionIdentifier' => $this->connectionIdentifier,
             'clientIdentifier' => $this->clientIdentifier,
             'clientName' => $this->clientName,
             'scopes' => $this->scopes,

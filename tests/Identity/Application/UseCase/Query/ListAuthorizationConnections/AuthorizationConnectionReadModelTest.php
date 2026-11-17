@@ -12,7 +12,7 @@ class AuthorizationConnectionReadModelTest extends TestCase
     public function testSerializationIncludesScopesAndNullableRevocationWithoutSecrets(): void
     {
         foreach ([null, '2026-11-17T01:00:00+00:00'] as $revokedAt) {
-            $payload = ['consentIdentifier' => 'consent', 'clientIdentifier' => 'client', 'clientName' => 'ChatGPT',
+            $payload = ['connectionIdentifier' => 'connection', 'clientIdentifier' => 'client', 'clientName' => 'ChatGPT',
                 'scopes' => ['wiki:read'], 'createdAt' => '2026-11-16T01:00:00+00:00', 'revokedAt' => $revokedAt];
             self::assertSame($payload, (new AuthorizationConnectionReadModel(...$payload))->toArray());
         }

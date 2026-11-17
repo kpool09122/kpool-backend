@@ -8,7 +8,7 @@ use Application\Models\Identity\McpAccessToken;
 use Illuminate\Contracts\Events\Dispatcher;
 use Laravel\Passport\Bridge\RefreshTokenRepository as PassportRefreshTokenRepository;
 use Laravel\Passport\Passport;
-use Source\Identity\Domain\ValueObject\AuthorizationConsentIdentifier;
+use Source\Identity\Domain\ValueObject\AuthorizationConnectionIdentifier;
 
 class RefreshTokenRepository extends PassportRefreshTokenRepository
 {
@@ -26,6 +26,6 @@ class RefreshTokenRepository extends PassportRefreshTokenRepository
         $token = McpAccessToken::query()->find($refresh->access_token_id);
 
         return $token === null || $token->revoked
-            || ! $this->issuanceContext->load(new AuthorizationConsentIdentifier($token->authorization_consent_id));
+            || ! $this->issuanceContext->load(new AuthorizationConnectionIdentifier($token->authorization_connection_id));
     }
 }

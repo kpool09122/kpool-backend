@@ -9,7 +9,7 @@ use Source\Identity\Application\Service\ValidatedAuthorizationToken;
 use Source\Identity\Domain\ValueObject\AccountPrincipalIdentifier;
 use Source\Identity\Domain\ValueObject\AuthorizationScope;
 use Source\Identity\Domain\ValueObject\OAuthClientIdentifier;
-use Source\Identity\Infrastructure\Factory\AuthorizationConsentFactory;
+use Source\Identity\Infrastructure\Factory\AuthorizationConnectionFactory;
 use Source\Identity\Infrastructure\Service\InternalApiAuthorizationCache;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -24,7 +24,7 @@ class InternalApiAuthorizationCacheTest extends TestCase
         $tokenId = (string) Str::uuid();
         $client = new OAuthClientIdentifier((string) Str::uuid());
         $account = new AccountIdentifier('0199f700-0000-7000-8000-000000000001');
-        $consent = new AuthorizationConsentFactory(new UuidGenerator())->create(
+        $connection = new AuthorizationConnectionFactory(new UuidGenerator())->create(
             new IdentityIdentifier('0199f700-0000-7000-8000-000000000003'),
             $client,
             [AuthorizationScope::WikiRead],
@@ -33,7 +33,7 @@ class InternalApiAuthorizationCacheTest extends TestCase
             'https://mcp.example/mcp',
             now()->toDateTimeImmutable(),
         );
-        $token = new ValidatedAuthorizationToken($tokenId, $consent, [AuthorizationScope::WikiRead], now()->addMinute()->toDateTimeImmutable());
+        $token = new ValidatedAuthorizationToken($tokenId, $connection, [AuthorizationScope::WikiRead], now()->addMinute()->toDateTimeImmutable());
         $loads = 0;
         $load = static function () use ($token, &$loads): ValidatedAuthorizationToken {
             ++$loads;

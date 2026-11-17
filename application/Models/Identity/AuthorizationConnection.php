@@ -34,8 +34,8 @@ use Override;
     'consented_at',
     'revoked_at',
 ])]
-#[Table(name: 'identity_authorization_consents', keyType: 'string')]
-class AuthorizationConsent extends Model
+#[Table(name: 'identity_authorization_connections', keyType: 'string')]
+class AuthorizationConnection extends Model
 {
     #[Override]
     public $incrementing = false;

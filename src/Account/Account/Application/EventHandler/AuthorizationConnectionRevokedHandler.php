@@ -6,9 +6,9 @@ namespace Source\Account\Account\Application\EventHandler;
 
 use Source\Account\Account\Application\Service\AccountContextServiceInterface;
 use Source\Account\Account\Application\Service\CurrentAccountServiceInterface;
-use Source\Identity\Domain\Event\AuthorizationConsentRevoked;
+use Source\Identity\Domain\Event\AuthorizationConnectionRevoked;
 
-readonly class AuthorizationConsentRevokedHandler
+readonly class AuthorizationConnectionRevokedHandler
 {
     public function __construct(
         private CurrentAccountServiceInterface $currentAccountService,
@@ -16,9 +16,9 @@ readonly class AuthorizationConsentRevokedHandler
     ) {
     }
 
-    public function handle(AuthorizationConsentRevoked $event): void
+    public function handle(AuthorizationConnectionRevoked $event): void
     {
-        $this->currentAccountService->forgetForAuthorizationConsent($event->identityIdentifier, $event->consentIdentifier);
-        $this->accountContextService->forgetForAuthorizationConsent($event->identityIdentifier, $event->consentIdentifier);
+        $this->currentAccountService->forgetForAuthorizationConnection($event->identityIdentifier, $event->connectionIdentifier);
+        $this->accountContextService->forgetForAuthorizationConnection($event->identityIdentifier, $event->connectionIdentifier);
     }
 }

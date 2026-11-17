@@ -22,7 +22,7 @@ use Source\Identity\Domain\Event\IdentityWithdrawing;
 use Source\Identity\Domain\Exception\StepUpAuthenticationRequiredException;
 use Source\Identity\Domain\Factory\ArchivedIdentityFactoryInterface;
 use Source\Identity\Domain\Repository\ArchivedIdentityRepositoryInterface;
-use Source\Identity\Domain\Repository\AuthorizationConsentRepositoryInterface;
+use Source\Identity\Domain\Repository\AuthorizationConnectionRepositoryInterface;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Identity\Domain\ValueObject\ArchivedIdentityIdentifier;
 use Source\Identity\Domain\ValueObject\IdentityName;
@@ -76,13 +76,13 @@ class WithdrawFromServiceTest extends TestCase
         $imageService = Mockery::mock(ImageServiceInterface::class);
         $imageService->shouldNotReceive('delete');
 
-        /** @var AuthorizationConsentRepositoryInterface&MockInterface $authorizationConsentRepository */
-        $authorizationConsentRepository = Mockery::mock(AuthorizationConsentRepositoryInterface::class);
+        /** @var AuthorizationConnectionRepositoryInterface&MockInterface $authorizationConnectionRepository */
+        $authorizationConnectionRepository = Mockery::mock(AuthorizationConnectionRepositoryInterface::class);
         /** @var AuthorizationTokenLifecycleServiceInterface&MockInterface $authorizationTokenLifecycleService */
         $authorizationTokenLifecycleService = Mockery::mock(AuthorizationTokenLifecycleServiceInterface::class);
         $this->expectException(StepUpAuthenticationRequiredException::class);
 
-        $authorizationRevocationService = new AuthorizationRevocationService($authorizationConsentRepository, $authorizationTokenLifecycleService, $events);
+        $authorizationRevocationService = new AuthorizationRevocationService($authorizationConnectionRepository, $authorizationTokenLifecycleService, $events);
         (new WithdrawFromService(
             $authentication,
             $actorContextService,
@@ -141,14 +141,14 @@ class WithdrawFromServiceTest extends TestCase
         $imageService = Mockery::mock(ImageServiceInterface::class);
         $imageService->shouldReceive('delete')->once()->with($profileImage)->andReturn(true)->globally()->ordered();
 
-        /** @var AuthorizationConsentRepositoryInterface&MockInterface $authorizationConsentRepository */
-        $authorizationConsentRepository = Mockery::mock(AuthorizationConsentRepositoryInterface::class);
-        $authorizationConsentRepository->shouldReceive('findByIdentityIdentifier')->once()->with($identityIdentifier)->andReturn([]);
+        /** @var AuthorizationConnectionRepositoryInterface&MockInterface $authorizationConnectionRepository */
+        $authorizationConnectionRepository = Mockery::mock(AuthorizationConnectionRepositoryInterface::class);
+        $authorizationConnectionRepository->shouldReceive('findByIdentityIdentifier')->once()->with($identityIdentifier)->andReturn([]);
         /** @var AuthorizationTokenLifecycleServiceInterface&MockInterface $authorizationTokenLifecycleService */
         $authorizationTokenLifecycleService = Mockery::mock(AuthorizationTokenLifecycleServiceInterface::class);
         $authorizationTokenLifecycleService->shouldReceive('deleteForIdentity')->once()->with($identityIdentifier);
 
-        $authorizationRevocationService = new AuthorizationRevocationService($authorizationConsentRepository, $authorizationTokenLifecycleService, $events);
+        $authorizationRevocationService = new AuthorizationRevocationService($authorizationConnectionRepository, $authorizationTokenLifecycleService, $events);
         (new WithdrawFromService(
             $authentication,
             $actorContextService,

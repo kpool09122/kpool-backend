@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Source\Identity\Application\UseCase\Command\ApproveAuthorization;
 
 use DateTimeImmutable;
-use Source\Identity\Application\Exception\InvalidAuthorizationConsentException;
+use Source\Identity\Application\Exception\InvalidAuthorizationRequestException;
 use Source\Identity\Application\Service\AuthorizationAccountServiceInterface;
 use Source\Identity\Application\Service\AuthorizationCodeParameters;
-use Source\Identity\Application\Service\AuthorizationConsentServiceInterface;
+use Source\Identity\Application\Service\AuthorizationConnectionServiceInterface;
 use Source\Identity\Application\Service\AuthorizationRequestStorageServiceInterface;
 use Source\Identity\Application\Service\AuthorizationRequestValidatorInterface;
-use Source\Identity\Domain\Factory\AuthorizationConsentFactoryInterface;
-use Source\Identity\Domain\Repository\AuthorizationConsentRepositoryInterface;
+use Source\Identity\Domain\Factory\AuthorizationConnectionFactoryInterface;
+use Source\Identity\Domain\Repository\AuthorizationConnectionRepositoryInterface;
 use Source\Identity\Domain\ValueObject\AuthorizationScope;
 
 readonly class ApproveAuthorization implements ApproveAuthorizationInterface
@@ -21,9 +21,9 @@ readonly class ApproveAuthorization implements ApproveAuthorizationInterface
         private AuthorizationRequestStorageServiceInterface $authorizationRequestStorageService,
         private AuthorizationRequestValidatorInterface $authorizationRequestValidator,
         private AuthorizationAccountServiceInterface $authorizationAccountService,
-        private AuthorizationConsentFactoryInterface $authorizationConsentFactory,
-        private AuthorizationConsentRepositoryInterface $authorizationConsentRepository,
-        private AuthorizationConsentServiceInterface $authorizationConsentService,
+        private AuthorizationConnectionFactoryInterface $authorizationConnectionFactory,
+        private AuthorizationConnectionRepositoryInterface $authorizationConnectionRepository,
+        private AuthorizationConnectionServiceInterface $authorizationConnectionService,
     ) {
     }
 
@@ -35,14 +35,14 @@ readonly class ApproveAuthorization implements ApproveAuthorizationInterface
         $originalAccount = $this->authorizationAccountService->resolveOriginalAccount($input->identityIdentifier());
         $scopes = $input->scopes();
         if ($scopes === [] || count(array_unique(array_map(static fn (AuthorizationScope $scope): string => $scope->value, $scopes))) !== count($scopes)) {
-            throw new InvalidAuthorizationConsentException();
+            throw new InvalidAuthorizationRequestException();
         }
         foreach ($scopes as $scope) {
             if (! in_array($scope, $parameters->requestedScopes, true)) {
-                throw new InvalidAuthorizationConsentException();
+                throw new InvalidAuthorizationRequestException();
             }
         }
-        $consent = $this->authorizationConsentFactory->create(
+        $connection = $this->authorizationConnectionFactory->create(
             $input->identityIdentifier(),
             $parameters->clientIdentifier,
             $scopes,
@@ -51,8 +51,8 @@ readonly class ApproveAuthorization implements ApproveAuthorizationInterface
             $parameters->resource,
             new DateTimeImmutable(),
         );
-        $this->authorizationConsentRepository->save($consent);
-        $output->setRedirectUri($this->authorizationConsentService->issueCode($consent->identifier(), new AuthorizationCodeParameters(
+        $this->authorizationConnectionRepository->save($connection);
+        $output->setRedirectUri($this->authorizationConnectionService->issueCode($connection->identifier(), new AuthorizationCodeParameters(
             $parameters->clientIdentifier,
             $parameters->redirectUri,
             $scopes,

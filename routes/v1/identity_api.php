@@ -90,7 +90,7 @@ Route::middleware(['auth.api', 'resolve.actor'])->group(function () {
         Route::patch('/auth/passkeys/{passkeyIdentifier}', UpdatePasskeyAction::class);
         Route::delete('/auth/passkeys/{passkeyIdentifier}', DeletePasskeyAction::class);
         Route::post('/auth/logout', LogoutAction::class);
-        Route::delete('/oauth/connections/{consentIdentifier}', RevokeAuthorizationAction::class);
+        Route::delete('/oauth/connections/{connectionIdentifier}', RevokeAuthorizationAction::class);
         Route::patch('/identities/me', UpdateIdentityAction::class);
         Route::delete('/identities/me', WithdrawFromServiceAction::class);
         Route::post('/oauth/requests', CreateAuthorizationRequestAction::class);

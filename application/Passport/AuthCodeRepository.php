@@ -9,7 +9,7 @@ use Laravel\Passport\Bridge\AuthCodeRepository as PassportAuthCodeRepository;
 use Laravel\Passport\Passport;
 use League\OAuth2\Server\Entities\AuthCodeEntityInterface;
 use League\OAuth2\Server\Entities\ScopeEntityInterface;
-use Source\Identity\Domain\ValueObject\AuthorizationConsentIdentifier;
+use Source\Identity\Domain\ValueObject\AuthorizationConnectionIdentifier;
 
 class AuthCodeRepository extends PassportAuthCodeRepository
 {
@@ -19,7 +19,7 @@ class AuthCodeRepository extends PassportAuthCodeRepository
 
     public function persistNewAuthCode(AuthCodeEntityInterface $authCodeEntity): void
     {
-        $consent = $this->issuanceContext->requireConsent(
+        $connection = $this->issuanceContext->requireConnection(
             $authCodeEntity->getUserIdentifier(),
             $authCodeEntity->getClient()->getIdentifier(),
             array_map(static fn (ScopeEntityInterface $scope): string => $scope->getIdentifier(), $authCodeEntity->getScopes()),
@@ -31,7 +31,7 @@ class AuthCodeRepository extends PassportAuthCodeRepository
             'scopes' => json_encode($authCodeEntity->getScopes(), JSON_THROW_ON_ERROR),
             'revoked' => false,
             'expires_at' => $authCodeEntity->getExpiryDateTime(),
-            'authorization_consent_id' => (string) $consent->identifier(),
+            'authorization_connection_id' => (string) $connection->identifier(),
         ])->save();
     }
 
@@ -40,6 +40,6 @@ class AuthCodeRepository extends PassportAuthCodeRepository
         $code = McpAuthCode::query()->find($codeId);
 
         return $code === null || $code->revoked || $code->expires_at === null || $code->expires_at->isPast()
-            || ! $this->issuanceContext->load(new AuthorizationConsentIdentifier($code->authorization_consent_id));
+            || ! $this->issuanceContext->load(new AuthorizationConnectionIdentifier($code->authorization_connection_id));
     }
 }

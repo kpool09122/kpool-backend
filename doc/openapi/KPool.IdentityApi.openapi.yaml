@@ -1766,7 +1766,7 @@ paths:
   /oauth/connections:
     get:
       operationId: OAuthConnections_listAuthorizationConnections
-      description: "List only the signed-in Identity's connections, including revoked connections, ordered by consent timestamp ascending then consent ID ascending. Empty results use connections: []. Cookie-only; no-store; independent of selected Account status."
+      description: "List only the signed-in Identity's connections, including revoked connections, ordered by consent timestamp ascending then connection ID ascending. Empty results use connections: []. Cookie-only; no-store; independent of selected Account status."
       parameters: []
       responses:
         '200':
@@ -1820,12 +1820,12 @@ paths:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
       security:
         - SessionCookieAuth: []
-  /oauth/connections/{consentIdentifier}:
+  /oauth/connections/{connectionIdentifier}:
     delete:
       operationId: OAuthConnections_revokeAuthorization
       description: Revoke only the signed-in Identity's specified connection, its access/refresh tokens and authorization codes. After commit, invalidate all associated internal API authorization caches and this connection's Account selection/context, preserving other connections and browser selections. Repeating revocation succeeds without changing revokedAt. Unknown and foreign IDs both return 404. Cookie and CSRF required. Returns an empty JSON array.
       parameters:
-        - name: consentIdentifier
+        - name: connectionIdentifier
           in: path
           required: true
           schema:
@@ -2526,14 +2526,14 @@ components:
     AuthorizationConnection:
       type: object
       required:
-        - consentIdentifier
+        - connectionIdentifier
         - clientIdentifier
         - clientName
         - scopes
         - createdAt
         - revokedAt
       properties:
-        consentIdentifier:
+        connectionIdentifier:
           $ref: '#/components/schemas/KPool.Common.Uuid'
         clientIdentifier:
           $ref: '#/components/schemas/KPool.Common.Uuid'

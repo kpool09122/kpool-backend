@@ -23,14 +23,14 @@ use Source\Identity\Application\Exception\InvalidAuthorizationTokenException;
 use Source\Identity\Application\Exception\InvalidInternalApiTokenConfigurationException;
 use Source\Identity\Application\Service\ApiAuthenticationContext;
 use Source\Identity\Application\Service\AuthorizationCodeParameters;
-use Source\Identity\Application\Service\AuthorizationConsentServiceInterface;
+use Source\Identity\Application\Service\AuthorizationConnectionServiceInterface;
 use Source\Identity\Application\Service\AuthorizationTokenVerifierInterface;
 use Source\Identity\Application\Service\InternalApiTokenServiceInterface;
-use Source\Identity\Domain\Entity\AuthorizationConsent;
-use Source\Identity\Domain\Repository\AuthorizationConsentRepositoryInterface;
+use Source\Identity\Domain\Entity\AuthorizationConnection;
+use Source\Identity\Domain\Repository\AuthorizationConnectionRepositoryInterface;
 use Source\Identity\Domain\ValueObject\AuthorizationScope;
 use Source\Identity\Infrastructure\Service\McpAuthorizationService;
-use Tests\Helper\CreateAuthorizationConsent;
+use Tests\Helper\CreateAuthorizationConnection;
 use Tests\TestCase;
 
 #[Group('useDb')]
@@ -40,16 +40,16 @@ class InternalApiTokenServiceTest extends TestCase
 
     public function testIssuesAnApiTokenAndPreservesTheValidatedAuthorizationContext(): void
     {
-        $consent = CreateAuthorizationConsent::create();
+        $connection = CreateAuthorizationConnection::create();
         config()->set('internal_api_token', ['resource' => 'https://api.example.test', 'lifetime_seconds' => 60]);
-        $tokens = $this->sourceTokens($consent);
+        $tokens = $this->sourceTokens($connection);
         $source = $this->app()->make(AuthorizationTokenVerifierInterface::class)->verify($tokens['access_token']);
         $service = $this->app()->make(InternalApiTokenServiceInterface::class);
         $issued = $service->issue($tokens['access_token']);
         $context = $service->verify($issued->reveal());
-        self::assertEquals($consent->identifier(), $context->consentIdentifier());
-        self::assertEquals($consent->identityIdentifier(), $context->identityIdentifier());
-        self::assertEquals($consent->clientIdentifier(), $context->clientIdentifier());
+        self::assertEquals($connection->identifier(), $context->connectionIdentifier());
+        self::assertEquals($connection->identityIdentifier(), $context->identityIdentifier());
+        self::assertEquals($connection->clientIdentifier(), $context->clientIdentifier());
         self::assertSame($source->tokenIdentifier, $context->sourceTokenIdentifier());
         self::assertSame($source->scopes, $context->scopes());
         self::assertLessThanOrEqual($source->expiresAt, $issued->expiresAt);
@@ -59,8 +59,8 @@ class InternalApiTokenServiceTest extends TestCase
 
     public function testMcpAndInternalApiTokensCannotBeUsedAtTheOtherAudience(): void
     {
-        $consent = CreateAuthorizationConsent::create();
-        $tokens = $this->sourceTokens($consent);
+        $connection = CreateAuthorizationConnection::create();
+        $tokens = $this->sourceTokens($connection);
         $service = $this->app()->make(InternalApiTokenServiceInterface::class);
         $api = $service->issue($tokens['access_token']);
         foreach (['api verifier' => fn () => $service->verify($tokens['access_token']),
@@ -75,10 +75,23 @@ class InternalApiTokenServiceTest extends TestCase
         }
     }
 
+    public function testTokenIssuedBeforeConnectionClaimRenameRemainsValid(): void
+    {
+        $connection = CreateAuthorizationConnection::create();
+        $tokens = $this->sourceTokens($connection);
+        $service = $this->app()->make(InternalApiTokenServiceInterface::class);
+        $payload = $this->payload($service->issue($tokens['access_token'])->reveal());
+        $payload['authorization_consent_id'] = $payload['authorization_connection_id'];
+        unset($payload['authorization_connection_id']);
+        $signed = JWT::encode($payload, config()->string('passport.private_key'), 'RS256', null, ['typ' => 'internal-api+jwt']);
+
+        self::assertEquals($connection->identifier(), $service->verify($signed)->connectionIdentifier());
+    }
+
     public function testVerificationReusesRedisAuthorizationAcrossApiTokensFromTheSameSource(): void
     {
-        $consent = CreateAuthorizationConsent::create();
-        $tokens = $this->sourceTokens($consent);
+        $connection = CreateAuthorizationConnection::create();
+        $tokens = $this->sourceTokens($connection);
         $service = $this->app()->make(InternalApiTokenServiceInterface::class);
         $first = $service->issue($tokens['access_token']);
         $second = $service->issue($tokens['access_token']);
@@ -101,13 +114,13 @@ class InternalApiTokenServiceTest extends TestCase
 
     public function testVerificationFallsBackToDatabaseWhenRedisIsUnavailable(): void
     {
-        $consent = CreateAuthorizationConsent::create();
-        $tokens = $this->sourceTokens($consent);
+        $connection = CreateAuthorizationConnection::create();
+        $tokens = $this->sourceTokens($connection);
         $service = $this->app()->make(InternalApiTokenServiceInterface::class);
         $api = $service->issue($tokens['access_token']);
         Cache::shouldReceive('store')->once()->with('redis')->andThrow(new RedisException('Connection lost.'));
 
-        self::assertEquals($consent->identifier(), $service->verify($api->reveal())->consentIdentifier());
+        self::assertEquals($connection->identifier(), $service->verify($api->reveal())->connectionIdentifier());
     }
 
     /** @return array<string, array{string, mixed}> */
@@ -115,11 +128,11 @@ class InternalApiTokenServiceTest extends TestCase
     {
         return [
             'issuer' => ['iss', 'https://other.test'],
-            'MCP audience' => ['aud', [CreateAuthorizationConsent::RESOURCE]],
-            'multiple audience' => ['aud', ['https://api.example.test', CreateAuthorizationConsent::RESOURCE]],
+            'MCP audience' => ['aud', [CreateAuthorizationConnection::RESOURCE]],
+            'multiple audience' => ['aud', ['https://api.example.test', CreateAuthorizationConnection::RESOURCE]],
             'identity' => ['sub', 'other'],
             'client' => ['client_id', 'other'],
-            'connection' => ['authorization_consent_id', '019ab000-0000-7000-8000-000000000001'],
+            'connection' => ['authorization_connection_id', '019ab000-0000-7000-8000-000000000001'],
             'source missing' => ['source_token_id', 'missing'],
             'source not scalar' => ['source_token_id', ['other']],
             'scope escalation' => ['scopes', ['wiki:read', 'wiki-images:write']],
@@ -135,8 +148,8 @@ class InternalApiTokenServiceTest extends TestCase
     #[DataProvider('invalidClaims')]
     public function testValidSignaturesCannotExpandOrChangeTheSourceBinding(string $claim, mixed $value): void
     {
-        $consent = CreateAuthorizationConsent::create();
-        $tokens = $this->sourceTokens($consent);
+        $connection = CreateAuthorizationConnection::create();
+        $tokens = $this->sourceTokens($connection);
         $service = $this->app()->make(InternalApiTokenServiceInterface::class);
         $api = $service->issue($tokens['access_token']);
         $payload = $this->payload($api->reveal());
@@ -155,9 +168,9 @@ class InternalApiTokenServiceTest extends TestCase
     #[DataProvider('malformedTokens')]
     public function testMalformedCredentialsAreRejectedWithoutRetainingThem(string $token): void
     {
-        CreateAuthorizationConsent::create();
+        CreateAuthorizationConnection::create();
         config()->set('internal_api_token.resource', 'https://api.example.test');
-        config()->set('mcp_oauth', ['issuer' => 'https://auth.example.test', 'resource' => CreateAuthorizationConsent::RESOURCE]);
+        config()->set('mcp_oauth', ['issuer' => 'https://auth.example.test', 'resource' => CreateAuthorizationConnection::RESOURCE]);
 
         try {
             $this->app()->make(InternalApiTokenServiceInterface::class)->verify($token);
@@ -170,7 +183,7 @@ class InternalApiTokenServiceTest extends TestCase
 
     public function testInvalidSourceCredentialsDoNotEscapeInExceptionChains(): void
     {
-        CreateAuthorizationConsent::create();
+        CreateAuthorizationConnection::create();
         config()->set('internal_api_token.resource', 'https://api.example.test');
 
         try {
@@ -185,14 +198,14 @@ class InternalApiTokenServiceTest extends TestCase
     /** @return array<string, array{string}> */
     public static function invalidResources(): array
     {
-        return ['empty' => [''], 'same as MCP' => [CreateAuthorizationConsent::RESOURCE]];
+        return ['empty' => [''], 'same as MCP' => [CreateAuthorizationConnection::RESOURCE]];
     }
 
     #[DataProvider('invalidResources')]
     public function testApiAndMcpResourcesMustBeDistinctAndNonEmpty(string $resource): void
     {
-        $consent = CreateAuthorizationConsent::create();
-        $tokens = $this->sourceTokens($consent);
+        $connection = CreateAuthorizationConnection::create();
+        $tokens = $this->sourceTokens($connection);
         config()->set('internal_api_token.resource', $resource);
         $this->expectException(InvalidInternalApiTokenConfigurationException::class);
         $this->expectExceptionMessage('Configure distinct MCP and internal API resources and a non-empty issuer.');
@@ -201,8 +214,8 @@ class InternalApiTokenServiceTest extends TestCase
 
     public function testSignatureTamperingIsRejected(): void
     {
-        $consent = CreateAuthorizationConsent::create();
-        $tokens = $this->sourceTokens($consent);
+        $connection = CreateAuthorizationConnection::create();
+        $tokens = $this->sourceTokens($connection);
         $service = $this->app()->make(InternalApiTokenServiceInterface::class);
         $api = $service->issue($tokens['access_token']);
         $parts = explode('.', $api->reveal());
@@ -214,7 +227,7 @@ class InternalApiTokenServiceTest extends TestCase
     /** @return array<string, array{string}> */
     public static function invalidSourceStates(): array
     {
-        return ['source revoked' => ['token'], 'connection revoked' => ['consent'], 'client revoked' => ['client'],
+        return ['source revoked' => ['token'], 'connection revoked' => ['connection'], 'client revoked' => ['client'],
             'source deleted' => ['deleted'], 'expired source' => ['expired'], 'source identity changed' => ['identity'],
             'source scope changed' => ['scope']];
     }
@@ -222,8 +235,8 @@ class InternalApiTokenServiceTest extends TestCase
     #[DataProvider('invalidSourceStates')]
     public function testPreviouslyVerifiedApiTokenIsRejectedAfterSourceStateChangesAndCacheIsForgotten(string $state): void
     {
-        $consent = CreateAuthorizationConsent::create();
-        $tokens = $this->sourceTokens($consent);
+        $connection = CreateAuthorizationConnection::create();
+        $tokens = $this->sourceTokens($connection);
         $service = $this->app()->make(InternalApiTokenServiceInterface::class);
         $api = $service->issue($tokens['access_token']);
         $context = $service->verify($api->reveal());
@@ -232,13 +245,13 @@ class InternalApiTokenServiceTest extends TestCase
             case 'token': $source->revoke();
 
                 break;
-            case 'consent':
-                $consent->revoke(new DateTimeImmutable());
-                $this->app()->make(AuthorizationConsentRepositoryInterface::class)->save($consent);
+            case 'connection':
+                $connection->revoke(new DateTimeImmutable());
+                $this->app()->make(AuthorizationConnectionRepositoryInterface::class)->save($connection);
 
                 break;
             case 'client':
-                McpClient::query()->findOrFail((string) $consent->clientIdentifier())->forceFill(['revoked' => true])->save();
+                McpClient::query()->findOrFail((string) $connection->clientIdentifier())->forceFill(['revoked' => true])->save();
 
                 break;
             case 'deleted': $source->delete();
@@ -261,14 +274,14 @@ class InternalApiTokenServiceTest extends TestCase
 
     public function testRefreshNarrowingAndInternalReissuancePreserveTheConnectionWithoutRegainingScopes(): void
     {
-        $consent = CreateAuthorizationConsent::create();
-        $tokens = $this->sourceTokens($consent);
+        $connection = CreateAuthorizationConnection::create();
+        $tokens = $this->sourceTokens($connection);
         $service = $this->app()->make(InternalApiTokenServiceInterface::class);
         $oldApi = $service->issue($tokens['access_token']);
         $oldContext = $service->verify($oldApi->reveal());
         request()->attributes->set(ApiAuthenticationContext::class, $oldContext);
-        $principal = new PrincipalIdentifier((string) $consent->originalPrincipalIdentifier());
-        $selected = new CurrentAccount($consent->identityIdentifier(), $consent->originalAccountIdentifier(), $principal, $consent->originalAccountIdentifier(), $principal, null);
+        $principal = new PrincipalIdentifier((string) $connection->originalPrincipalIdentifier());
+        $selected = new CurrentAccount($connection->identityIdentifier(), $connection->originalAccountIdentifier(), $principal, $connection->originalAccountIdentifier(), $principal, null);
         $currentAccountService = $this->app()->make(CurrentAccountServiceInterface::class);
         $currentAccountService->save($selected);
 
@@ -277,8 +290,8 @@ class InternalApiTokenServiceTest extends TestCase
         $transactions = new DatabaseTransactionsManager([$connectionName]);
         $transactions->begin($connectionName, DB::transactionLevel());
         DB::connection()->setTransactionManager($transactions);
-        $refreshed = DB::transaction(function () use ($consent, $tokens, $service, $oldApi): array {
-            $refreshed = $this->exchange(['grant_type' => 'refresh_token', 'client_id' => (string) $consent->clientIdentifier(),
+        $refreshed = DB::transaction(function () use ($connection, $tokens, $service, $oldApi): array {
+            $refreshed = $this->exchange(['grant_type' => 'refresh_token', 'client_id' => (string) $connection->clientIdentifier(),
                 'refresh_token' => $tokens['refresh_token'], 'scope' => 'wiki:read']);
             $service->verify($oldApi->reveal());
 
@@ -289,11 +302,11 @@ class InternalApiTokenServiceTest extends TestCase
         self::assertNotSame($first->reveal(), $second->reveal());
         foreach ([$first, $second] as $api) {
             $context = $service->verify($api->reveal());
-            self::assertEquals($consent->identifier(), $context->consentIdentifier());
+            self::assertEquals($connection->identifier(), $context->connectionIdentifier());
             self::assertSame([AuthorizationScope::WikiRead], $context->scopes());
             self::assertNotSame($oldContext->sourceTokenIdentifier(), $context->sourceTokenIdentifier());
             request()->attributes->set(ApiAuthenticationContext::class, $context);
-            self::assertEquals($selected, $currentAccountService->find($consent->identityIdentifier()));
+            self::assertEquals($selected, $currentAccountService->find($connection->identityIdentifier()));
         }
         $this->expectException(InvalidAuthorizationTokenException::class);
         $service->verify($oldApi->reveal());
@@ -301,8 +314,8 @@ class InternalApiTokenServiceTest extends TestCase
 
     public function testConfiguredLifetimeAndExactExpirationBoundary(): void
     {
-        $consent = CreateAuthorizationConsent::create();
-        $tokens = $this->sourceTokens($consent);
+        $connection = CreateAuthorizationConnection::create();
+        $tokens = $this->sourceTokens($connection);
         $service = $this->app()->make(InternalApiTokenServiceInterface::class);
         $this->travelTo(now()->startOfSecond());
         config()->set('internal_api_token.lifetime_seconds', 15);
@@ -317,8 +330,8 @@ class InternalApiTokenServiceTest extends TestCase
 
     public function testLifetimeCannotExceedTheRemainingSourceLifetime(): void
     {
-        $consent = CreateAuthorizationConsent::create();
-        $tokens = $this->sourceTokens($consent);
+        $connection = CreateAuthorizationConnection::create();
+        $tokens = $this->sourceTokens($connection);
         $this->travelTo(now()->startOfSecond());
         McpAccessToken::query()->update(['expires_at' => now()->addSeconds(10)]);
         $service = $this->app()->make(InternalApiTokenServiceInterface::class);
@@ -339,18 +352,18 @@ class InternalApiTokenServiceTest extends TestCase
     #[DataProvider('invalidLifetimes')]
     public function testInvalidLifetimeConfigurationDoesNotIssueTokens(int $seconds): void
     {
-        $consent = CreateAuthorizationConsent::create();
-        $tokens = $this->sourceTokens($consent);
+        $connection = CreateAuthorizationConnection::create();
+        $tokens = $this->sourceTokens($connection);
         config()->set('internal_api_token.lifetime_seconds', $seconds);
         $this->expectException(InvalidInternalApiTokenConfigurationException::class);
         $this->expectExceptionMessage('Internal API token lifetime must be between 1 and 60 seconds.');
         $this->app()->make(InternalApiTokenServiceInterface::class)->issue($tokens['access_token']);
     }
 
-    public function testOriginalAccountAndPrincipalAreResolvedFromThePersistedConsent(): void
+    public function testOriginalAccountAndPrincipalAreResolvedFromThePersistedConnection(): void
     {
-        $consent = CreateAuthorizationConsent::create();
-        $tokens = $this->sourceTokens($consent);
+        $connection = CreateAuthorizationConnection::create();
+        $tokens = $this->sourceTokens($connection);
         $service = $this->app()->make(InternalApiTokenServiceInterface::class);
         $api = $service->issue($tokens['access_token']);
         $payload = $this->payload($api->reveal());
@@ -358,14 +371,14 @@ class InternalApiTokenServiceTest extends TestCase
         $payload['original_principal_id'] = 'other-account';
         $signed = JWT::encode($payload, config()->string('passport.private_key'), 'RS256', null, ['typ' => 'internal-api+jwt']);
         $context = $service->verify($signed);
-        self::assertEquals($consent->originalAccountIdentifier(), $context->originalAccountIdentifier());
-        self::assertEquals($consent->originalPrincipalIdentifier(), $context->originalPrincipalIdentifier());
+        self::assertEquals($connection->originalAccountIdentifier(), $context->originalAccountIdentifier());
+        self::assertEquals($connection->originalPrincipalIdentifier(), $context->originalPrincipalIdentifier());
     }
 
     public function testNoApiCredentialsArePersistedAsPassportOrRefreshTokens(): void
     {
-        $consent = CreateAuthorizationConsent::create();
-        $tokens = $this->sourceTokens($consent);
+        $connection = CreateAuthorizationConnection::create();
+        $tokens = $this->sourceTokens($connection);
         $service = $this->app()->make(InternalApiTokenServiceInterface::class);
         $service->issue($tokens['access_token']);
         $service->issue($tokens['access_token']);
@@ -384,16 +397,16 @@ class InternalApiTokenServiceTest extends TestCase
     }
 
     /** @return array{access_token: string, refresh_token: string} */
-    private function sourceTokens(AuthorizationConsent $consent): array
+    private function sourceTokens(AuthorizationConnection $connection): array
     {
         config()->set('internal_api_token', ['resource' => 'https://api.example.test', 'lifetime_seconds' => 60]);
-        $redirect = $this->app()->make(AuthorizationConsentServiceInterface::class)->issueCode(
-            $consent->identifier(),
+        $redirect = $this->app()->make(AuthorizationConnectionServiceInterface::class)->issueCode(
+            $connection->identifier(),
             new AuthorizationCodeParameters(
-                $consent->clientIdentifier(),
-                CreateAuthorizationConsent::REDIRECT,
-                $consent->scopes(),
-                CreateAuthorizationConsent::RESOURCE,
+                $connection->clientIdentifier(),
+                CreateAuthorizationConnection::REDIRECT,
+                $connection->scopes(),
+                CreateAuthorizationConnection::RESOURCE,
                 rtrim(strtr(base64_encode(hash('sha256', self::VERIFIER, true)), '+/', '-_'), '='),
                 'state',
             ),
@@ -402,9 +415,9 @@ class InternalApiTokenServiceTest extends TestCase
         self::assertIsString($parameters['code']);
 
         return $this->exchange([
-            'grant_type' => 'authorization_code', 'client_id' => (string) $consent->clientIdentifier(),
+            'grant_type' => 'authorization_code', 'client_id' => (string) $connection->clientIdentifier(),
             'code' => $parameters['code'], 'code_verifier' => self::VERIFIER,
-            'redirect_uri' => CreateAuthorizationConsent::REDIRECT, 'resource' => CreateAuthorizationConsent::RESOURCE,
+            'redirect_uri' => CreateAuthorizationConnection::REDIRECT, 'resource' => CreateAuthorizationConnection::RESOURCE,
         ]);
     }
 

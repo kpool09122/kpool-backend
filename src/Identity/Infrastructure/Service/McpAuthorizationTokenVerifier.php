@@ -18,13 +18,13 @@ use Nyholm\Psr7\ServerRequest;
 use Source\Identity\Application\Exception\InvalidAuthorizationTokenException;
 use Source\Identity\Application\Service\AuthorizationTokenVerifierInterface;
 use Source\Identity\Application\Service\ValidatedAuthorizationToken;
-use Source\Identity\Domain\Repository\AuthorizationConsentRepositoryInterface;
+use Source\Identity\Domain\Repository\AuthorizationConnectionRepositoryInterface;
 use Source\Identity\Domain\ValueObject\AuthorizationScope;
 
 readonly class McpAuthorizationTokenVerifier implements AuthorizationTokenVerifierInterface
 {
     public function __construct(
-        private AuthorizationConsentRepositoryInterface $authorizationConsentRepository,
+        private AuthorizationConnectionRepositoryInterface $authorizationConnectionRepository,
         private Dispatcher $dispatcher,
     ) {
     }
@@ -44,7 +44,7 @@ readonly class McpAuthorizationTokenVerifier implements AuthorizationTokenVerifi
         if ($bearerToken === '') {
             throw OAuthServerException::accessDenied();
         }
-        $context = new IssuanceContext($this->authorizationConsentRepository, null);
+        $context = new IssuanceContext($this->authorizationConnectionRepository, null);
         $server = new ResourceServer(new AccessTokenRepository($this->dispatcher, $context), SigningKeys::load('public'));
         $verified = $server->validateAuthenticatedRequest((new ServerRequest('GET', '/'))->withHeader('Authorization', 'Bearer ' . $bearerToken));
         // Parse claims only AFTER the library has verified signature, validity and persisted revocation.
@@ -63,11 +63,11 @@ readonly class McpAuthorizationTokenVerifier implements AuthorizationTokenVerifi
             || $claims->get('scopes') !== $token->scopes) {
             throw OAuthServerException::accessDenied('Invalid token binding.');
         }
-        $consent = $context->requireConsent($token->user_id, $token->client_id, $token->scopes);
+        $connection = $context->requireConnection($token->user_id, $token->client_id, $token->scopes);
 
         return new ValidatedAuthorizationToken(
             $tokenId,
-            $consent,
+            $connection,
             array_map(AuthorizationScope::from(...), $token->scopes),
             $token->expires_at->toDateTimeImmutable(),
         );

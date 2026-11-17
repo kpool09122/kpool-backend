@@ -16,7 +16,7 @@ use Source\Identity\Application\Exception\AuthorizationConnectionNotFoundExcepti
 use Source\Identity\Application\UseCase\Command\RevokeAuthorization\RevokeAuthorizationInput;
 use Source\Identity\Application\UseCase\Command\RevokeAuthorization\RevokeAuthorizationInterface;
 use Source\Identity\Application\UseCase\Command\RevokeAuthorization\RevokeAuthorizationOutput;
-use Source\Identity\Domain\ValueObject\AuthorizationConsentIdentifier;
+use Source\Identity\Domain\ValueObject\AuthorizationConnectionIdentifier;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -35,7 +35,7 @@ readonly class RevokeAuthorizationAction
             try {
                 $input = new RevokeAuthorizationInput(
                     $this->actorContext->identityIdentifier,
-                    new AuthorizationConsentIdentifier($request->consentIdentifier()),
+                    new AuthorizationConnectionIdentifier($request->connectionIdentifier()),
                 );
                 $output = new RevokeAuthorizationOutput();
             } catch (InvalidArgumentException $exception) {

@@ -18,7 +18,7 @@ class ScopeRepository extends PassportScopeRepository
 
     public function finalizeScopes(array $scopes, string $grantType, ClientEntityInterface $clientEntity, ?string $userIdentifier = null, ?string $authCodeId = null): array
     {
-        $this->issuanceContext->requireConsent(
+        $this->issuanceContext->requireConnection(
             $userIdentifier,
             $clientEntity->getIdentifier(),
             array_map(static fn (ScopeEntityInterface $scope): string => $scope->getIdentifier(), $scopes),
