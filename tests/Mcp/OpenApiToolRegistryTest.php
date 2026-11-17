@@ -14,6 +14,41 @@ use Tests\TestCase;
 
 class OpenApiToolRegistryTest extends TestCase
 {
+    public function testManagedImageToolsUseThePublishedOpenApiContract(): void
+    {
+        $registry = app(OpenApiToolRegistry::class);
+        $list = $registry->find('list_managed_wiki_images');
+        $edit = $registry->find('update_wiki_image_metadata');
+        self::assertNotNull($list);
+        self::assertNotNull($edit);
+        self::assertSame(['wiki-images:read'], $list->scopes);
+        self::assertSame(['wiki-images:write'], $edit->scopes);
+        self::assertStringContainsString('including hidden published images', OpenApiDocument::string($list->definition()['description']));
+        self::assertStringContainsString('Preserves image file, approval and visibility', OpenApiDocument::string($edit->definition()['description']));
+        $query = (object) ['status' => 'approved', 'page' => 2, 'perPage' => 100, 'license' => null, 'authorMissing' => true, 'licenseMissing' => false];
+        self::assertTrue($list->accepts($query));
+        self::assertSame(['path' => '/api/v1/wiki/managed-images', 'body' => null,
+            'query' => ['status' => 'approved', 'page' => 2, 'perPage' => 100, 'license' => '', 'authorMissing' => 'true', 'licenseMissing' => 'false']], $list->request($query));
+        foreach (['approved', 'pending', 'under_review', 'rejected'] as $status) {
+            self::assertTrue($list->accepts((object) ['status' => $status, 'page' => null, 'perPage' => null, 'authorMissing' => null, 'licenseMissing' => null]));
+        }
+        foreach ([[], ['status' => 'unknown'], ['status' => 'approved', 'page' => 0], ['status' => 'approved', 'perPage' => 101], ['status' => 'approved', 'license' => 'unknown'], ['status' => 'approved', 'authorMissing' => 'true']] as $invalid) {
+            self::assertFalse($list->accepts((object) $invalid));
+        }
+        $args = ['imageId' => '019a8fa0-3f20-7000-8000-000000000001', 'sourceUrl' => null, 'sourceName' => 'Source', 'author' => 'Author', 'license' => 'CC-BY-4.0', 'altText' => null, 'displayOrder' => 0];
+        self::assertTrue($edit->accepts((object) $args));
+        self::assertSame(['path' => '/api/v1/wiki/image/' . $args['imageId'] . '/metadata', 'body' => array_diff_key($args, ['imageId' => true]), 'query' => []], $edit->request((object) $args));
+        foreach (array_keys($args) as $required) {
+            $incomplete = $args;
+            unset($incomplete[$required]);
+            self::assertFalse($edit->accepts((object) $incomplete), $required);
+        }
+        foreach (['imageId' => 'invalid', 'sourceName' => '', 'author' => str_repeat('a', 256), 'license' => 'unknown', 'altText' => str_repeat('a', 513), 'sourceUrl' => str_repeat('a', 513), 'displayOrder' => -1, 'base64EncodedImage' => 'forbidden'] as $key => $value) {
+            self::assertFalse($edit->accepts((object) array_replace($args, [$key => $value])), $key);
+        }
+        self::assertTrue($edit->accepts((object) array_replace($args, ['sourceUrl' => '', 'altText' => ''])));
+    }
+
     public function testProductionToolsDeriveDescriptionsAndNullableUuidFromOpenApi(): void
     {
         $registry = app(OpenApiToolRegistry::class);
@@ -164,7 +199,7 @@ class OpenApiToolRegistryTest extends TestCase
     public function testAllWikiToolsAreRegisteredAndEditRejectsIncompleteReplacement(): void
     {
         $registry = app(OpenApiToolRegistry::class);
-        self::assertCount(20, $registry->definitions());
+        self::assertCount(22, $registry->definitions());
         $create = $registry->find('create_wiki_draft');
         $edit = $registry->find('edit_wiki_draft');
         self::assertNotNull($create);
