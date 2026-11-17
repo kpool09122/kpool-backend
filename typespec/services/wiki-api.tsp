@@ -1,4 +1,5 @@
 import "./wiki-api/common.tsp";
+import "./wiki-api/wiki-input.tsp";
 import "./wiki-api/wiki.tsp";
 import "./wiki-api/image.tsp";
 import "./wiki-api/principal.tsp";

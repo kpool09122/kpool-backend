@@ -17,7 +17,7 @@ class OpenApiToolRegistryTest extends TestCase
     public function testProductionToolsDeriveDescriptionsAndNullableUuidFromOpenApi(): void
     {
         $registry = app(OpenApiToolRegistry::class);
-        self::assertSame(['get_account_context', 'switch_account'], array_column($registry->definitions(), 'name'));
+        self::assertSame(['get_account_context', 'switch_account'], array_slice(array_column($registry->definitions(), 'name'), 0, 2));
         $tool = $registry->find('switch_account');
         self::assertNotNull($tool);
         self::assertStringContainsString('without changing the authenticated identity', OpenApiDocument::string($tool->definition()['description']));
@@ -113,9 +113,98 @@ class OpenApiToolRegistryTest extends TestCase
             'serverId' => ['type' => 'string', 'readOnly' => true],
             'value' => ['type' => 'string', 'nullable' => true, 'allOf' => [['$ref' => '#/components/schemas/Id']]],
         ]]);
-        self::assertSame([], $schema['required']);
-        self::assertArrayNotHasKey('serverId', OpenApiDocument::map($schema['properties']));
+        self::assertSame([], OpenApiDocument::map($schema)['required']);
+        self::assertArrayNotHasKey('serverId', OpenApiDocument::map(OpenApiDocument::map($schema)['properties']));
         self::assertSame(['type' => 'null'], data_get($schema, 'properties.value.anyOf.1'));
+    }
+
+    public function testComposedBodyKeepsInheritedRequiredFieldsAndRoutesThemToJson(): void
+    {
+        $document = $this->document();
+        data_set($document, 'components.schemas.Input', ['allOf' => [
+            ['type' => 'object', 'required' => ['title'], 'properties' => ['title' => ['type' => 'string', 'minLength' => 2]]],
+            ['type' => 'object', 'required' => ['basic'], 'properties' => ['basic' => ['type' => 'object'], 'free' => []]],
+        ]]);
+        $tool = $this->registry(OpenApiDocument::map($document))->find('edit_item');
+        self::assertNotNull($tool);
+        $arguments = (object) ['id' => 'x', 'title' => 'ok', 'basic' => (object) ['name' => 'A'], 'free' => (object) []];
+        self::assertTrue($tool->accepts($arguments));
+        self::assertFalse($tool->accepts((object) ['id' => 'x', 'basic' => (object) []]));
+        self::assertFalse($tool->accepts((object) ['id' => 'x', 'title' => 'x', 'basic' => (object) []]));
+        self::assertFalse($tool->accepts((object) ['id' => 'x', 'title' => 'ok', 'basic' => (object) [], 'unknown' => 1]));
+        self::assertSame(['title' => 'ok', 'basic' => $arguments->basic, 'free' => $arguments->free], $tool->request($arguments)['body']);
+        self::assertStringContainsString('"free":{}', json_encode($tool->definition(), JSON_THROW_ON_ERROR));
+    }
+
+    public function testDraftListAndSubmitUseManagedHeadersAndArrayQueries(): void
+    {
+        $file = __DIR__ . '/../../doc/openapi/KPool.WikiApi.openapi.yaml';
+        $registry = new OpenApiToolRegistry([
+            'drafts' => ['document' => $file, 'method' => 'GET', 'path' => '/draft-wikis', 'scopes' => ['wiki-drafts:read']],
+            'submit' => ['document' => $file, 'method' => 'POST', 'path' => '/wiki/{wikiId}/submit', 'scopes' => ['wiki-drafts:submit'],
+                'managedHeaders' => ['X-Kpool-Visitor-Country', 'X-Kpool-Visitor-Region', 'X-Kpool-Visitor-Timestamp', 'X-Kpool-Visitor-Signature']],
+        ]);
+        $list = $registry->find('drafts');
+        $submit = $registry->find('submit');
+        self::assertNotNull($list);
+        self::assertNotNull($submit);
+        self::assertTrue($list->accepts((object) ['statuses' => ['pending', 'rejected']]));
+        self::assertFalse($list->accepts((object) ['statuses' => ['bad']]));
+        self::assertSame(['statuses' => 'pending,rejected', 'page' => 2], $list->request((object) ['statuses' => ['pending', 'rejected'], 'page' => 2])['query']);
+        self::assertFalse($list->accepts((object) ['statuses' => []]));
+        self::assertFalse($list->accepts((object) ['statuses' => ['pending'], 'page' => 0]));
+        self::assertFalse($list->accepts((object) ['statuses' => ['pending'], 'perPage' => 101]));
+        $args = (object) ['wikiId' => '019a8fa0-3f20-7000-8000-000000000001', 'resourceType' => 'group'];
+        self::assertTrue($submit->accepts($args));
+        self::assertFalse($submit->accepts((object) (get_object_vars($args) + ['X-Kpool-Visitor-Signature' => 'forged'])));
+        self::assertStringNotContainsString('X-Kpool-Visitor', json_encode($submit->definition(), JSON_THROW_ON_ERROR));
+        self::assertSame(['resourceType' => 'group'], $submit->request($args)['body']);
+    }
+
+    public function testAllWikiToolsAreRegisteredAndEditRejectsIncompleteReplacement(): void
+    {
+        $registry = app(OpenApiToolRegistry::class);
+        self::assertCount(20, $registry->definitions());
+        $create = $registry->find('create_wiki_draft');
+        $edit = $registry->find('edit_wiki_draft');
+        self::assertNotNull($create);
+        self::assertNotNull($edit);
+        self::assertTrue($create->accepts((object) ['resourceType' => 'agency', 'language' => 'ja', 'slug' => 'ag-test', 'basic' => (object) ['name' => 'Test']]));
+        self::assertFalse($edit->accepts((object) ['wikiId' => '019a8fa0-3f20-7000-8000-000000000001', 'resourceType' => 'agency', 'basic' => (object) ['name' => 'Test']]));
+        self::assertNull($registry->find('auto_create_wiki'));
+        foreach (config()->array('mcp_tools') as $registration) {
+            self::assertNotContains(data_get($registration, 'path'), ['/wiki/auto-create', '/wiki/{wikiId}/approve', '/wiki/{wikiId}/publish']);
+        }
+    }
+
+    public function testCompleteAgencyEditPreservesEveryValueAndRejectsEachOmission(): void
+    {
+        $tool = app(OpenApiToolRegistry::class)->find('edit_wiki_draft');
+        self::assertNotNull($tool);
+        $basic = (object) ['name' => 'Agency', 'normalizedName' => 'agency', 'ceo' => 'CEO', 'normalizedCeo' => 'ceo',
+            'foundedIn' => null, 'parentAgencyIdentifier' => null, 'status' => null, 'officialWebsite' => null, 'socialLinks' => ['https://example.test']];
+        $args = (object) ['wikiId' => '019a8fa0-3f20-7000-8000-000000000001', 'resourceType' => 'agency', 'basic' => $basic,
+            'sections' => [(object) ['type' => 'section', 'title' => 'History', 'displayOrder' => 0, 'contents' => [(object) ['type' => 'text', 'content' => 'Keep me']]]],
+            'imageIdentifier' => null, 'themeColor' => '#abcdef', 'fontStyle' => null, 'title' => 'Title', 'metaDescription' => 'Description', 'keywords' => ['key'],
+            'agencyIdentifier' => null, 'groupIdentifiers' => [], 'talentIdentifiers' => []];
+        self::assertTrue($tool->accepts($args));
+        $wrongType = clone $args;
+        $wrongType->resourceType = 'group';
+        self::assertFalse($tool->accepts($wrongType), 'A complete agency object must not erase group fields.');
+        $expected = get_object_vars($args);
+        unset($expected['wikiId']);
+        self::assertSame($expected, $tool->request($args)['body']);
+        foreach (array_keys(get_object_vars($args)) as $key) {
+            $incomplete = clone $args;
+            unset($incomplete->{$key});
+            self::assertFalse($tool->accepts($incomplete), $key);
+        }
+        foreach (array_keys(get_object_vars($basic)) as $key) {
+            $incomplete = clone $args;
+            $incomplete->basic = clone $basic;
+            unset($incomplete->basic->{$key});
+            self::assertFalse($tool->accepts($incomplete), 'basic.' . $key);
+        }
     }
 
     /** @param array<string, mixed> $document */

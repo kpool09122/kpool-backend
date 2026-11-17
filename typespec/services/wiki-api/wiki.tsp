@@ -6,17 +6,18 @@ namespace KPool.WikiApi;
 @doc("Request body for creating a wiki draft.")
 model CreateWikiRequestBody extends WikiAssociationTargets {
   @doc("Resource type that the wiki belongs to.")
-  resourceType: string;
+  resourceType: "agency" | "group" | "talent" | "song";
   @doc("Language of the wiki.")
   language: string;
-  @doc("Slug must be unique within the resource type among published wikis, regardless of language. When branching from a published wiki, its translation set is excluded.")
+  @doc("Use the resource prefix ag-, gr-, tl-, or sg-, followed by lowercase letters, digits and single hyphens. Unique within the resource type among published wikis, regardless of language; branching excludes its translation set.")
+  @minLength(3) @maxLength(80) @pattern("^(ag|gr|tl|sg)-[a-z0-9]+(-[a-z0-9]+)*$")
   slug: string;
   @doc("Basic wiki content payload.")
-  basic: unknown;
+  basic: WikiBasicInput;
   @doc("Representative image identifier for the wiki.")
   imageIdentifier?: Uuid | null;
   @doc("Section content payloads.")
-  sections?: unknown[];
+  sections?: WikiContentInput[] | null;
   @doc("Theme color applied to the wiki.")
   themeColor?: WikiHexColor | null;
   @doc("Stable font style identifier applied to the wiki.")
@@ -29,7 +30,7 @@ model CreateWikiRequestBody extends WikiAssociationTargets {
   @maxItems(5)
   keywords?: SeoKeywordText[] | null;
   @doc("Published wiki identifier to branch from.")
-  publishedWikiIdentifier?: Uuid;
+  publishedWikiIdentifier?: Uuid | null;
 }
 
 @doc("Request body for automatically creating a wiki draft.")
@@ -56,13 +57,13 @@ model AutoCreateWikiRequestBody {
 @doc("Request body for updating a wiki draft.")
 model UpdateWikiDraftRequestBody extends WikiAssociationTargets {
   @doc("Resource type that the wiki belongs to.")
-  resourceType: string;
+  resourceType: "agency" | "group" | "talent" | "song";
   @doc("Basic wiki content payload.")
-  basic: unknown;
+  basic: WikiBasicInput;
   @doc("Representative image identifier for the wiki.")
   imageIdentifier?: Uuid | null;
   @doc("Section content payloads.")
-  sections?: unknown[];
+  sections?: WikiContentInput[] | null;
   @doc("Theme color applied to the wiki.")
   themeColor?: WikiHexColor | null;
   @doc("Stable font style identifier applied to the wiki.")
@@ -79,7 +80,7 @@ model UpdateWikiDraftRequestBody extends WikiAssociationTargets {
 @doc("Request body for wiki workflow actions.")
 model WikiWorkflowRequestBody extends WikiAssociationTargets {
   @doc("Resource type that the wiki belongs to.")
-  resourceType: string;
+  resourceType: "agency" | "group" | "talent" | "song";
 }
 
 @doc("Request body for rejecting a wiki draft.")
@@ -530,7 +531,9 @@ interface WikiListOperations {
   @doc("List published wikis by language. Internal API Bearer scope: wiki:read.")
   listWikis(
     @path language: string,
-    @query perPage?: int32,
+    @doc("Page number; default 1. Uses the existing Laravel paginator.")
+    @minValue(1) @query page?: int32 | null,
+    @minValue(1) @maxValue(100) @query perPage?: int32 | null,
     @query resourceType?: string,
     @query keyword?: string,
     @doc("Sort field. Use createdAt for newly created wikis and version for most frequently updated wikis.")
@@ -568,9 +571,11 @@ interface MyDraftWikiListOperations {
   @useAuth(SessionCookieAuth | InternalApiBearerAuth)
   @doc("List draft wikis edited by the current principal. Internal API Bearer scope: wiki-drafts:read.")
   listMyDraftWikis(
-    @query perPage?: int32,
+    @doc("Page number; default 1. Uses the existing Laravel paginator.")
+    @minValue(1) @query page?: int32 | null,
+    @minValue(1) @maxValue(100) @query perPage?: int32 | null,
     @query translationSetIdentifier?: Uuid,
-    @query statuses: DraftWikiStatus[],
+    @minItems(1) @query statuses: DraftWikiStatus[],
     @query resourceType?: string,
   ): ListDraftWikisResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse | KPool.Common.ForbiddenProblemResponse;
 }
@@ -581,9 +586,11 @@ interface DraftWikiListOperations {
   @useAuth(SessionCookieAuth | InternalApiBearerAuth)
   @doc("List draft wikis with read policy authorization. Internal API Bearer scope: wiki-drafts:read.")
   listDraftWikis(
-    @query perPage?: int32,
+    @doc("Page number; default 1. Uses the existing Laravel paginator.")
+    @minValue(1) @query page?: int32 | null,
+    @minValue(1) @maxValue(100) @query perPage?: int32 | null,
     @query translationSetIdentifier?: Uuid,
-    @query statuses: DraftWikiStatus[],
+    @minItems(1) @query statuses: DraftWikiStatus[],
     @query resourceType?: string,
   ): ListDraftWikisResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
 }

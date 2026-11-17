@@ -65,6 +65,11 @@ final readonly class OpenApiTool
                     throw new LogicException('Invalid path argument.');
                 }
                 $path = str_replace('{' . $name . '}', rawurlencode((string) $value), $path);
+            } elseif ($location === 'query_csv') {
+                if (! is_array($value)) {
+                    throw new LogicException('Invalid query array.');
+                }
+                $query[$name] = implode(',', array_map(OpenApiDocument::string(...), $value));
             } elseif ($location === 'query') {
                 $query[$name] = is_bool($value) ? ($value ? 'true' : 'false') : ($value ?? '');
             } else {
