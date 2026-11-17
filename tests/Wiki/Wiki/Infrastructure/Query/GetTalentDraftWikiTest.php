@@ -6,23 +6,32 @@ namespace Tests\Wiki\Wiki\Infrastructure\Query;
 
 use Database\Seeders\WikiEditorSampleSeeder;
 use PHPUnit\Framework\Attributes\Group;
+use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetTalentDraftWiki\GetTalentDraftWikiInput;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetTalentDraftWiki\GetTalentDraftWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Query\TalentWikiBasicReadModel;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
+use Tests\Helper\CreateDraftReadPrincipal;
 use Tests\Helper\CreateDraftWiki;
 use Tests\TestCase;
 
 class GetTalentDraftWikiTest extends TestCase
 {
+    private ?PrincipalIdentifier $readPrincipalIdentifier = null;
+
+    private function readPrincipalIdentifier(): PrincipalIdentifier
+    {
+        return $this->readPrincipalIdentifier ??= CreateDraftReadPrincipal::create();
+    }
+
     #[Group('useDb')]
     public function testProcessReturnsDraftTalentWikiForSeederData(): void
     {
         $this->seed(WikiEditorSampleSeeder::class);
 
         $useCase = $this->app()->make(GetTalentDraftWikiInterface::class);
-        $readModel = $useCase->process(new GetTalentDraftWikiInput(new DraftWikiIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f172')));
+        $readModel = $useCase->process(new GetTalentDraftWikiInput(new DraftWikiIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f172'), $this->readPrincipalIdentifier()));
 
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f172', $readModel->wikiIdentifier());
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f173', $readModel->translationSetIdentifier());
@@ -65,7 +74,7 @@ class GetTalentDraftWikiTest extends TestCase
         );
 
         $useCase = $this->app()->make(GetTalentDraftWikiInterface::class);
-        $readModel = $useCase->process(new GetTalentDraftWikiInput(new DraftWikiIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f201')));
+        $readModel = $useCase->process(new GetTalentDraftWikiInput(new DraftWikiIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217f201'), $this->readPrincipalIdentifier()));
 
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f201', $readModel->wikiIdentifier());
         $this->assertSame('01965bb2-bcc9-7c6f-8b90-89f7f217f202', $readModel->translationSetIdentifier());
@@ -82,6 +91,6 @@ class GetTalentDraftWikiTest extends TestCase
 
         $this->expectException(WikiNotFoundException::class);
 
-        $useCase->process(new GetTalentDraftWikiInput(new DraftWikiIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217ffff')));
+        $useCase->process(new GetTalentDraftWikiInput(new DraftWikiIdentifier('01965bb2-bcc9-7c6f-8b90-89f7f217ffff'), $this->readPrincipalIdentifier()));
     }
 }

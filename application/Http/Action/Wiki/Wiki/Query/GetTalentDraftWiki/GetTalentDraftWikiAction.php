@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Wiki\Wiki\Query\GetTalentDraftWiki;
 
+use Application\Http\Context\WikiContext;
+use Application\Http\Exceptions\ForbiddenHttpException;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\NotFoundHttpException;
 use Application\Http\Exceptions\UnprocessableEntityHttpException;
 use Illuminate\Http\JsonResponse;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
+use Source\Wiki\Shared\Domain\Exception\DisallowedException;
+use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetTalentDraftWiki\GetTalentDraftWikiInput;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetTalentDraftWiki\GetTalentDraftWikiInterface;
@@ -22,6 +26,7 @@ readonly class GetTalentDraftWikiAction
 {
     public function __construct(
         private GetTalentDraftWikiInterface $getTalentDraftWiki,
+        private WikiContext $wikiContext,
         private LoggerInterface $logger,
     ) {
     }
@@ -35,6 +40,7 @@ readonly class GetTalentDraftWikiAction
             try {
                 $input = new GetTalentDraftWikiInput(
                     new DraftWikiIdentifier($request->wikiIdentifier()),
+                    $this->wikiContext->principalIdentifier,
                 );
             } catch (InvalidArgumentException|ValueError $e) {
                 throw new UnprocessableEntityHttpException(detail: $e->getMessage(), previous: $e);
@@ -42,10 +48,14 @@ readonly class GetTalentDraftWikiAction
 
             try {
                 $readModel = $this->getTalentDraftWiki->process($input);
+            } catch (DisallowedException $e) {
+                throw new ForbiddenHttpException(detail: error_message('disallowed', $request->language()), previous: $e);
+            } catch (PrincipalNotFoundException $e) {
+                throw new NotFoundHttpException(detail: error_message('principal_not_found', $request->language()), previous: $e);
             } catch (WikiNotFoundException $e) {
                 throw new NotFoundHttpException(detail: 'Draft wiki not found.', previous: $e);
             }
-        } catch (NotFoundHttpException|UnprocessableEntityHttpException $e) {
+        } catch (ForbiddenHttpException|NotFoundHttpException|UnprocessableEntityHttpException $e) {
             $this->logger->error((string) $e);
 
             return response()->json($e->toProblemDetails(), $e->getHttpStatus());

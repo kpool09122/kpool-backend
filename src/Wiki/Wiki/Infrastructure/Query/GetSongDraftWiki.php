@@ -7,9 +7,16 @@ namespace Source\Wiki\Wiki\Infrastructure\Query;
 use Application\Models\Wiki\DraftWiki as DraftWikiModel;
 use Application\Models\Wiki\DraftWikiSongBasic as DraftWikiSongBasicModel;
 use Application\Models\Wiki\Wiki as WikiModel;
+use Illuminate\Database\Eloquent\Model;
 use InvalidArgumentException;
 use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Infrastructure\Support\ImageUrl;
+use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
+use Source\Wiki\Shared\Domain\Exception\DisallowedException;
+use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
+use Source\Wiki\Shared\Domain\ValueObject\Action;
+use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Application\UseCase\Query\DraftWikiReadModel;
@@ -19,23 +26,28 @@ use Source\Wiki\Wiki\Application\UseCase\Query\OfficialColorReadModelMapper;
 use Source\Wiki\Wiki\Application\UseCase\Query\SongWikiBasicReadModel;
 use Source\Wiki\Wiki\Application\UseCase\Query\SongWikiTalentSummaryReadModel;
 use Source\Wiki\Wiki\Application\UseCase\Query\TalentWikiGroupSummaryReadModel;
-use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 
 readonly class GetSongDraftWiki implements GetSongDraftWikiInterface
 {
+    public function __construct(
+        private PrincipalRepositoryInterface $principalRepository,
+        private PolicyEvaluatorInterface $policyEvaluator,
+    ) {
+    }
+
     /**
+     * @throws DisallowedException
+     * @throws PrincipalNotFoundException
      * @throws WikiNotFoundException
      */
     public function process(GetSongDraftWikiInputPort $input): DraftWikiReadModel
     {
-        return $this->getByIdentifier($input->wikiIdentifier());
-    }
+        $principal = $this->principalRepository->findById($input->principalIdentifier());
+        if ($principal === null) {
+            throw new PrincipalNotFoundException();
+        }
 
-    /**
-     * @throws WikiNotFoundException
-     */
-    private function getByIdentifier(DraftWikiIdentifier $wikiIdentifier): DraftWikiReadModel
-    {
+        $wikiIdentifier = $input->wikiIdentifier();
         $model = DraftWikiModel::query()
             ->select(
                 'draft_wikis.*',
@@ -55,6 +67,19 @@ readonly class GetSongDraftWiki implements GetSongDraftWikiInterface
 
         if ($model === null) {
             throw new WikiNotFoundException("Draft song wiki not found for wiki identifier: {$wikiIdentifier}");
+        }
+
+        $basic = $this->songBasic($model->songBasic);
+        $resource = new Resource(
+            type: ResourceType::SONG,
+            agencyId: $basic->agency_identifier,
+            groupIds: $basic->groups->map(static fn (Model $group): string => (string) $group->id)->all(),
+            talentIds: $basic->talents->map(static fn (Model $talent): string => (string) $talent->id)->all(),
+            editorId: $model->editor_id,
+        );
+
+        if (! $this->policyEvaluator->evaluate($principal, Action::READ, $resource)) {
+            throw new DisallowedException();
         }
 
         return $this->readModel($model);

@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Wiki\Wiki\Query\GetAgencyDraftWiki;
 
+use Application\Http\Action\Concerns\ResolvesLanguage;
 use Illuminate\Foundation\Http\FormRequest;
 
 class GetAgencyDraftWikiRequest extends FormRequest
 {
+    use ResolvesLanguage;
+
     /**
      * @return array<array-key, mixed>
      */

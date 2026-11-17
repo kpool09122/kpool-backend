@@ -733,7 +733,7 @@ interface WikiOperations {
   @get
   @route("/group/{wikiIdentifier}/draft")
   @useAuth(SessionCookieAuth | InternalApiBearerAuth)
-  @doc("Fetch a group draft wiki by draft wiki identifier. Internal API Bearer scope: wiki-drafts:read.")
+  @doc("Fetch a group draft wiki by draft wiki identifier. Requires READ Policy on the target draft resource using the current Account/delegation Wiki Principal. Returns 403 when READ is denied and 404 when the draft or Principal does not exist. Internal API Bearer scope: wiki-drafts:read.")
   getGroupDraftWiki(
     @path wikiIdentifier: Uuid,
   ): GetGroupDraftWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse;
@@ -750,7 +750,7 @@ interface WikiOperations {
   @get
   @route("/talent/{wikiIdentifier}/draft")
   @useAuth(SessionCookieAuth | InternalApiBearerAuth)
-  @doc("Fetch a talent draft wiki by draft wiki identifier. Internal API Bearer scope: wiki-drafts:read.")
+  @doc("Fetch a talent draft wiki by draft wiki identifier. Requires READ Policy on the target draft resource using the current Account/delegation Wiki Principal. Returns 403 when READ is denied and 404 when the draft or Principal does not exist. Internal API Bearer scope: wiki-drafts:read.")
   getTalentDraftWiki(
     @path wikiIdentifier: Uuid,
   ): GetTalentDraftWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse;
@@ -767,7 +767,7 @@ interface WikiOperations {
   @get
   @route("/song/{wikiIdentifier}/draft")
   @useAuth(SessionCookieAuth | InternalApiBearerAuth)
-  @doc("Fetch a song draft wiki by draft wiki identifier. Internal API Bearer scope: wiki-drafts:read.")
+  @doc("Fetch a song draft wiki by draft wiki identifier. Requires READ Policy on the target draft resource using the current Account/delegation Wiki Principal. Returns 403 when READ is denied and 404 when the draft or Principal does not exist. Internal API Bearer scope: wiki-drafts:read.")
   getSongDraftWiki(
     @path wikiIdentifier: Uuid,
   ): GetSongDraftWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse;
@@ -784,7 +784,7 @@ interface WikiOperations {
   @get
   @route("/agency/{wikiIdentifier}/draft")
   @useAuth(SessionCookieAuth | InternalApiBearerAuth)
-  @doc("Fetch an agency draft wiki by draft wiki identifier. Internal API Bearer scope: wiki-drafts:read.")
+  @doc("Fetch an agency draft wiki by draft wiki identifier. Requires READ Policy on the target draft resource using the current Account/delegation Wiki Principal. Returns 403 when READ is denied and 404 when the draft or Principal does not exist. Internal API Bearer scope: wiki-drafts:read.")
   getAgencyDraftWiki(
     @path wikiIdentifier: Uuid,
   ): GetAgencyDraftWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse;
