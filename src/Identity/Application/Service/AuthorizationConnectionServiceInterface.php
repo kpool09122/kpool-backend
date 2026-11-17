@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Source\Identity\Application\Service;
 
+use League\OAuth2\Server\Exception\OAuthServerException;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Source\Identity\Application\Exception\InvalidAuthorizationRequestException;
 use Source\Identity\Domain\ValueObject\AuthorizationConnectionIdentifier;
 
-/** Issues authorization codes for a connection already validated and saved by the caller. */
+/** Issues authorization codes and exchanges tokens for authorization connections. */
 interface AuthorizationConnectionServiceInterface
 {
     /**
@@ -15,4 +18,10 @@ interface AuthorizationConnectionServiceInterface
      * @throws InvalidAuthorizationRequestException
      */
     public function issueCode(AuthorizationConnectionIdentifier $connectionIdentifier, AuthorizationCodeParameters $authorizationCodeParameters): string;
+
+    /**
+     * The caller owns the transaction, including refresh rotation and old-token revocation.
+     * @throws OAuthServerException
+     */
+    public function exchange(ServerRequestInterface $request): ResponseInterface;
 }

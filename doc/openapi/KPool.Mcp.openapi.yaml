@@ -1,0 +1,1965 @@
+openapi: 3.0.0
+info:
+  title: k-pool MCP
+  version: 0.0.0
+tags: []
+paths:
+  /.well-known/oauth-authorization-server:
+    get:
+      operationId: getAuthorizationServerMetadata
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorizationServerMetadata'
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '401':
+          description: Access is unauthorized.
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '406':
+          description: Client error
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '413':
+          description: Client error
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '415':
+          description: Client error
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '502':
+          description: Server error
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /.well-known/oauth-protected-resource:
+    get:
+      operationId: getRootProtectedResourceMetadata
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceMetadata'
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '401':
+          description: Access is unauthorized.
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '406':
+          description: Client error
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '413':
+          description: Client error
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '415':
+          description: Client error
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '502':
+          description: Server error
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /.well-known/oauth-protected-resource/mcp:
+    get:
+      operationId: getProtectedResourceMetadata
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResourceMetadata'
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '401':
+          description: Access is unauthorized.
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '406':
+          description: Client error
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '413':
+          description: Client error
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '415':
+          description: Client error
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '502':
+          description: Server error
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /mcp:
+    post:
+      operationId: sendMessage
+      description: 'Streamable HTTP JSON responses, with no server session or unsolicited SSE. Every request requires an MCP-audience Bearer; Cookie and internal-API tokens are not accepted. tools/call arguments are strictly validated: get_account_context takes {}, switch_account requires delegationIdentifier (UUID or null for original Account). Tool notifications never execute side effects. 401/insufficient_scope 403 carry WWW-Authenticate; other API 403/404/409/422/429 return isError=true with sanitized structuredContent.status/code/retryAfter. No automatic retries, redirects or user-supplied API URLs.'
+      parameters:
+        - name: Accept
+          in: header
+          required: true
+          schema:
+            type: string
+        - name: MCP-Protocol-Version
+          in: header
+          required: false
+          schema:
+            type: string
+        - name: Origin
+          in: header
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RpcResponse'
+        '202':
+          description: The request has been accepted for processing, but processing has not yet completed.
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/RpcResponse'
+                  - anyOf:
+                      - $ref: '#/components/schemas/ProtocolError'
+                      - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '401':
+          description: Access is unauthorized.
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '406':
+          description: Client error
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '413':
+          description: Client error
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '415':
+          description: Client error
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '502':
+          description: Server error
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RpcRequest'
+      security:
+        - BearerAuth: []
+    get:
+      operationId: listenForMessages
+      parameters: []
+      responses:
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '401':
+          description: Access is unauthorized.
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '405':
+          description: Client error
+          headers:
+            Allow:
+              required: true
+              schema:
+                type: string
+                enum:
+                  - POST
+        '406':
+          description: Client error
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '413':
+          description: Client error
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '415':
+          description: Client error
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '502':
+          description: Server error
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      security:
+        - BearerAuth: []
+    delete:
+      operationId: terminateSession
+      parameters: []
+      responses:
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '401':
+          description: Access is unauthorized.
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '405':
+          description: Client error
+          headers:
+            Allow:
+              required: true
+              schema:
+                type: string
+                enum:
+                  - POST
+        '406':
+          description: Client error
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '413':
+          description: Client error
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '415':
+          description: Client error
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '502':
+          description: Server error
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      security:
+        - BearerAuth: []
+  /oauth/token:
+    post:
+      operationId: exchangeToken
+      description: Pre-registered clients only. PKCE S256, resource, exact redirect URI and revocation are validated by McpAuthorizationService. Refresh issuance/revocation is one DB transaction; old internal-API authorization caches are invalidated after commit. Tokens are returned only to the OAuth client, never through tools.
+      parameters:
+        - name: Authorization
+          in: header
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tokens'
+        '400':
+          description: The server could not understand the request due to invalid syntax.
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '401':
+          description: Access is unauthorized.
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '406':
+          description: Client error
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '413':
+          description: Client error
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '415':
+          description: Client error
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '502':
+          description: Server error
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          headers:
+            WWW-Authenticate:
+              required: false
+              schema:
+                type: string
+            Retry-After:
+              required: false
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/ProtocolError'
+                  - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRequest'
+components:
+  schemas:
+    AccountContext:
+      type: object
+      required:
+        - accountIdentifier
+        - delegationIdentifier
+        - account
+        - originalAccount
+        - switchableAccounts
+      properties:
+        accountIdentifier:
+          type: string
+          nullable: true
+        delegationIdentifier:
+          type: string
+          nullable: true
+        account:
+          type: object
+          allOf:
+            - $ref: '#/components/schemas/AccountReference'
+          nullable: true
+        originalAccount:
+          type: object
+          allOf:
+            - $ref: '#/components/schemas/AccountReference'
+          nullable: true
+        switchableAccounts:
+          type: array
+          items:
+            type: object
+            properties:
+              delegationIdentifier:
+                type: string
+                nullable: true
+              accountIdentifier:
+                type: string
+              account:
+                $ref: '#/components/schemas/AccountReference'
+              isCurrent:
+                type: boolean
+            required:
+              - delegationIdentifier
+              - accountIdentifier
+              - account
+              - isCurrent
+    AccountReference:
+      type: object
+      required:
+        - accountIdentifier
+        - name
+      properties:
+        accountIdentifier:
+          type: string
+        name:
+          type: string
+    AuthorizationServerMetadata:
+      type: object
+      required:
+        - issuer
+        - authorization_endpoint
+        - token_endpoint
+        - response_types_supported
+        - grant_types_supported
+        - code_challenge_methods_supported
+        - token_endpoint_auth_methods_supported
+        - scopes_supported
+      properties:
+        issuer:
+          type: string
+          format: uri
+        authorization_endpoint:
+          type: string
+          format: uri
+          description: 'Configured browser consent entry URL (frontend #631/#632). The client sends its original OAuth parameters, including opaque state and PKCE, directly to this URL. Login returnTo and explicit consent are handled by the frontend; this is not the authenticated request-creation API.'
+        token_endpoint:
+          type: string
+          format: uri
+        response_types_supported:
+          type: array
+          items:
+            type: string
+            enum:
+              - code
+        grant_types_supported:
+          type: array
+          items:
+            type: string
+            enum:
+              - authorization_code
+              - refresh_token
+        code_challenge_methods_supported:
+          type: array
+          items:
+            type: string
+            enum:
+              - S256
+        token_endpoint_auth_methods_supported:
+          type: array
+          items:
+            type: string
+            enum:
+              - none
+              - client_secret_post
+              - client_secret_basic
+        scopes_supported:
+          type: array
+          items:
+            type: string
+    KPool.Common.PrincipalStatusConflictProblem:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: string
+          enum:
+            - last_active_manager
+            - principal_status_change_forbidden
+          description: 'last_active_manager: the final state loses the last reachable active permission manager. principal_status_change_forbidden: a forced-stop lifecycle transition was requested.'
+      allOf:
+        - $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      description: Atomic Principal membership/status save rejected. No submitted group or Principal change is committed.
+    KPool.Common.ProblemDetails:
+      type: object
+      properties:
+        type:
+          type: string
+          description: URI reference identifying the problem type.
+        status:
+          type: integer
+          format: int32
+          description: HTTP status code.
+        title:
+          type: string
+          description: Short error title.
+        detail:
+          type: string
+          description: Human-readable error detail.
+        instance:
+          type: string
+          description: URI reference identifying the specific occurrence.
+        code:
+          type: string
+          description: 'Machine-readable application error code. Internal API Bearer errors: 401 authentication_required for malformed, expired, revoked, wrong-audience tokens or a missing Identity; 403 insufficient_scope for a missing route scope; 403 oauth_route_not_allowed for non-allowlisted method/route pairs. Internal API token configuration failures return 500, not 401. Cookie-only mutations can return 419 csrf_token_mismatch. Authenticated endpoints use authentication_required for a missing or invalid login session, and recent_authentication_required when the current identity and login session lack valid recent authentication. Both return 401; clients must use this code rather than matching detail text. A non-active Principal returns 403 with principal_inactive, distinct from ordinary permission denial. Bulk Principal membership/status saves return 409 with last_active_manager if the final state leaves no reachable active permission manager, or principal_status_change_forbidden if a forbidden lifecycle transition is requested. Neither conflict commits any membership or status changes.'
+      description: RFC 9457 Problem Details payload shared by JSON error responses.
+    ProtocolError:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+    ResourceMetadata:
+      type: object
+      required:
+        - resource
+        - authorization_servers
+        - scopes_supported
+        - bearer_methods_supported
+      properties:
+        resource:
+          type: string
+          format: uri
+        authorization_servers:
+          type: array
+          items:
+            type: string
+            format: uri
+        scopes_supported:
+          type: array
+          items:
+            type: string
+        bearer_methods_supported:
+          type: array
+          items:
+            type: string
+            enum:
+              - header
+    RpcRequest:
+      type: object
+      required:
+        - jsonrpc
+        - method
+      properties:
+        jsonrpc:
+          type: string
+          enum:
+            - '2.0'
+        id:
+          anyOf:
+            - type: string
+            - type: integer
+        method:
+          anyOf:
+            - type: string
+              enum:
+                - initialize
+                - ping
+                - tools/list
+                - tools/call
+                - notifications/initialized
+            - type: string
+        params:
+          type: object
+          additionalProperties: {}
+    RpcResponse:
+      type: object
+      required:
+        - jsonrpc
+        - id
+      properties:
+        jsonrpc:
+          type: string
+          enum:
+            - '2.0'
+        id:
+          anyOf:
+            - type: string
+            - type: integer
+          nullable: true
+        result:
+          anyOf:
+            - $ref: '#/components/schemas/ToolResult'
+            - type: object
+              properties:
+                tools:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ToolDefinition'
+              required:
+                - tools
+            - type: object
+              additionalProperties: {}
+        error:
+          type: object
+          properties:
+            code:
+              type: integer
+              format: int32
+            message:
+              type: string
+          required:
+            - code
+            - message
+    TokenRequest:
+      type: object
+      required:
+        - grant_type
+      properties:
+        grant_type:
+          type: string
+          enum:
+            - authorization_code
+            - refresh_token
+        client_id:
+          type: string
+        client_secret:
+          type: string
+        code:
+          type: string
+        code_verifier:
+          type: string
+        redirect_uri:
+          type: string
+          format: uri
+        resource:
+          type: string
+          format: uri
+          description: Required for authorization_code. If sent on refresh, must equal the original MCP resource exactly.
+        refresh_token:
+          type: string
+        scope:
+          type: string
+          description: Refresh may only narrow the previously granted scopes. Forbidden on authorization_code exchange.
+    Tokens:
+      type: object
+      required:
+        - token_type
+        - expires_in
+        - access_token
+        - refresh_token
+      properties:
+        token_type:
+          type: string
+          enum:
+            - Bearer
+        expires_in:
+          type: integer
+          format: int32
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+    ToolDefinition:
+      type: object
+      required:
+        - name
+        - description
+        - inputSchema
+        - securitySchemes
+        - _meta
+        - annotations
+      properties:
+        name:
+          type: string
+          enum:
+            - get_account_context
+            - switch_account
+        description:
+          type: string
+        inputSchema:
+          type: object
+          additionalProperties: {}
+        securitySchemes:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                enum:
+                  - oauth2
+              scopes:
+                type: array
+                items:
+                  type: string
+            required:
+              - type
+              - scopes
+          description: OAuth-required Account selection helpers have no additional business scope, matching existing HTTP API. Subsequent business tools must require the granted token scopes as well as current Account permissions.
+        _meta:
+          type: object
+          additionalProperties: {}
+        annotations:
+          type: object
+          additionalProperties:
+            type: boolean
+    ToolError:
+      type: object
+      required:
+        - status
+        - code
+        - retryAfter
+      properties:
+        status:
+          type: integer
+          format: int32
+        code:
+          type: string
+          enum:
+            - forbidden
+            - not_found
+            - conflict
+            - validation_failed
+            - rate_limited
+            - api_unavailable
+            - invalid_api_response
+            - invalid_api_configuration
+        retryAfter:
+          type: integer
+          format: int32
+          nullable: true
+    ToolResult:
+      type: object
+      required:
+        - content
+        - structuredContent
+        - isError
+      properties:
+        content:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                enum:
+                  - text
+              text:
+                type: string
+            required:
+              - type
+              - text
+        structuredContent:
+          anyOf:
+            - $ref: '#/components/schemas/AccountContext'
+            - type: object
+              properties:
+                switched:
+                  type: boolean
+                  enum:
+                    - true
+              required:
+                - switched
+            - $ref: '#/components/schemas/ToolError'
+        isError:
+          type: boolean
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: Bearer
+servers:
+  - url: /
+    description: Stateless MCP transport, metadata and OAuth token exchange. Disabled until MCP_SERVER_ENABLED=true and deployment verification is complete.
+    variables: {}

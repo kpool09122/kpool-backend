@@ -21,6 +21,9 @@ bootstrap/cache/**
 public/storage
 !resources/
 !resources/**
+!doc/
+!doc/openapi/
+!doc/openapi/*.yaml
 !routes/
 !routes/**
 !docker/

@@ -28,6 +28,7 @@ use Application\Providers\Identity\EventServiceProvider as IdentityEventServiceP
 use Application\Providers\Identity\UseCaseServiceProvider as IdentityUseCaseServiceProvider;
 use Application\Providers\Monetization\DomainServiceProvider as MonetizationDomainServiceProvider;
 use Application\Providers\Monetization\UseCaseServiceProvider as MonetizationUseCaseServiceProvider;
+use Application\Providers\McpServiceProvider;
 use Application\Providers\SharedServiceProvider;
 use Application\Providers\SiteManagement\DomainServiceProvider as SiteManagementDomainServiceProvider;
 use Application\Providers\SiteManagement\UseCaseServiceProvider as SiteManagementUseCaseServiceProvider;
@@ -47,6 +48,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         health: '/health',
         then: function () {
+            Route::group([], base_path('routes/mcp.php'));
             Route::prefix('api/v1')->middleware(['api', 'session'])->group(function () {
                 Route::prefix('identity')->group(base_path('routes/v1/identity_api.php'));
                 Route::prefix('monetization')->middleware(['auth.api', 'account.active', 'principal.active', 'resolve.actor'])
@@ -73,6 +75,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
     })
     ->withProviders([
         // Shared
+        McpServiceProvider::class,
         SharedServiceProvider::class,
         ClientServiceProvider::class,
 
