@@ -25,6 +25,7 @@ use Application\Http\Action\Identity\Command\SocialAuthenticate\Callback\SocialA
 use Application\Http\Action\Identity\Command\SocialLogin\Redirect\SocialLoginRedirectAction;
 use Application\Http\Action\Identity\Command\StartPasskeyRecoveryWithSocial\StartPasskeyRecoveryWithSocialAction;
 use Application\Http\Action\Identity\Command\StartStepUpWithSocial\StartStepUpWithSocialAction;
+use Application\Http\Action\Identity\Command\UpdateAuthorizationScopeSettings\UpdateAuthorizationScopeSettingsAction;
 use Application\Http\Action\Identity\Command\UpdateIdentity\UpdateIdentityAction;
 use Application\Http\Action\Identity\Command\UpdatePasskey\UpdatePasskeyAction;
 use Application\Http\Action\Identity\Command\VerifyEmail\VerifyEmailAction;
@@ -33,6 +34,7 @@ use Application\Http\Action\Identity\Command\VerifySocialLinkingEmail\VerifySoci
 use Application\Http\Action\Identity\Command\WithdrawFromService\WithdrawFromServiceAction;
 use Application\Http\Action\Identity\Query\GetAuthenticatedIdentity\GetAuthenticatedIdentityAction;
 use Application\Http\Action\Identity\Query\GetAuthorizationRequest\GetAuthorizationRequestAction;
+use Application\Http\Action\Identity\Query\GetAuthorizationScopeSettings\GetAuthorizationScopeSettingsAction;
 use Application\Http\Action\Identity\Query\GetCsrfToken\GetCsrfTokenAction;
 use Application\Http\Action\Identity\Query\GetSocialLinking\GetSocialLinkingAction;
 use Application\Http\Action\Identity\Query\GetWithdrawalEligibility\GetWithdrawalEligibilityAction;
@@ -76,6 +78,7 @@ Route::middleware(['auth.api', 'resolve.actor'])->group(function () {
         Route::get('/auth/me', GetAuthenticatedIdentityAction::class);
         Route::get('/auth/passkeys', ListPasskeysAction::class);
         Route::get('/oauth/connections', ListAuthorizationConnectionsAction::class);
+        Route::get('/oauth/scope-settings', GetAuthorizationScopeSettingsAction::class);
         // Disabled by #605: Route::get('/auth/identities/{identityIdentifier}/profile', GetIdentityProfileAction::class);
         Route::get('/identities/me/withdrawal-eligibility', GetWithdrawalEligibilityAction::class);
         Route::get('/oauth/requests/{requestIdentifier}', GetAuthorizationRequestAction::class);
@@ -92,6 +95,7 @@ Route::middleware(['auth.api', 'resolve.actor'])->group(function () {
         Route::post('/auth/logout', LogoutAction::class);
         Route::delete('/oauth/connections/{connectionIdentifier}', RevokeAuthorizationAction::class);
         Route::patch('/identities/me', UpdateIdentityAction::class);
+        Route::put('/oauth/scope-settings', UpdateAuthorizationScopeSettingsAction::class);
         Route::delete('/identities/me', WithdrawFromServiceAction::class);
         Route::post('/oauth/requests', CreateAuthorizationRequestAction::class);
         Route::post('/oauth/requests/{requestIdentifier}/approve', ApproveAuthorizationAction::class);

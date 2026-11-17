@@ -31,7 +31,7 @@ class CreateApiAuthenticationContext
         $account = new AccountIdentifier('0199f700-0000-7000-8000-000000000001');
         $connection = new AuthorizationConnectionFactory(new UuidGenerator())->create(
             new IdentityIdentifier('0199f700-0000-7000-8000-000000000003'),
-            new OAuthClientIdentifier('0199f700-0000-4000-8000-000000000010'),
+            new OAuthClientIdentifier('0199f700-0000-7000-8000-000000000010'),
             $scopes,
             $account,
             new AccountPrincipalIdentifier('0199f700-0000-7000-8000-000000000004'),

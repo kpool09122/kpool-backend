@@ -41,11 +41,13 @@ use Source\Identity\Application\Service\StepUpOAuthSessionStorageServiceInterfac
 use Source\Identity\Application\Service\WebAuthnServiceInterface;
 use Source\Identity\Domain\Factory\ArchivedIdentityFactoryInterface;
 use Source\Identity\Domain\Factory\AuthorizationConnectionFactoryInterface;
+use Source\Identity\Domain\Factory\AuthorizationScopeSettingsFactoryInterface;
 use Source\Identity\Domain\Factory\IdentityFactoryInterface;
 use Source\Identity\Domain\Factory\PasskeyCredentialFactoryInterface;
 use Source\Identity\Domain\Factory\PasskeyUserFactoryInterface;
 use Source\Identity\Domain\Repository\ArchivedIdentityRepositoryInterface;
 use Source\Identity\Domain\Repository\AuthorizationConnectionRepositoryInterface;
+use Source\Identity\Domain\Repository\AuthorizationScopeSettingsRepositoryInterface;
 use Source\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Source\Identity\Domain\Repository\PasskeyCredentialRepositoryInterface;
 use Source\Identity\Domain\Repository\PasskeyUserRepositoryInterface;
@@ -57,11 +59,13 @@ use Source\Identity\Domain\Service\WebAuthnChallengeGeneratorInterface;
 use Source\Identity\Domain\ValueObject\AuthorizationScope;
 use Source\Identity\Infrastructure\Factory\ArchivedIdentityFactory;
 use Source\Identity\Infrastructure\Factory\AuthorizationConnectionFactory;
+use Source\Identity\Infrastructure\Factory\AuthorizationScopeSettingsFactory;
 use Source\Identity\Infrastructure\Factory\IdentityFactory;
 use Source\Identity\Infrastructure\Factory\PasskeyCredentialFactory;
 use Source\Identity\Infrastructure\Factory\PasskeyUserFactory;
 use Source\Identity\Infrastructure\Repository\ArchivedIdentityRepository;
 use Source\Identity\Infrastructure\Repository\AuthorizationConnectionRepository;
+use Source\Identity\Infrastructure\Repository\AuthorizationScopeSettingsRepository;
 use Source\Identity\Infrastructure\Repository\IdentityRepository;
 use Source\Identity\Infrastructure\Repository\PasskeyCredentialRepository;
 use Source\Identity\Infrastructure\Repository\PasskeyUserRepository;
@@ -107,6 +111,8 @@ class DomainServiceProvider extends ServiceProvider
 
         $this->app->singleton(AuthorizationRevocationServiceInterface::class, AuthorizationRevocationService::class);
         $this->app->singleton(AuthorizationTokenLifecycleServiceInterface::class, AuthorizationTokenLifecycleService::class);
+        $this->app->singleton(AuthorizationScopeSettingsFactoryInterface::class, AuthorizationScopeSettingsFactory::class);
+        $this->app->singleton(AuthorizationScopeSettingsRepositoryInterface::class, AuthorizationScopeSettingsRepository::class);
         Passport::ignoreRoutes();
         Passport::useTokenModel(McpAccessToken::class);
         Passport::useAuthCodeModel(McpAuthCode::class);

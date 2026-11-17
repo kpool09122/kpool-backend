@@ -13,6 +13,7 @@ use Source\Identity\Application\Service\AuthorizationRequestStorageServiceInterf
 use Source\Identity\Application\Service\AuthorizationRequestValidatorInterface;
 use Source\Identity\Domain\Factory\AuthorizationConnectionFactoryInterface;
 use Source\Identity\Domain\Repository\AuthorizationConnectionRepositoryInterface;
+use Source\Identity\Domain\Repository\AuthorizationScopeSettingsRepositoryInterface;
 use Source\Identity\Domain\ValueObject\AuthorizationScope;
 
 readonly class ApproveAuthorization implements ApproveAuthorizationInterface
@@ -24,6 +25,7 @@ readonly class ApproveAuthorization implements ApproveAuthorizationInterface
         private AuthorizationConnectionFactoryInterface $authorizationConnectionFactory,
         private AuthorizationConnectionRepositoryInterface $authorizationConnectionRepository,
         private AuthorizationConnectionServiceInterface $authorizationConnectionService,
+        private AuthorizationScopeSettingsRepositoryInterface $authorizationScopeSettingsRepository,
     ) {
     }
 
@@ -37,8 +39,9 @@ readonly class ApproveAuthorization implements ApproveAuthorizationInterface
         if ($scopes === [] || count(array_unique(array_map(static fn (AuthorizationScope $scope): string => $scope->value, $scopes))) !== count($scopes)) {
             throw new InvalidAuthorizationRequestException();
         }
+        $allowedScopes = $this->authorizationScopeSettingsRepository->find($input->identityIdentifier())?->scopes() ?? [];
         foreach ($scopes as $scope) {
-            if (! in_array($scope, $parameters->requestedScopes, true)) {
+            if (! in_array($scope, $parameters->requestedScopes, true) || ! in_array($scope, $allowedScopes, true)) {
                 throw new InvalidAuthorizationRequestException();
             }
         }

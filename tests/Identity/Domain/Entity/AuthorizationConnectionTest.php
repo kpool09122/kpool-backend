@@ -40,7 +40,7 @@ class AuthorizationConnectionTest extends TestCase
 
         return new AuthorizationConnectionFactory(new UuidGenerator())->create(
             new IdentityIdentifier('0199f700-0000-7000-8000-000000000002'),
-            new OAuthClientIdentifier('0199f700-0000-4000-8000-000000000010'),
+            new OAuthClientIdentifier('0199f700-0000-7000-8000-000000000010'),
             $scopes,
             $original,
             new AccountPrincipalIdentifier('0199f700-0000-7000-8000-000000000004'),

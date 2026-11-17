@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Illuminate\Support\Str;
 use Mockery;
 use Mockery\MockInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Source\Identity\Application\Exception\InvalidAuthorizationRequestException;
 use Source\Identity\Application\Service\AuthorizationAccount;
 use Source\Identity\Application\Service\AuthorizationAccountServiceInterface;
@@ -19,10 +20,13 @@ use Source\Identity\Application\Service\PendingAuthorization;
 use Source\Identity\Application\UseCase\Command\ApproveAuthorization\ApproveAuthorization;
 use Source\Identity\Application\UseCase\Command\ApproveAuthorization\ApproveAuthorizationInput;
 use Source\Identity\Application\UseCase\Command\ApproveAuthorization\ApproveAuthorizationOutput;
+use Source\Identity\Domain\Entity\AuthorizationScopeSettings;
 use Source\Identity\Domain\Factory\AuthorizationConnectionFactoryInterface;
 use Source\Identity\Domain\Repository\AuthorizationConnectionRepositoryInterface;
+use Source\Identity\Domain\Repository\AuthorizationScopeSettingsRepositoryInterface;
 use Source\Identity\Domain\ValueObject\AccountPrincipalIdentifier;
 use Source\Identity\Domain\ValueObject\AuthorizationScope;
+use Source\Identity\Domain\ValueObject\AuthorizationScopeSettingsIdentifier;
 use Source\Identity\Domain\ValueObject\OAuthClientIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -30,7 +34,20 @@ use Tests\TestCase;
 
 class ApproveAuthorizationTest extends TestCase
 {
-    public function testRejectsScopeOutsideRequestedScopesBeforePersisting(): void
+    /** @return array<string, array{list<AuthorizationScope>|null, AuthorizationScope}> */
+    public static function rejectedScopes(): array
+    {
+        return [
+            'outside requested scopes' => [AuthorizationScope::cases(), AuthorizationScope::DraftWrite],
+            'not configured' => [null, AuthorizationScope::WikiRead],
+            'all disabled' => [[], AuthorizationScope::WikiRead],
+            'not explicitly allowed' => [[AuthorizationScope::DraftWrite], AuthorizationScope::WikiRead],
+        ];
+    }
+
+    /** @param list<AuthorizationScope>|null $allowed */
+    #[DataProvider('rejectedScopes')]
+    public function testRejectsDisallowedScopesBeforePersisting(?array $allowed, AuthorizationScope $selected): void
     {
         $identity = new IdentityIdentifier((string) Str::uuid7());
         $account = new AccountIdentifier((string) Str::uuid7());
@@ -54,8 +71,11 @@ class ApproveAuthorizationTest extends TestCase
         /** @var AuthorizationConnectionServiceInterface&MockInterface $codes */
         $codes = Mockery::mock(AuthorizationConnectionServiceInterface::class);
         $codes->shouldNotReceive('issueCode');
-        $useCase = new ApproveAuthorization($storage, $validator, $accounts, $factory, $repository, $codes);
+        /** @var AuthorizationScopeSettingsRepositoryInterface&MockInterface $settings */
+        $settings = Mockery::mock(AuthorizationScopeSettingsRepositoryInterface::class);
+        $settings->shouldReceive('find')->once()->with($identity)->andReturn($allowed === null ? null : new AuthorizationScopeSettings(new AuthorizationScopeSettingsIdentifier('0199f700-0000-7000-8000-000000000098'), $identity, $allowed));
+        $useCase = new ApproveAuthorization($storage, $validator, $accounts, $factory, $repository, $codes, $settings);
         $this->expectException(InvalidAuthorizationRequestException::class);
-        $useCase->process(new ApproveAuthorizationInput('request', $identity, [AuthorizationScope::DraftWrite]), new ApproveAuthorizationOutput());
+        $useCase->process(new ApproveAuthorizationInput('request', $identity, [$selected]), new ApproveAuthorizationOutput());
     }
 }
