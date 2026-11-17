@@ -20,7 +20,9 @@
         "aws/aws-sdk-php": "^3.0",
         "league/flysystem-aws-s3-v3": "^3.0",
         "brick/math": "^1.0",
-        "laravel/passport": "~13.10.0"
+        "laravel/passport": "~13.10.0",
+        "symfony/yaml": "^8.0",
+        "opis/json-schema": "^2.4.1"
     },
     "require-dev": {
         "roave/security-advisories": "dev-latest",

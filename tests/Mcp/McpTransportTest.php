@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Mcp;
 
-use Application\Mcp\AccountApiAdapter;
+use Application\Mcp\AccountResultProjector;
+use Application\Mcp\McpApiClient;
+use Application\Mcp\McpToolExecutor;
 use Application\Mcp\McpTransport;
+use Application\Mcp\OpenApiToolRegistry;
 use DateTimeImmutable;
 use Illuminate\Http\Client\Request as ClientRequest;
 use Illuminate\Http\Request;
@@ -44,6 +47,33 @@ class McpTransportTest extends TestCase
             Http::assertSent(fn (ClientRequest $request): bool => $request['delegationIdentifier'] === $delegationIdentifier && $request->hasHeader('Authorization', 'Bearer internal-secret'));
         }
         Http::assertSentCount(2);
+    }
+
+    public function testAdditionalRegistrationIsListedAndExecutedWithoutNamedTransportBranches(): void
+    {
+        $registrations = config()->array('mcp_tools');
+        $registrations['additional_reader'] = $registrations['get_account_context'];
+        config()->set('mcp_tools', $registrations);
+        Http::fake(['https://api.example.test/api/v1/identity/auth/me' => Http::response([
+            'accountIdentifier' => null, 'delegationIdentifier' => null, 'account' => null,
+            'originalAccount' => null, 'switchableAccounts' => [], 'access_token' => 'hidden-secret',
+        ])]);
+        $list = $this->send(['jsonrpc' => '2.0', 'id' => 1, 'method' => 'tools/list']);
+        (new AssertableJsonString((string) $list->getContent()))->assertPath('result.tools.2.name', 'additional_reader');
+        $response = $this->send(['jsonrpc' => '2.0', 'id' => 2, 'method' => 'tools/call', 'params' => ['name' => 'additional_reader']], issueToken: true);
+        (new AssertableJsonString((string) $response->getContent()))->assertPath('result.isError', false);
+        self::assertStringNotContainsString('hidden-secret', (string) $response->getContent());
+        Http::assertSentCount(1);
+    }
+
+    public function testConfiguredScopesAreCheckedBeforeIssuingInternalToken(): void
+    {
+        config()->set('mcp_tools.get_account_context.scopes', ['wiki-drafts:write']);
+        Http::preventStrayRequests();
+        $response = $this->send(['jsonrpc' => '2.0', 'id' => 1, 'method' => 'tools/call', 'params' => ['name' => 'get_account_context']]);
+        self::assertSame(403, $response->getStatusCode());
+        self::assertStringContainsString('insufficient_scope', (string) $response->headers->get('WWW-Authenticate'));
+        Http::assertNothingSent();
     }
 
     /** @return list<array{int, string}> */
@@ -112,7 +142,7 @@ class McpTransportTest extends TestCase
         /** @var InternalApiTokenServiceInterface&MockInterface $internalApiTokenService */
         $internalApiTokenService = Mockery::mock(InternalApiTokenServiceInterface::class);
         $internalApiTokenService->shouldNotReceive('issue');
-        $transport = new McpTransport($verifier, new AccountApiAdapter($internalApiTokenService));
+        $transport = new McpTransport($verifier, app(OpenApiToolRegistry::class), new McpToolExecutor(new McpApiClient($internalApiTokenService), new AccountResultProjector()));
         $request = Request::create('/mcp', 'POST', server: ['HTTP_AUTHORIZATION' => 'Bearer valid-token', 'CONTENT_TYPE' => 'application/json', 'HTTP_ACCEPT' => 'application/json, text/event-stream'], content: '{"jsonrpc":"2.0","id":1,"method":"tools/list"}');
         self::assertSame(200, $transport->handle($request)->getStatusCode());
         self::assertSame(401, $transport->handle($request)->getStatusCode());
@@ -174,7 +204,7 @@ class McpTransportTest extends TestCase
         if ($issueToken) {
             $internalApiTokenService->shouldReceive('issue')->once()->with('valid-token')->andReturn(new InternalApiToken('internal-secret', new DateTimeImmutable('+1 minute')));
         }
-        $transport = new McpTransport($verifier, new AccountApiAdapter($internalApiTokenService));
+        $transport = new McpTransport($verifier, app(OpenApiToolRegistry::class), new McpToolExecutor(new McpApiClient($internalApiTokenService), new AccountResultProjector()));
 
         return $transport->handle(Request::create('/mcp', $method, server: $server + ['HTTP_AUTHORIZATION' => 'Bearer valid-token', 'CONTENT_TYPE' => 'application/json', 'HTTP_ACCEPT' => 'application/json, text/event-stream'], content: $raw ?? json_encode($message, JSON_THROW_ON_ERROR)));
     }
@@ -197,7 +227,7 @@ class McpTransportTest extends TestCase
         $verifier->shouldReceive('verify')->once()->with('invalid-secret')->andThrow(new InvalidAuthorizationTokenException());
         /** @var InternalApiTokenServiceInterface&MockInterface $internalApiTokenService */
         $internalApiTokenService = Mockery::mock(InternalApiTokenServiceInterface::class);
-        $transport = new McpTransport($verifier, new AccountApiAdapter($internalApiTokenService));
+        $transport = new McpTransport($verifier, app(OpenApiToolRegistry::class), new McpToolExecutor(new McpApiClient($internalApiTokenService), new AccountResultProjector()));
         $request = Request::create('/mcp', 'POST', server: ['HTTP_AUTHORIZATION' => 'Bearer invalid-secret', 'CONTENT_TYPE' => 'application/json', 'HTTP_ACCEPT' => 'application/json, text/event-stream'], content: '{"jsonrpc":"2.0","id":1,"method":"tools/list"}');
         $response = $transport->handle($request);
         self::assertSame(401, $response->getStatusCode());

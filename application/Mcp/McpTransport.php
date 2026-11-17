@@ -20,7 +20,8 @@ readonly class McpTransport
 {
     public function __construct(
         private AuthorizationTokenVerifierInterface $authorizationTokenVerifier,
-        private AccountApiAdapter $accountApiAdapter,
+        private OpenApiToolRegistry $openApiToolRegistry,
+        private McpToolExecutor $mcpToolExecutor,
     ) {
     }
 
@@ -95,7 +96,7 @@ readonly class McpTransport
             case 'ping':
                 return $this->rpcResult($id, new stdClass());
             case 'tools/list':
-                return $this->rpcResult($id, ['tools' => $this->tools()]);
+                return $this->rpcResult($id, ['tools' => $this->openApiToolRegistry->definitions()]);
             case 'tools/call':
                 return $this->callTool($id, $params, $matches[1], $validated);
             default:
@@ -103,54 +104,27 @@ readonly class McpTransport
         }
     }
 
-    /** @return list<array{name: string, description: string, inputSchema: array<string, mixed>, securitySchemes: list<array{type: string, scopes: list<string>}>, _meta: array<string, mixed>, annotations: array<string, bool>}> */
-    private function tools(): array
-    {
-        $schemes = [['type' => 'oauth2', 'scopes' => []]];
-
-        return [
-            ['name' => 'get_account_context', 'description' => 'Get the current Account and current switchable Accounts. If accountIdentifier is null, choose a candidate using switch_account.',
-                'inputSchema' => ['type' => 'object', 'properties' => new stdClass(), 'additionalProperties' => false],
-                'securitySchemes' => $schemes, '_meta' => ['securitySchemes' => $schemes],
-                'annotations' => ['readOnlyHint' => true, 'destructiveHint' => false, 'openWorldHint' => false]],
-            ['name' => 'switch_account', 'description' => 'Switch the Account for this OAuth connection. Use a delegationIdentifier from get_account_context, or null to return to the original Account.',
-                'inputSchema' => ['type' => 'object', 'properties' => ['delegationIdentifier' => ['type' => ['string', 'null'], 'format' => 'uuid']], 'required' => ['delegationIdentifier'], 'additionalProperties' => false],
-                'securitySchemes' => $schemes, '_meta' => ['securitySchemes' => $schemes],
-                'annotations' => ['readOnlyHint' => false, 'destructiveHint' => false, 'idempotentHint' => true, 'openWorldHint' => false]],
-        ];
-    }
-
     private function callTool(int|string $id, stdClass $params, #[SensitiveParameter] string $bearer, ValidatedAuthorizationToken $validated): Response
     {
-        $definitions = array_column($this->tools(), null, 'name');
         $name = $params->name ?? null;
-        if (! is_string($name) || ! isset($definitions[$name]) || array_diff(array_keys(get_object_vars($params)), ['name', 'arguments', '_meta']) !== []) {
+        if (! is_string($name) || ($tool = $this->openApiToolRegistry->find($name)) === null || array_diff(array_keys(get_object_vars($params)), ['name', 'arguments', '_meta']) !== []) {
             return $this->rpcError($id, -32602, 'Invalid params');
         }
         $arguments = $params->arguments ?? new stdClass();
         if (! $arguments instanceof stdClass) {
             return $this->rpcError($id, -32602, 'Invalid params');
         }
-        $args = get_object_vars($arguments);
-        $delegationIdentifier = $args['delegationIdentifier'] ?? null;
-        if (($name === 'get_account_context' && $args !== [])
-            || ($name === 'switch_account' && (array_keys($args) !== ['delegationIdentifier']
-                || ($delegationIdentifier !== null && (! is_string($delegationIdentifier)
-                    || preg_match('/\A[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\z/iD', $delegationIdentifier) !== 1))))) {
+        if (! $tool->accepts($arguments)) {
             return $this->rpcError($id, -32602, 'Invalid params');
         }
-        // Selection helpers require OAuth but no business scope, matching the existing API.
-        // Business tools must declare scopes here; check actual token grants, never consent's superset.
         $granted = array_map(static fn (AuthorizationScope $scope): string => $scope->value, $validated->scopes);
-        $required = $definitions[$name]['securitySchemes'][0]['scopes'];
+        $required = $tool->scopes;
         if (array_diff($required, $granted) !== []) {
             return $this->challenge(403, 'insufficient_scope');
         }
 
         try {
-            $data = $name === 'get_account_context'
-                ? $this->accountApiAdapter->context($bearer)
-                : $this->accountApiAdapter->switchAccount($bearer, is_string($delegationIdentifier) ? $delegationIdentifier : null);
+            $data = $this->mcpToolExecutor->execute($tool, $arguments, $bearer);
         } catch (InvalidAuthorizationTokenException) {
             return $this->challenge(401, 'invalid_token');
         } catch (InvalidInternalApiTokenConfigurationException) {

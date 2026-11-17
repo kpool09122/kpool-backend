@@ -39,6 +39,7 @@ COPY config/ config/
 COPY public/ public/
 COPY resources/ resources/
 COPY routes/ routes/
+COPY doc/openapi/ doc/openapi/
 COPY --chmod=644 docker/production/nginx.conf /etc/nginx/nginx.conf
 COPY --chmod=644 docker/production/php-fpm.conf /usr/local/etc/php-fpm.d/zz-production.conf
 COPY --chmod=644 docker/production/php.ini /usr/local/etc/php/conf.d/zz-production.ini
