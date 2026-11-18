@@ -1,7 +1,7 @@
 using TypeSpec.Http;
 
 @service(#{ title: "k-pool MCP" })
-@server("/", "Stateless MCP transport, metadata and OAuth token exchange. Disabled until MCP_SERVER_ENABLED=true and deployment verification is complete.")
+@server("/", "Stateless MCP transport, metadata and OAuth token exchange.")
 namespace KPool.Mcp;
 
 model ResourceMetadata {

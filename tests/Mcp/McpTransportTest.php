@@ -227,7 +227,6 @@ class McpTransportTest extends TestCase
 
     public function testSameTransportRevalidatesTokenOnEveryRequest(): void
     {
-        config()->set('mcp_server.enabled', true);
         config()->set('mcp_oauth.issuer', 'https://auth.example.test');
         /** @var AuthorizationTokenVerifierInterface&MockInterface $verifier */
         $verifier = Mockery::mock(AuthorizationTokenVerifierInterface::class);
@@ -289,7 +288,6 @@ class McpTransportTest extends TestCase
      */
     private function send(array $message, array $server = [], string $method = 'POST', bool $issueToken = false, ?string $raw = null, array $scopes = [AuthorizationScope::WikiRead]): Response
     {
-        config()->set('mcp_server.enabled', true);
         config()->set('mcp_oauth.issuer', 'https://auth.example.test');
         config()->set('mcp_oauth.resource', 'https://auth.example.test/mcp');
         config()->set('mcp_server.api_base_url', 'https://api.example.test');
@@ -325,7 +323,6 @@ class McpTransportTest extends TestCase
 
     public function testInvalidTokenHasDiscoveryChallengeWithoutLeakingCredentials(): void
     {
-        config()->set('mcp_server.enabled', true);
         config()->set('mcp_oauth.issuer', 'https://auth.example.test');
         config()->set('mcp_oauth.resource', 'https://auth.example.test/mcp');
         /** @var AuthorizationTokenVerifierInterface&MockInterface $verifier */

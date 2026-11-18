@@ -8,7 +8,7 @@ parameters:
         - application/Http/Action
         - application/Passport
         - application/Mcp
-        - application/Http/Middleware/EnsureMcpEnabled.php
+        - application/Http/Middleware/EnsureMcpConfigured.php
         - tests
         - phpstan/Rules
     excludePaths:

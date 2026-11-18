@@ -28,9 +28,6 @@ readonly class McpTransport
 
     public function handle(Request $request): Response
     {
-        if (! config()->boolean('mcp_server.enabled')) {
-            return new JsonResponse(['error' => 'not_found'], 404);
-        }
         $headers = $request->headers->all('Authorization');
         if (count($headers) !== 1 || preg_match('/\ABearer ([A-Za-z0-9._~+\/-]+=*)\z/iD', $headers[0] ?? '', $matches) !== 1) {
             return $this->challenge(401, 'invalid_token');

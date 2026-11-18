@@ -4,20 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Http\Middleware;
 
-use Application\Http\Middleware\EnsureMcpEnabled;
+use Application\Http\Middleware\EnsureMcpConfigured;
 use Application\Mcp\McpMetadata;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;
 
-class EnsureMcpEnabledTest extends TestCase
+class EnsureMcpConfiguredTest extends TestCase
 {
-    public function testDisabledServerNeverReachesEndpoint(): void
-    {
-        config()->set('mcp_server.enabled', false);
-        self::assertSame(404, $this->runMiddleware()->getStatusCode());
-    }
-
     public function testMisconfiguredResourceIsNotPublished(): void
     {
         $this->configure();
@@ -39,7 +33,7 @@ class EnsureMcpEnabledTest extends TestCase
         self::assertSame(503, $this->runMiddleware()->getStatusCode());
     }
 
-    public function testEnabledServerHasConsistentDiscoveryConfiguration(): void
+    public function testConfiguredServerReachesEndpoint(): void
     {
         $this->configure();
         self::assertSame(204, $this->runMiddleware()->getStatusCode());
@@ -47,7 +41,6 @@ class EnsureMcpEnabledTest extends TestCase
 
     private function configure(): void
     {
-        config()->set('mcp_server.enabled', true);
         config()->set('mcp_oauth.issuer', 'https://api.example.test');
         config()->set('mcp_oauth.resource', 'https://api.example.test/mcp');
         config()->set('internal_api_token.resource', 'https://api.example.test/internal');
@@ -56,6 +49,6 @@ class EnsureMcpEnabledTest extends TestCase
 
     private function runMiddleware(): Response
     {
-        return (new EnsureMcpEnabled(new McpMetadata()))->handle(Request::create('/mcp'), static fn (): Response => new Response('', 204));
+        return (new EnsureMcpConfigured(new McpMetadata()))->handle(Request::create('/mcp'), static fn (): Response => new Response('', 204));
     }
 }
