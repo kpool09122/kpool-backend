@@ -1961,5 +1961,5 @@ components:
       scheme: Bearer
 servers:
   - url: /
-    description: Stateless MCP transport, metadata and OAuth token exchange. Disabled until MCP_SERVER_ENABLED=true and deployment verification is complete.
+    description: Stateless MCP transport, metadata and OAuth token exchange.
     variables: {}

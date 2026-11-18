@@ -11,7 +11,7 @@ use LogicException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 
-readonly class EnsureMcpEnabled
+readonly class EnsureMcpConfigured
 {
     public function __construct(private McpMetadata $mcpMetadata)
     {
@@ -20,10 +20,6 @@ readonly class EnsureMcpEnabled
     /** @param Closure(Request): Response $next */
     public function handle(Request $request, Closure $next): Response
     {
-        if (! config()->boolean('mcp_server.enabled')) {
-            return new JsonResponse(['error' => 'not_found'], 404);
-        }
-
         try {
             $this->mcpMetadata->assertConfigured();
         } catch (LogicException) {
