@@ -26,6 +26,14 @@ class ExternalServiceConfigurationTests(unittest.TestCase):
                 runtime_environment({name: 'fixture-never-export'})
 
 class RuntimeEnvironmentTests(unittest.TestCase):
+    def test_internal_api_audience_is_public_but_token_credentials_remain_rejected(self):
+        from contract import runtime_environment
+        settings = {'INTERNAL_API_TOKEN_RESOURCE': 'https://api.example.com'}
+        self.assertEqual({item['name']: item['value'] for item in runtime_environment(settings)}, settings)
+        for name in ('INTERNAL_API_TOKEN', 'INTERNAL_API_TOKEN_RESOURCE_SECRET', 'OTHER_TOKEN_RESOURCE'):
+            with self.subTest(name=name), self.assertRaises(ValueError):
+                runtime_environment({name: 'private-value'})
+
     def test_new_nonsecret_keys_are_forwarded_without_registration(self):
         from contract import runtime_environment
         settings = {'CONTACT_REPLY_TO_ADDRESS': 'support@example.com',

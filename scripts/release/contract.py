@@ -21,6 +21,8 @@ ENV_KEY = re.compile(r'[A-Z][A-Z0-9_]*\Z')
 # The public Sentry DSN may stay in plain configuration; credentials use ECS secrets.
 PLAIN_SECRET_KEYS = (SECRET_KEYS - {'SENTRY_LARAVEL_DSN'}) | {'APP_PREVIOUS_KEYS', 'MAIL_URL'}
 SECRET_KEY_PATTERN = re.compile(r'(?:^|_)(?:SECRET|PASSWORD|TOKEN|CREDENTIALS?|PRIVATE_KEY|API_KEY|ACCESS_KEY)(?:_|$)')
+# JWT audience identifiers are public configuration, not token credentials.
+PUBLIC_TOKEN_CONFIGURATION_KEYS = {'INTERNAL_API_TOKEN_RESOURCE'}
 SECRET_REF = re.compile(r'arn:aws:secretsmanager:ap-northeast-1:[0-9]{12}:secret:[A-Za-z0-9/_+=.@-]+:[A-Za-z0-9_]+::\Z')
 
 
@@ -29,7 +31,8 @@ def runtime_environment(config):
         raise ValueError('Runtime configuration must be an object')
     for key in config:
         if (not isinstance(key, str) or not ENV_KEY.fullmatch(key)
-                or key in PLAIN_SECRET_KEYS or SECRET_KEY_PATTERN.search(key)):
+                or key in PLAIN_SECRET_KEYS
+                or (SECRET_KEY_PATTERN.search(key) and key not in PUBLIC_TOKEN_CONFIGURATION_KEYS)):
             raise ValueError('Invalid or secret runtime configuration key')
     if any(not isinstance(v, str) or '\n' in v or len(v) > 4096 for v in config.values()):
         raise ValueError('Runtime configuration must contain bounded string values')
