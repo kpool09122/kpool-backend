@@ -819,7 +819,8 @@ model PendingAuthorizationResult {
   expiresAt: Timestamp;
 }
 
-model AuthorizationRequestResult extends PendingAuthorizationResult {
+model AuthorizationRequestResult {
+  ...PendingAuthorizationResult;
   clientName: string;
   @doc("Requested scopes intersected with the Identity-wide allowed scopes, in requested order. Empty means consent is unavailable; disable approval and allow cancellation. Settings are rechecked on final approval.")
   scopes: { scope: ConsentScope; description: string; }[];

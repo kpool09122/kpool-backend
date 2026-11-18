@@ -2685,9 +2685,15 @@ components:
     AuthorizationRequestResult:
       type: object
       required:
+        - requestIdentifier
+        - expiresAt
         - clientName
         - scopes
       properties:
+        requestIdentifier:
+          type: string
+        expiresAt:
+          $ref: '#/components/schemas/KPool.Common.Timestamp'
         clientName:
           type: string
         scopes:
@@ -2703,8 +2709,6 @@ components:
               - scope
               - description
           description: Requested scopes intersected with the Identity-wide allowed scopes, in requested order. Empty means consent is unavailable; disable approval and allow cancellation. Settings are rechecked on final approval.
-      allOf:
-        - $ref: '#/components/schemas/PendingAuthorizationResult'
     AuthorizationScopeSettings:
       type: object
       required:
