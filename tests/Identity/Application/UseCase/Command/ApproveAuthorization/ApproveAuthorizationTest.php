@@ -17,6 +17,7 @@ use Source\Identity\Application\Service\AuthorizationConnectionServiceInterface;
 use Source\Identity\Application\Service\AuthorizationRequestStorageServiceInterface;
 use Source\Identity\Application\Service\AuthorizationRequestValidatorInterface;
 use Source\Identity\Application\Service\PendingAuthorization;
+use Source\Identity\Application\Service\StepUpAuthenticationStorageServiceInterface;
 use Source\Identity\Application\UseCase\Command\ApproveAuthorization\ApproveAuthorization;
 use Source\Identity\Application\UseCase\Command\ApproveAuthorization\ApproveAuthorizationInput;
 use Source\Identity\Application\UseCase\Command\ApproveAuthorization\ApproveAuthorizationOutput;
@@ -28,6 +29,9 @@ use Source\Identity\Domain\ValueObject\AccountPrincipalIdentifier;
 use Source\Identity\Domain\ValueObject\AuthorizationScope;
 use Source\Identity\Domain\ValueObject\AuthorizationScopeSettingsIdentifier;
 use Source\Identity\Domain\ValueObject\OAuthClientIdentifier;
+use Source\Identity\Domain\ValueObject\StepUpAuthentication;
+use Source\Identity\Domain\ValueObject\StepUpAuthenticationMethod;
+use Source\Identity\Domain\ValueObject\StepUpAuthenticationScope;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Tests\TestCase;
@@ -74,8 +78,18 @@ class ApproveAuthorizationTest extends TestCase
         /** @var AuthorizationScopeSettingsRepositoryInterface&MockInterface $settings */
         $settings = Mockery::mock(AuthorizationScopeSettingsRepositoryInterface::class);
         $settings->shouldReceive('find')->once()->with($identity)->andReturn($allowed === null ? null : new AuthorizationScopeSettings(new AuthorizationScopeSettingsIdentifier('0199f700-0000-7000-8000-000000000098'), $identity, $allowed));
-        $useCase = new ApproveAuthorization($storage, $validator, $accounts, $factory, $repository, $codes, $settings);
+        $useCase = new ApproveAuthorization($this->validStepUp(), $storage, $validator, $accounts, $factory, $repository, $codes, $settings);
         $this->expectException(InvalidAuthorizationRequestException::class);
         $useCase->process(new ApproveAuthorizationInput('request', $identity, [$selected]), new ApproveAuthorizationOutput());
+    }
+
+    private function validStepUp(): StepUpAuthenticationStorageServiceInterface
+    {
+        /** @var StepUpAuthenticationStorageServiceInterface&MockInterface $stepUpAuthenticationStorageService */
+        $stepUpAuthenticationStorageService = Mockery::mock(StepUpAuthenticationStorageServiceInterface::class);
+        $stepUpAuthenticationStorageService->shouldReceive('requireValid')->once()->with(Mockery::type(IdentityIdentifier::class), StepUpAuthenticationScope::RECENT_AUTHENTICATION)
+            ->andReturnUsing(static fn (IdentityIdentifier $identity): StepUpAuthentication => new StepUpAuthentication($identity, StepUpAuthenticationMethod::PASSKEY, new DateTimeImmutable(), StepUpAuthenticationScope::RECENT_AUTHENTICATION, new DateTimeImmutable('+10 minutes')));
+
+        return $stepUpAuthenticationStorageService;
     }
 }

@@ -14,6 +14,8 @@ class StepUpReturnDestinationTest extends TestCase
         $this->assertSame([
             'PASSKEYS' => 'passkeys',
             'WITHDRAWAL' => 'withdrawal',
+            'EXTERNAL_CONNECTIONS' => 'external-connections',
+            'AUTHORIZATION' => 'authorization',
         ], array_column(StepUpReturnDestination::cases(), 'value', 'name'));
     }
 }

@@ -6,6 +6,7 @@ namespace Tests\Identity\Infrastructure\Service;
 
 use Application\Models\Account\Principal;
 use Application\Models\Identity\AuthorizationConnection;
+use DateTimeImmutable;
 use Illuminate\Support\Facades\DB;
 use Laravel\Passport\ClientRepository;
 use Mockery;
@@ -19,6 +20,7 @@ use Source\Identity\Application\Service\AuthorizationCodeParameters;
 use Source\Identity\Application\Service\AuthorizationConnectionServiceInterface;
 use Source\Identity\Application\Service\AuthorizationRequestValidatorInterface;
 use Source\Identity\Application\Service\PendingAuthorization;
+use Source\Identity\Application\Service\StepUpAuthenticationStorageServiceInterface;
 use Source\Identity\Application\UseCase\Command\ApproveAuthorization\ApproveAuthorization;
 use Source\Identity\Application\UseCase\Command\ApproveAuthorization\ApproveAuthorizationInput;
 use Source\Identity\Application\UseCase\Command\ApproveAuthorization\ApproveAuthorizationOutput;
@@ -31,13 +33,27 @@ use Source\Identity\Domain\ValueObject\AuthorizationConnectionIdentifier;
 use Source\Identity\Domain\ValueObject\AuthorizationScope;
 use Source\Identity\Domain\ValueObject\AuthorizationScopeSettingsIdentifier;
 use Source\Identity\Domain\ValueObject\OAuthClientIdentifier;
+use Source\Identity\Domain\ValueObject\StepUpAuthentication;
+use Source\Identity\Domain\ValueObject\StepUpAuthenticationMethod;
+use Source\Identity\Domain\ValueObject\StepUpAuthenticationScope;
 use Source\Identity\Infrastructure\Query\GetAuthorizationRequest;
+use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Tests\Helper\AuthorizationRequestScenario;
 use Tests\TestCase;
 
 #[Group('useDb')]
 class AuthorizationConnectionFlowTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $stepUpAuthenticationStorageService = Mockery::mock(StepUpAuthenticationStorageServiceInterface::class);
+        $stepUpAuthenticationStorageService->shouldReceive('requireValid')->with(Mockery::type(IdentityIdentifier::class), StepUpAuthenticationScope::RECENT_AUTHENTICATION)
+            ->andReturnUsing(static fn (IdentityIdentifier $identity): StepUpAuthentication => new StepUpAuthentication($identity, StepUpAuthenticationMethod::PASSKEY, new DateTimeImmutable(), StepUpAuthenticationScope::RECENT_AUTHENTICATION, new DateTimeImmutable('+10 minutes')));
+        $this->app()->instance(StepUpAuthenticationStorageServiceInterface::class, $stepUpAuthenticationStorageService);
+    }
+
     public function testPersistsOnlySelectedScopesAndIssuesRealCodeFromStoredParameters(): void
     {
         $scenario = AuthorizationRequestScenario::create();
@@ -74,6 +90,7 @@ class AuthorizationConnectionFlowTest extends TestCase
             throw new InvalidAuthorizationRequestException();
         });
         $useCase = new ApproveAuthorization(
+            app(StepUpAuthenticationStorageServiceInterface::class),
             $scenario->authorizationRequestStorageService,
             app(AuthorizationRequestValidatorInterface::class),
             app(AuthorizationAccountServiceInterface::class),

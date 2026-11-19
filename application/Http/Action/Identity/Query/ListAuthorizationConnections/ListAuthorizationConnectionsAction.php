@@ -6,11 +6,13 @@ namespace Application\Http\Action\Identity\Query\ListAuthorizationConnections;
 
 use Application\Http\Context\ActorContext;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
+use Application\Http\Exceptions\UnauthorizedHttpException;
 use Illuminate\Http\JsonResponse;
 use Psr\Log\LoggerInterface;
 use Source\Identity\Application\UseCase\Query\ListAuthorizationConnections\AuthorizationConnectionReadModel;
 use Source\Identity\Application\UseCase\Query\ListAuthorizationConnections\ListAuthorizationConnectionsInput;
 use Source\Identity\Application\UseCase\Query\ListAuthorizationConnections\ListAuthorizationConnectionsInterface;
+use Source\Identity\Domain\Exception\StepUpAuthenticationRequiredException;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -27,6 +29,14 @@ readonly class ListAuthorizationConnectionsAction
     {
         try {
             $connections = $this->listAuthorizationConnections->process(new ListAuthorizationConnectionsInput($this->actorContext->identityIdentifier));
+        } catch (StepUpAuthenticationRequiredException $exception) {
+            $httpException = new UnauthorizedHttpException(
+                detail: error_message('recent_authentication_required', $this->actorContext->language->value),
+                extensions: ['code' => 'recent_authentication_required'],
+                previous: $exception,
+            );
+
+            return response()->json($httpException->toProblemDetails(), $httpException->getHttpStatus(), ['Cache-Control' => 'no-store']);
         } catch (Throwable $exception) {
             $this->logger->error((string) $exception);
 

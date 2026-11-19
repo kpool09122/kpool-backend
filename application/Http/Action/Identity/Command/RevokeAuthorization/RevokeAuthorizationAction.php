@@ -7,6 +7,7 @@ namespace Application\Http\Action\Identity\Command\RevokeAuthorization;
 use Application\Http\Context\ActorContext;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\NotFoundHttpException;
+use Application\Http\Exceptions\UnauthorizedHttpException;
 use Application\Http\Exceptions\UnprocessableEntityHttpException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -16,6 +17,7 @@ use Source\Identity\Application\Exception\AuthorizationConnectionNotFoundExcepti
 use Source\Identity\Application\UseCase\Command\RevokeAuthorization\RevokeAuthorizationInput;
 use Source\Identity\Application\UseCase\Command\RevokeAuthorization\RevokeAuthorizationInterface;
 use Source\Identity\Application\UseCase\Command\RevokeAuthorization\RevokeAuthorizationOutput;
+use Source\Identity\Domain\Exception\StepUpAuthenticationRequiredException;
 use Source\Identity\Domain\ValueObject\AuthorizationConnectionIdentifier;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
@@ -63,6 +65,14 @@ readonly class RevokeAuthorizationAction
             $this->logger->error((string) $exception);
 
             return response()->json($exception->toProblemDetails(), $exception->getHttpStatus());
+        } catch (StepUpAuthenticationRequiredException $exception) {
+            $httpException = new UnauthorizedHttpException(
+                detail: error_message('recent_authentication_required', $this->actorContext->language->value),
+                extensions: ['code' => 'recent_authentication_required'],
+                previous: $exception,
+            );
+
+            return response()->json($httpException->toProblemDetails(), $httpException->getHttpStatus(), ['Cache-Control' => 'no-store']);
         } catch (Throwable $exception) {
             $this->logger->error((string) $exception);
 

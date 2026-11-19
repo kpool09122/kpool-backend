@@ -5,10 +5,16 @@ declare(strict_types=1);
 namespace Tests\Identity\Infrastructure\Query;
 
 use Application\Models\Identity\AuthorizationConnection as ConnectionModel;
+use DateTimeImmutable;
 use Illuminate\Support\Str;
+use Mockery;
 use PHPUnit\Framework\Attributes\Group;
+use Source\Identity\Application\Service\StepUpAuthenticationStorageServiceInterface;
 use Source\Identity\Application\UseCase\Query\ListAuthorizationConnections\ListAuthorizationConnectionsInput;
 use Source\Identity\Application\UseCase\Query\ListAuthorizationConnections\ListAuthorizationConnectionsInterface;
+use Source\Identity\Domain\ValueObject\StepUpAuthentication;
+use Source\Identity\Domain\ValueObject\StepUpAuthenticationMethod;
+use Source\Identity\Domain\ValueObject\StepUpAuthenticationScope;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Tests\Helper\CreateAuthorizationConnection;
 use Tests\TestCase;
@@ -16,6 +22,16 @@ use Tests\TestCase;
 #[Group('useDb')]
 class ListAuthorizationConnectionsTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $stepUpAuthenticationStorageService = Mockery::mock(StepUpAuthenticationStorageServiceInterface::class);
+        $stepUpAuthenticationStorageService->shouldReceive('requireValid')->with(Mockery::type(IdentityIdentifier::class), StepUpAuthenticationScope::RECENT_AUTHENTICATION)
+            ->andReturnUsing(static fn (IdentityIdentifier $identity): StepUpAuthentication => new StepUpAuthentication($identity, StepUpAuthenticationMethod::PASSKEY, new DateTimeImmutable(), StepUpAuthenticationScope::RECENT_AUTHENTICATION, new DateTimeImmutable('+10 minutes')));
+        $this->app()->instance(StepUpAuthenticationStorageServiceInterface::class, $stepUpAuthenticationStorageService);
+    }
+
     public function testOnlyOwnConnectionsAreReturnedInStableOrderWithoutClientSecrets(): void
     {
         $owner = CreateAuthorizationConnection::create();

@@ -11,14 +11,17 @@ use Source\Identity\Application\Service\AuthorizationCodeParameters;
 use Source\Identity\Application\Service\AuthorizationConnectionServiceInterface;
 use Source\Identity\Application\Service\AuthorizationRequestStorageServiceInterface;
 use Source\Identity\Application\Service\AuthorizationRequestValidatorInterface;
+use Source\Identity\Application\Service\StepUpAuthenticationStorageServiceInterface;
 use Source\Identity\Domain\Factory\AuthorizationConnectionFactoryInterface;
 use Source\Identity\Domain\Repository\AuthorizationConnectionRepositoryInterface;
 use Source\Identity\Domain\Repository\AuthorizationScopeSettingsRepositoryInterface;
 use Source\Identity\Domain\ValueObject\AuthorizationScope;
+use Source\Identity\Domain\ValueObject\StepUpAuthenticationScope;
 
 readonly class ApproveAuthorization implements ApproveAuthorizationInterface
 {
     public function __construct(
+        private StepUpAuthenticationStorageServiceInterface $stepUpAuthenticationStorageService,
         private AuthorizationRequestStorageServiceInterface $authorizationRequestStorageService,
         private AuthorizationRequestValidatorInterface $authorizationRequestValidator,
         private AuthorizationAccountServiceInterface $authorizationAccountService,
@@ -31,6 +34,7 @@ readonly class ApproveAuthorization implements ApproveAuthorizationInterface
 
     public function process(ApproveAuthorizationInputPort $input, ApproveAuthorizationOutputPort $output): void
     {
+        $this->stepUpAuthenticationStorageService->requireValid($input->identityIdentifier(), StepUpAuthenticationScope::RECENT_AUTHENTICATION);
         $pending = $this->authorizationRequestStorageService->requireValid($input->requestIdentifier(), $input->identityIdentifier());
         $parameters = $pending->parameters;
         $this->authorizationRequestValidator->validate($parameters);

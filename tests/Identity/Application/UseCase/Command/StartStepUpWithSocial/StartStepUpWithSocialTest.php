@@ -50,6 +50,8 @@ class StartStepUpWithSocialTest extends TestCase
         return [
             'passkeys' => [StepUpReturnDestination::PASSKEYS, '/settings/passkeys?stepUp=complete'],
             'withdrawal' => [StepUpReturnDestination::WITHDRAWAL, '/settings/withdrawal?stepUp=complete'],
+            'external connections' => [StepUpReturnDestination::EXTERNAL_CONNECTIONS, '/admin/user/external-connections'],
+            'authorization' => [StepUpReturnDestination::AUTHORIZATION, '/auth/oauth/authorize?stepUp=complete'],
         ];
     }
 

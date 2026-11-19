@@ -12,6 +12,7 @@ use PHPUnit\Framework\TestCase;
 use Source\Identity\Application\Exception\AuthorizationConnectionNotFoundException;
 use Source\Identity\Application\Service\AuthorizationRevocationService;
 use Source\Identity\Application\Service\AuthorizationTokenLifecycleServiceInterface;
+use Source\Identity\Application\Service\StepUpAuthenticationStorageServiceInterface;
 use Source\Identity\Application\UseCase\Command\RevokeAuthorization\RevokeAuthorization;
 use Source\Identity\Application\UseCase\Command\RevokeAuthorization\RevokeAuthorizationInput;
 use Source\Identity\Application\UseCase\Command\RevokeAuthorization\RevokeAuthorizationOutput;
@@ -22,6 +23,9 @@ use Source\Identity\Domain\ValueObject\AccountPrincipalIdentifier;
 use Source\Identity\Domain\ValueObject\AuthorizationConnectionIdentifier;
 use Source\Identity\Domain\ValueObject\AuthorizationScope;
 use Source\Identity\Domain\ValueObject\OAuthClientIdentifier;
+use Source\Identity\Domain\ValueObject\StepUpAuthentication;
+use Source\Identity\Domain\ValueObject\StepUpAuthenticationMethod;
+use Source\Identity\Domain\ValueObject\StepUpAuthenticationScope;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -75,8 +79,18 @@ class RevokeAuthorizationTest extends TestCase
             $this->expectException(AuthorizationConnectionNotFoundException::class);
         }
         $authorizationRevocationService = new AuthorizationRevocationService($authorizationConnectionRepository, $authorizationTokenLifecycleService, $eventDispatcher);
-        (new RevokeAuthorization($authorizationConnectionRepository, $authorizationRevocationService))
+        (new RevokeAuthorization($this->validStepUp(), $authorizationConnectionRepository, $authorizationRevocationService))
             ->process(new RevokeAuthorizationInput($identity, $id), new RevokeAuthorizationOutput());
         self::assertNotNull($connection->revokedAt());
+    }
+
+    private function validStepUp(): StepUpAuthenticationStorageServiceInterface
+    {
+        /** @var StepUpAuthenticationStorageServiceInterface&MockInterface $stepUpAuthenticationStorageService */
+        $stepUpAuthenticationStorageService = Mockery::mock(StepUpAuthenticationStorageServiceInterface::class);
+        $stepUpAuthenticationStorageService->shouldReceive('requireValid')->once()->with(Mockery::type(IdentityIdentifier::class), StepUpAuthenticationScope::RECENT_AUTHENTICATION)
+            ->andReturnUsing(static fn (IdentityIdentifier $identity): StepUpAuthentication => new StepUpAuthentication($identity, StepUpAuthenticationMethod::PASSKEY, new DateTimeImmutable(), StepUpAuthenticationScope::RECENT_AUTHENTICATION, new DateTimeImmutable('+10 minutes')));
+
+        return $stepUpAuthenticationStorageService;
     }
 }
