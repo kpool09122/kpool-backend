@@ -816,7 +816,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-    patch:
+    put:
       operationId: AccountOperations_updateAccount
       description: Update account information.
       parameters:

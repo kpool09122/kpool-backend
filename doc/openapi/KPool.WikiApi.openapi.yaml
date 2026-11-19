@@ -522,7 +522,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /image/{imageId}/metadata:
-    patch:
+    put:
       operationId: ImageMetadataOperations_updateImageMetadata
       description: 'Update published image metadata immediately for operators. Preserves image file, approval and visibility. Internal API Bearer scope: wiki-images:write.'
       parameters:

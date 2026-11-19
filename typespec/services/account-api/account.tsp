@@ -134,7 +134,7 @@ interface AccountOperations {
     @path accountId: Uuid,
   ): OkAccountResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
 
-  @patch
+  @put
   @route("/{accountId}")
   @doc("Update account information.")
   updateAccount(

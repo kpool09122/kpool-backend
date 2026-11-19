@@ -67,7 +67,7 @@ Route::middleware(['auth.api', 'account.active', 'principal.active', 'resolve.ac
 
     Route::middleware('rate-limit:screen,command')->group(function () {
         // Account
-        Route::patch('/accounts/{accountId}', UpdateAccountAction::class);
+        Route::put('/accounts/{accountId}', UpdateAccountAction::class);
         Route::put('/accounts/{accountId}/notification-settings', UpdateNotificationSettingsAction::class);
         // Disabled by #605: Route::delete('/accounts/{accountId}', DeleteAccountAction::class);
         Route::post('/accounts/switch', SwitchAccountAction::class);
