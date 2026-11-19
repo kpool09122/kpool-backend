@@ -60,6 +60,24 @@ class BackendTests(unittest.TestCase):
                 self.assertEqual(environment['CONTACT_REPLY_TO_ADDRESS'], 'support@example.com')
                 self.assertEqual(environment['SUPPORT_PORTAL_URL'], 'https://support.example.com')
 
+    def test_passport_keys_are_registered_as_secret_references_without_migration_access(self):
+        names = ['PASSPORT_PRIVATE_KEY', 'PASSPORT_PUBLIC_KEY']
+        self.config['app_secret_keys'] = names
+        self.backend.preflight()
+        self.backend.register()
+        definitions = [args for _, operation, args in self.aws.calls if operation == 'register-task-definition']
+        self.assertEqual(len(definitions), 4)
+        for definition in definitions:
+            container = definition['containerDefinitions'][0]
+            with self.subTest(container=container['name']):
+                self.assertFalse(set(names) & {item['name'] for item in container['environment']})
+                if container['name'] == 'migration':
+                    self.assertFalse(set(names) & {item['name'] for item in container['secrets']})
+                else:
+                    for name in names:
+                        self.assertIn({'name': name, 'valueFrom': self.o['AppSecretArn'] + ':' + name + '::'},
+                                      container['secrets'])
+
     def test_visitor_location_secret_is_injected_from_app_secret_into_api_and_worker(self):
         self.config['app_secret_keys']=['WIKI_VISITOR_LOCATION_SECRET']
         self.backend.preflight()
