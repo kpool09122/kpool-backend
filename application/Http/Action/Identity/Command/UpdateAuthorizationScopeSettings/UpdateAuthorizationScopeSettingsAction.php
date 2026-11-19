@@ -7,6 +7,7 @@ namespace Application\Http\Action\Identity\Command\UpdateAuthorizationScopeSetti
 use Application\Http\Context\ActorContext;
 use Application\Http\Exceptions\BadRequestHttpException;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
+use Application\Http\Exceptions\UnauthorizedHttpException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -14,6 +15,7 @@ use Psr\Log\LoggerInterface;
 use Source\Identity\Application\UseCase\Command\UpdateAuthorizationScopeSettings\UpdateAuthorizationScopeSettingsInput;
 use Source\Identity\Application\UseCase\Command\UpdateAuthorizationScopeSettings\UpdateAuthorizationScopeSettingsInterface;
 use Source\Identity\Application\UseCase\Command\UpdateAuthorizationScopeSettings\UpdateAuthorizationScopeSettingsOutput;
+use Source\Identity\Domain\Exception\StepUpAuthenticationRequiredException;
 use Source\Identity\Domain\ValueObject\AuthorizationScope;
 use Throwable;
 use ValueError;
@@ -39,6 +41,14 @@ readonly class UpdateAuthorizationScopeSettingsAction
             $this->logger->error((string) $e);
 
             return response()->json($e->toProblemDetails(), $e->getHttpStatus(), ['Cache-Control' => 'no-store']);
+        } catch (StepUpAuthenticationRequiredException $exception) {
+            $httpException = new UnauthorizedHttpException(
+                detail: error_message('recent_authentication_required', $this->actorContext->language->value),
+                extensions: ['code' => 'recent_authentication_required'],
+                previous: $exception,
+            );
+
+            return response()->json($httpException->toProblemDetails(), $httpException->getHttpStatus(), ['Cache-Control' => 'no-store']);
         } catch (Throwable $e) {
             $this->logger->error((string) $e);
 

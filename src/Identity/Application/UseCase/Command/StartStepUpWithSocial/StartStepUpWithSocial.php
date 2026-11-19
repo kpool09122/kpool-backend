@@ -39,6 +39,8 @@ readonly class StartStepUpWithSocial implements StartStepUpWithSocialInterface
         $returnTo = match ($input->returnDestination()) {
             StepUpReturnDestination::PASSKEYS => '/settings/passkeys?stepUp=complete',
             StepUpReturnDestination::WITHDRAWAL => '/settings/withdrawal?stepUp=complete',
+            StepUpReturnDestination::EXTERNAL_CONNECTIONS => '/admin/user/external-connections',
+            StepUpReturnDestination::AUTHORIZATION => '/auth/oauth/authorize?stepUp=complete',
         };
         $this->stepUpOAuthSessionStorageService->store($state, new StepUpOAuthSession(
             $input->identityIdentifier(),

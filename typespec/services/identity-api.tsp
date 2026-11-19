@@ -713,7 +713,7 @@ interface IdentityAuthOperations {
 
   @post
   @route("/step-up/passkey")
-  @doc("Verify an existing passkey and grant common recent authentication to the same identity and login session for ten minutes from verification. Passkey operations and identity withdrawal share this result without consuming it or extending its expiry.")
+  @doc("Verify an existing passkey and grant common recent authentication to the same identity and login session for ten minutes from verification. Passkey operations, identity withdrawal, external connection management and authorization approval share this result without consuming it or extending its expiry.")
   completeStepUpWithPasskey(
     @body body: CompleteStepUpWithPasskeyRequestBody,
   ): OkEmptyResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
@@ -723,7 +723,7 @@ interface IdentityAuthOperations {
   @doc("Create a linked-SSO recent authentication URL when no passkey is registered. Persist the allowlisted return destination in the originating login session on the server. The result is reusable for ten minutes by the same identity and login session without consumption or extension.")
   startStepUpWithSocial(
     @path provider: string,
-    @query returnTo: "passkeys" | "withdrawal",
+    @query returnTo: "passkeys" | "withdrawal" | "external-connections" | "authorization",
   ): RedirectUrlResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
 
   @post
@@ -851,7 +851,7 @@ interface OAuthConsent {
   getAuthorizationRequest(@path requestIdentifier: string): AuthorizationRequestResponse | UnauthorizedProblemResponse | ForbiddenProblemResponse | BadRequestProblemResponse | ConflictProblemResponse | NotFoundProblemResponse | TooManyRequestsProblemResponse | ServiceUnavailableProblemResponse | InternalServerErrorProblemResponse;
 
   @post @route("/{requestIdentifier}/approve")
-  @doc("Revalidate the original account and principal, persist scope consent and issue a code in one DB transaction. Failure rolls back consent and leaves the request retryable. Only server-stored Client/redirect/resource/PKCE/state and an approved subset of stored scopes reach code issuance.")
+  @doc("Requires reusable recent authentication within ten minutes (401 recent_authentication_required). Revalidate the original account and principal, persist scope consent and issue a code in one DB transaction. Failure rolls back consent and leaves the request retryable. Only server-stored Client/redirect/resource/PKCE/state and an approved subset of stored scopes reach code issuance.")
   @useAuth(SessionCookieAuth)
   approveAuthorization(@path requestIdentifier: string, @body body: ApproveAuthorizationBody): AuthorizationContinuationResponse | UnauthorizedProblemResponse | ForbiddenProblemResponse | BadRequestProblemResponse | ConflictProblemResponse | NotFoundProblemResponse | UnprocessableEntityProblemResponse | CsrfTokenMismatchProblemResponse | TooManyRequestsProblemResponse | ServiceUnavailableProblemResponse | InternalServerErrorProblemResponse;
 
@@ -888,26 +888,28 @@ model AuthorizationScopeSettingsResponse {
   @body body: AuthorizationScopeSettings;
 }
 
+@doc("Reading or updating settings requires reusable recent authentication from the same identity and login session within ten minutes; otherwise returns 401 recent_authentication_required.")
 @route("/oauth/scope-settings")
 @useAuth(SessionCookieAuth)
 interface OAuthScopeSettings {
   @get
-  @doc("Read the authenticated Identity's allowed scopes. No target Identity ID is accepted. Cookie-only, no-store, independent of Account selection/status.")
+  @doc("Requires reusable recent authentication from the same identity and login session within ten minutes; otherwise returns 401 recent_authentication_required. Read the authenticated Identity's allowed scopes. No target Identity ID is accepted. Cookie-only, no-store, independent of Account selection/status.")
   getAuthorizationScopeSettings(): AuthorizationScopeSettingsResponse | UnauthorizedProblemResponse | ForbiddenProblemResponse | TooManyRequestsProblemResponse | ServiceUnavailableProblemResponse | InternalServerErrorProblemResponse;
 
   @put
-  @doc("Replace the authenticated Identity's allowed scopes. Cookie and CSRF required; no-store. scopes is required, unique and may be empty. Returns an empty JSON array. Does not modify existing consents; applies when subsequent consent is finalized.")
+  @doc("Requires reusable recent authentication from the same identity and login session within ten minutes; otherwise returns 401 recent_authentication_required. Replace the authenticated Identity's allowed scopes. Cookie and CSRF required; no-store. scopes is required, unique and may be empty. Returns an empty JSON array. Does not modify existing consents; applies when subsequent consent is finalized.")
   updateAuthorizationScopeSettings(@body body: AuthorizationScopeSettings): OkEmptyResponse | UnauthorizedProblemResponse | ForbiddenProblemResponse | BadRequestProblemResponse | UnprocessableEntityProblemResponse | CsrfTokenMismatchProblemResponse | TooManyRequestsProblemResponse | ServiceUnavailableProblemResponse | InternalServerErrorProblemResponse;
 }
 
+@doc("Listing or revoking connections requires reusable recent authentication from the same identity and login session within ten minutes; otherwise returns 401 recent_authentication_required.")
 @route("/oauth/connections")
 @useAuth(SessionCookieAuth)
 interface OAuthConnections {
   @get
-  @doc("List only the signed-in Identity's connections, including revoked connections, ordered by consent timestamp ascending then connection ID ascending. Empty results use connections: []. Cookie-only; no-store; independent of selected Account status.")
+  @doc("Requires reusable recent authentication from the same identity and login session within ten minutes; otherwise returns 401 recent_authentication_required. List only the signed-in Identity's connections, including revoked connections, ordered by consent timestamp ascending then connection ID ascending. Empty results use connections: []. Cookie-only; no-store; independent of selected Account status.")
   listAuthorizationConnections(): AuthorizationConnectionsResponse | UnauthorizedProblemResponse | ForbiddenProblemResponse | TooManyRequestsProblemResponse | ServiceUnavailableProblemResponse | InternalServerErrorProblemResponse;
 
   @delete @route("/{connectionIdentifier}")
-  @doc("Revoke only the signed-in Identity's specified connection, its access/refresh tokens and authorization codes. After commit, invalidate all associated internal API authorization caches and this connection's Account selection/context, preserving other connections and browser selections. Repeating revocation succeeds without changing revokedAt. Unknown and foreign IDs both return 404. Cookie and CSRF required. Returns an empty JSON array.")
+  @doc("Requires reusable recent authentication from the same identity and login session within ten minutes; otherwise returns 401 recent_authentication_required. Revoke only the signed-in Identity's specified connection, its access/refresh tokens and authorization codes. After commit, invalidate all associated internal API authorization caches and this connection's Account selection/context, preserving other connections and browser selections. Repeating revocation succeeds without changing revokedAt. Unknown and foreign IDs both return 404. Cookie and CSRF required. Returns an empty JSON array.")
   revokeAuthorization(@path connectionIdentifier: Uuid): OkEmptyResponse | UnauthorizedProblemResponse | ForbiddenProblemResponse | NotFoundProblemResponse | UnprocessableEntityProblemResponse | CsrfTokenMismatchProblemResponse | TooManyRequestsProblemResponse | ServiceUnavailableProblemResponse | InternalServerErrorProblemResponse;
 }

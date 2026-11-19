@@ -6,14 +6,24 @@ namespace Source\Identity\Infrastructure\Query;
 
 use Application\Models\Identity\AuthorizationConnection;
 use LogicException;
+use Source\Identity\Application\Service\StepUpAuthenticationStorageServiceInterface;
 use Source\Identity\Application\UseCase\Query\ListAuthorizationConnections\AuthorizationConnectionReadModel;
 use Source\Identity\Application\UseCase\Query\ListAuthorizationConnections\ListAuthorizationConnectionsInputPort;
 use Source\Identity\Application\UseCase\Query\ListAuthorizationConnections\ListAuthorizationConnectionsInterface;
+use Source\Identity\Domain\ValueObject\StepUpAuthenticationScope;
 
 readonly class ListAuthorizationConnections implements ListAuthorizationConnectionsInterface
 {
+    public function __construct(
+        private StepUpAuthenticationStorageServiceInterface $stepUpAuthenticationStorageService,
+    ) {
+    }
+
+    /** @phpstan-impure */
     public function process(ListAuthorizationConnectionsInputPort $input): array
     {
+        $this->stepUpAuthenticationStorageService->requireValid($input->identityIdentifier(), StepUpAuthenticationScope::RECENT_AUTHENTICATION);
+
         return array_values(AuthorizationConnection::query()
             ->with('client:id,name')
             ->where('identity_id', (string) $input->identityIdentifier())
