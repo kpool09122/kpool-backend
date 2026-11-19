@@ -166,13 +166,20 @@ final class OpenApiToolRegistry
         if (isset($operation['requestBody'])) {
             $body = $document->resolve(OpenApiDocument::map($operation['requestBody']));
             $content = OpenApiDocument::map($body['content'] ?? null);
-            if (array_keys($content) !== ['application/json'] || ($body['required'] ?? false) !== true) {
-                throw new LogicException('Only required JSON object request bodies are supported.');
+            if (array_keys($content) !== ['application/json']) {
+                throw new LogicException('Only JSON object request bodies are supported.');
             }
             $media = OpenApiDocument::map($content['application/json']);
             $bodySchema = OpenApiDocument::map($document->schema(OpenApiDocument::map($media['schema'] ?? null)));
             $schema = $this->bodyShape($bodySchema);
+            $bodyRequired = ($body['required'] ?? false) === true;
             $bodyConstraints = ['allOf' => [$bodySchema]];
+            if (! $bodyRequired && $schema['properties'] !== []) {
+                $bodyConstraints = [
+                    'if' => ['anyOf' => array_map(static fn (string $key): array => ['required' => [$key]], array_keys($schema['properties']))],
+                    'then' => $bodySchema,
+                ];
+            }
             foreach (OpenApiDocument::map($schema['properties'] instanceof stdClass ? [] : $schema['properties']) as $key => $property) {
                 if (isset($properties[$key])) {
                     throw new LogicException('MCP parameter/body names must not collide.');
@@ -180,7 +187,7 @@ final class OpenApiToolRegistry
                 $properties[$key] = $property;
                 $locations[$key] = 'body';
             }
-            foreach (OpenApiDocument::items($schema['required'] ?? []) as $key) {
+            foreach ($bodyRequired ? OpenApiDocument::items($schema['required'] ?? []) : [] as $key) {
                 $required[] = OpenApiDocument::string($key);
             }
         }
@@ -243,7 +250,8 @@ final class OpenApiToolRegistry
             $scopes,
             $annotations,
             $projector,
-            isset($operation['requestBody'])
+            isset($operation['requestBody']),
+            $bodyRequired ?? false,
         );
     }
 }

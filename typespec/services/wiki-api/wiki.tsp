@@ -112,10 +112,18 @@ model RejectWikiRequestBody extends WikiAssociationTargets {
 }
 
 @doc("Request body for deleting a wiki draft.")
-model DeleteWikiRequestBody extends WikiAssociationTargets {}
+model DeleteWikiRequestBody {
+  ...OmitProperties<WikiAssociationTargets, "groupIdentifiers" | "talentIdentifiers">;
+  groupIdentifiers?: Uuid[] | null;
+  talentIdentifiers?: Uuid[] | null;
+}
 
 @doc("Request body for withdrawing a wiki draft review request.")
-model WithdrawWikiRequestBody extends WikiAssociationTargets {}
+model WithdrawWikiRequestBody {
+  ...OmitProperties<WikiAssociationTargets, "groupIdentifiers" | "talentIdentifiers">;
+  groupIdentifiers?: Uuid[] | null;
+  talentIdentifiers?: Uuid[] | null;
+}
 
 @doc("Request body for rolling back a wiki to a previous version.")
 model RollbackWikiRequestBody extends WikiAssociationTargets {
@@ -635,11 +643,12 @@ interface WikiOperations {
 
   @delete
   @route("/{wikiId}")
-  @doc("Delete a wiki draft.")
+  @useAuth(SessionCookieAuth | InternalApiBearerAuth)
+  @doc("Delete a pending or rejected wiki draft. Internal API Bearer scope: wiki-drafts:write.")
   deleteWiki(
     @path wikiId: Uuid,
     @body body?: DeleteWikiRequestBody,
-  ): KPool.Common.NoContentResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+  ): KPool.Common.NoContentResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse | KPool.Common.UnauthorizedProblemResponse;
 
   @post
   @route("/{wikiId}/approve")
@@ -724,12 +733,13 @@ interface WikiOperations {
 
   @post
   @route("/{wikiId}/withdraw")
-  @doc("Withdraw a wiki draft review request.")
+  @useAuth(SessionCookieAuth | InternalApiBearerAuth)
+  @doc("Withdraw a wiki draft review request, returning it from under review to pending. Internal API Bearer scope: wiki-drafts:write.")
   withdrawWiki(
     ...VisitorLocationHeaders,
     @path wikiId: Uuid,
     @body body?: WithdrawWikiRequestBody,
-  ): CreateDraftWikiResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+  ): CreateDraftWikiResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse | KPool.Common.UnauthorizedProblemResponse;
 
   @post
   @route("/{wikiId}/translate")

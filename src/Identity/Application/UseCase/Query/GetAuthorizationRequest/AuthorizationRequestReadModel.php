@@ -27,7 +27,7 @@ readonly class AuthorizationRequestReadModel
             'scopes' => array_map(static fn (AuthorizationScope $scope): array => ['scope' => $scope->value, 'description' => match ($scope) {
                 AuthorizationScope::WikiRead => 'Wiki の閲覧',
                 AuthorizationScope::DraftRead => 'Draft Wiki の閲覧',
-                AuthorizationScope::DraftWrite => 'Draft Wiki の作成・編集',
+                AuthorizationScope::DraftWrite => 'Draft Wiki の作成・編集・削除・取り下げ',
                 AuthorizationScope::DraftSubmit => 'Draft Wiki の提出',
                 AuthorizationScope::ImageRead => 'Wiki 画像の閲覧',
                 AuthorizationScope::ImageWrite => 'Wiki 画像の追加・編集',

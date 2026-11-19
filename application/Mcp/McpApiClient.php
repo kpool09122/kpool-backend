@@ -58,6 +58,9 @@ readonly class McpApiClient
                 $status === 429 && ctype_digit($retryAfter) ? min(86400, (int) $retryAfter) : null
             );
         }
+        if ($response->noContent()) {
+            return ['success' => true];
+        }
         $body = $response->json();
         if (! is_array($body) || ($body !== [] && array_is_list($body))) {
             throw new ApiFailure(502, 'invalid_api_response');

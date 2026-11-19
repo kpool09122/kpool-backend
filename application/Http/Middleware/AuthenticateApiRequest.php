@@ -42,6 +42,8 @@ readonly class AuthenticateApiRequest
         'GET api/v1/wiki/wiki/{language}/talent/{slug}/my/draft' => AuthorizationScope::DraftRead,
         'POST api/v1/wiki/wiki/create' => AuthorizationScope::DraftWrite,
         'POST api/v1/wiki/wiki/{wikiId}/edit' => AuthorizationScope::DraftWrite,
+        'DELETE api/v1/wiki/wiki/{wikiId}' => AuthorizationScope::DraftWrite,
+        'POST api/v1/wiki/wiki/{wikiId}/withdraw' => AuthorizationScope::DraftWrite,
         'POST api/v1/wiki/wiki/submit' => AuthorizationScope::DraftSubmit,
         'POST api/v1/wiki/wiki/{wikiId}/submit' => AuthorizationScope::DraftSubmit,
         'GET api/v1/wiki/images' => AuthorizationScope::ImageRead,

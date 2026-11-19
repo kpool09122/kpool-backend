@@ -26,6 +26,7 @@ final readonly class OpenApiTool
         private array $annotations,
         public ?string $resultProjector = null,
         private bool $hasRequestBody = false,
+        private bool $requestBodyRequired = true,
     ) {
     }
 
@@ -77,6 +78,6 @@ final readonly class OpenApiTool
             }
         }
 
-        return ['path' => $path, 'body' => $this->hasRequestBody ? OpenApiDocument::map($body) : null, 'query' => OpenApiDocument::map($query)];
+        return ['path' => $path, 'body' => $this->hasRequestBody && ($this->requestBodyRequired || $body !== []) ? OpenApiDocument::map($body) : null, 'query' => OpenApiDocument::map($query)];
     }
 }
