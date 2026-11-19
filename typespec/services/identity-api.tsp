@@ -827,7 +827,7 @@ model AuthorizationRequestResult {
 }
 
 model ApproveAuthorizationBody {
-  @doc("Nonempty unique subset of both the server-stored requested scopes and the latest Identity-wide allowed scopes. Expansion or disallowed scopes are rejected with 400, including settings changes after screen display. wiki-drafts:write is displayed as Draft Wiki の作成・編集 and excludes automatic creation.")
+  @doc("Nonempty unique subset of both the server-stored requested scopes and the latest Identity-wide allowed scopes. Expansion or disallowed scopes are rejected with 400, including settings changes after screen display. wiki-drafts:write is displayed as Draft Wiki の作成・編集・削除・取り下げ and excludes automatic creation.")
   scopes: ConsentScope[];
 }
 

@@ -5239,7 +5239,7 @@ paths:
   /wiki/{wikiId}:
     delete:
       operationId: WikiOperations_deleteWiki
-      description: Delete a wiki draft.
+      description: 'Delete a pending or rejected wiki draft. Internal API Bearer scope: wiki-drafts:write.'
       parameters:
         - name: wikiId
           in: path
@@ -5249,6 +5249,12 @@ paths:
       responses:
         '204':
           description: Response with no content.
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '403':
           description: Access is forbidden.
           content:
@@ -5309,6 +5315,9 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/DeleteWikiRequestBody'
+      security:
+        - SessionCookieAuth: []
+        - InternalApiBearerAuth: []
   /wiki/{wikiId}/approve:
     post:
       operationId: WikiOperations_approveWiki
@@ -6047,7 +6056,7 @@ paths:
   /wiki/{wikiId}/withdraw:
     post:
       operationId: WikiOperations_withdrawWiki
-      description: Withdraw a wiki draft review request.
+      description: 'Withdraw a wiki draft review request, returning it from under review to pending. Internal API Bearer scope: wiki-drafts:write.'
       parameters:
         - $ref: '#/components/parameters/VisitorLocationHeaders.visitorCountry'
         - $ref: '#/components/parameters/VisitorLocationHeaders.visitorRegion'
@@ -6065,6 +6074,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DraftWikiSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '403':
           description: Access is forbidden.
           content:
@@ -6125,6 +6140,9 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/WithdrawWikiRequestBody'
+      security:
+        - SessionCookieAuth: []
+        - InternalApiBearerAuth: []
   /wikis/version-inconsistencies:
     get:
       operationId: WikiListOperations_listVersionInconsistentWikis
@@ -7017,8 +7035,23 @@ components:
       description: Summary of a newly created principal.
     DeleteWikiRequestBody:
       type: object
-      allOf:
-        - $ref: '#/components/schemas/WikiAssociationTargets'
+      properties:
+        agencyIdentifier:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
+          description: Associated agency identifier.
+        groupIdentifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
+        talentIdentifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
       description: Request body for deleting a wiki draft.
     DraftImageListItem:
       type: object
@@ -11226,8 +11259,23 @@ components:
       description: Request body for wiki workflow actions.
     WithdrawWikiRequestBody:
       type: object
-      allOf:
-        - $ref: '#/components/schemas/WikiAssociationTargets'
+      properties:
+        agencyIdentifier:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
+          description: Associated agency identifier.
+        groupIdentifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
+        talentIdentifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
       description: Request body for withdrawing a wiki draft review request.
   securitySchemes:
     SessionCookieAuth:

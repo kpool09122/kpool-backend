@@ -146,6 +146,77 @@ class McpTransportTest extends TestCase
         Http::assertNothingSent();
     }
 
+    /** @return array<string, array{string, string, string, int, array<string, mixed>}> */
+    public static function draftWriteOperations(): array
+    {
+        return [
+            'delete' => ['delete_wiki_draft', 'DELETE', '', 204, ['success' => true]],
+            'withdraw' => ['withdraw_wiki_draft', 'POST', '/withdraw', 201, ['wikiIdentifier' => 'draft-id', 'status' => 'pending']],
+        ];
+    }
+
+    /** @param array<string, mixed> $expected */
+    #[DataProvider('draftWriteOperations')]
+    public function testDraftDeletionAndWithdrawalExecuteWithWriteScope(string $name, string $method, string $suffix, int $status, array $expected): void
+    {
+        $id = '019a8fa0-3f20-7000-8000-000000000001';
+        $url = 'https://api.example.test/api/v1/wiki/wiki/' . $id . $suffix;
+        $targets = ['agencyIdentifier' => null, 'groupIdentifiers' => [$id], 'talentIdentifiers' => []];
+        Http::preventStrayRequests();
+        Http::fake([$url => Http::response($status === 204 ? '' : $expected, $status)]);
+        $list = $this->send(['jsonrpc' => '2.0', 'id' => 1, 'method' => 'tools/list'], scopes: [AuthorizationScope::DraftWrite]);
+        (new AssertableJsonString((string) $list->getContent()))->assertFragment(['name' => $name]);
+        $response = $this->send(['jsonrpc' => '2.0', 'id' => 2, 'method' => 'tools/call', 'params' => [
+            'name' => $name, 'arguments' => ['wikiId' => $id, ...$targets],
+        ]], issueToken: true, scopes: [AuthorizationScope::DraftWrite]);
+        $json = new AssertableJsonString((string) $response->getContent());
+        $json->assertPath('result.isError', false);
+        $json->assertPath('result.structuredContent', $expected);
+        Http::assertSent(fn (ClientRequest $request): bool => $request->method() === $method
+            && $request->url() === $url && $request->data() === $targets
+            && $request->hasHeader('Authorization', 'Bearer internal-secret')
+            && ! $request->hasHeader('X-Kpool-Visitor-Country')
+            && ! $request->hasHeader('X-Kpool-Visitor-Region')
+            && ! $request->hasHeader('X-Kpool-Visitor-Timestamp')
+            && ! $request->hasHeader('X-Kpool-Visitor-Signature'));
+        Http::assertSentCount(1);
+    }
+
+    public function testDraftDeletionAndWithdrawalRejectReadAndSubmitScopes(): void
+    {
+        Http::preventStrayRequests();
+        foreach (['delete_wiki_draft', 'withdraw_wiki_draft'] as $name) {
+            foreach ([AuthorizationScope::DraftRead, AuthorizationScope::DraftSubmit] as $scope) {
+                $response = $this->send(['jsonrpc' => '2.0', 'id' => 1, 'method' => 'tools/call', 'params' => [
+                    'name' => $name, 'arguments' => ['wikiId' => '019a8fa0-3f20-7000-8000-000000000001'],
+                ]], scopes: [$scope]);
+                self::assertSame(403, $response->getStatusCode());
+                self::assertStringContainsString('insufficient_scope', (string) $response->headers->get('WWW-Authenticate'));
+            }
+        }
+        Http::assertNothingSent();
+    }
+
+    public function testDraftDeletionAndWithdrawalPreserveBusinessErrors(): void
+    {
+        Http::preventStrayRequests();
+        Http::fake(['https://api.example.test/api/v1/wiki/wiki/*' => Http::sequence()
+            ->push([], 403)->push([], 404)->push([], 409)
+            ->push([], 403)->push([], 404)->push([], 409)]);
+        foreach (['delete_wiki_draft', 'withdraw_wiki_draft'] as $name) {
+            foreach ([403 => 'forbidden', 404 => 'not_found', 409 => 'conflict'] as $status => $code) {
+                $response = $this->send(['jsonrpc' => '2.0', 'id' => 1, 'method' => 'tools/call', 'params' => [
+                    'name' => $name, 'arguments' => ['wikiId' => '019a8fa0-3f20-7000-8000-000000000001'],
+                ]], issueToken: true, scopes: [AuthorizationScope::DraftWrite]);
+                $json = new AssertableJsonString((string) $response->getContent());
+                $json->assertPath('result.isError', true);
+                $json->assertPath('result.structuredContent.status', $status);
+                $json->assertPath('result.structuredContent.code', $code);
+            }
+        }
+        Http::assertSentCount(6);
+    }
+
     public function testBulkSubmissionIsListedAndExecutesWithSubmitScopeInOneApiCall(): void
     {
         Http::preventStrayRequests();

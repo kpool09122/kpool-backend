@@ -169,6 +169,23 @@ return [
         'requireCompleteObjects' => ['basic'],
         'annotations' => ['readOnlyHint' => false, 'destructiveHint' => true, 'openWorldHint' => false],
     ],
+    'delete_wiki_draft' => [
+        'document' => __DIR__ . '/../doc/openapi/KPool.WikiApi.openapi.yaml',
+        'method' => 'DELETE',
+        'path' => '/wiki/{wikiId}',
+        'scopes' => ['wiki-drafts:write'],
+        'instructions' => 'Delete a pending or rejected draft using its draft identifier, which is distinct from the published Wiki identifier. Requires the existing Wiki delete policy. Obtain the user intention to delete. Pass the draft association targets when applicable. Check the Account using get_account_context when starting work or after switching Accounts. Returns success: true after deletion.',
+        'annotations' => ['readOnlyHint' => false, 'destructiveHint' => true, 'openWorldHint' => false],
+    ],
+    'withdraw_wiki_draft' => [
+        'document' => __DIR__ . '/../doc/openapi/KPool.WikiApi.openapi.yaml',
+        'method' => 'POST',
+        'path' => '/wiki/{wikiId}/withdraw',
+        'scopes' => ['wiki-drafts:write'],
+        'managedHeaders' => ['X-Kpool-Visitor-Country', 'X-Kpool-Visitor-Region', 'X-Kpool-Visitor-Timestamp', 'X-Kpool-Visitor-Signature'],
+        'instructions' => 'Withdraw a review request for an under_review draft, returning it to pending. Requires the existing Wiki withdraw policy. Obtain the user intention to withdraw. Use the draft identifier, which is distinct from the published Wiki identifier, and pass the draft association targets when applicable. No trusted visitor location is available over MCP, so managed visitor headers are omitted and the API records unknown location. Check the Account using get_account_context when starting work or after switching Accounts. Returns the existing API response.',
+        'annotations' => ['readOnlyHint' => false, 'destructiveHint' => true, 'openWorldHint' => false],
+    ],
     'list_managed_wiki_images' => [
         'document' => __DIR__ . '/../doc/openapi/KPool.WikiApi.openapi.yaml',
         'method' => 'GET',

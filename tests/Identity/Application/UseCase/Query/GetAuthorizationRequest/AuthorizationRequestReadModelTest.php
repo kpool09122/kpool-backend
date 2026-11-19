@@ -24,7 +24,7 @@ class AuthorizationRequestReadModelTest extends TestCase
         $model = new AuthorizationRequestReadModel($pending, 'Client', [AuthorizationScope::DraftWrite]);
         $this->assertSame([
         'requestIdentifier' => 'request', 'expiresAt' => '2030-01-01T00:00:00+00:00', 'clientName' => 'Client',
-        'scopes' => [['scope' => 'wiki-drafts:write', 'description' => 'Draft Wiki の作成・編集']],
+        'scopes' => [['scope' => 'wiki-drafts:write', 'description' => 'Draft Wiki の作成・編集・削除・取り下げ']],
         ], $model->toArray());
         $this->assertSame([], (new AuthorizationRequestReadModel($pending, 'Client', []))->toArray()['scopes']);
     }

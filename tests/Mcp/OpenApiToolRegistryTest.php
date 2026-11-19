@@ -222,10 +222,47 @@ class OpenApiToolRegistryTest extends TestCase
         self::assertStringNotContainsString('X-Kpool-Visitor', json_encode($tool->definition(), JSON_THROW_ON_ERROR));
     }
 
+    public function testDraftDeletionAndWithdrawalUseWriteScopeAndOptionalAssociationTargets(): void
+    {
+        $registry = app(OpenApiToolRegistry::class);
+        $id = '019a8fa0-3f20-7000-8000-000000000001';
+        foreach (['delete_wiki_draft' => ['DELETE', ''], 'withdraw_wiki_draft' => ['POST', '/withdraw']] as $name => [$method, $suffix]) {
+            $tool = $registry->find($name);
+            self::assertNotNull($tool);
+            self::assertSame($method, $tool->method);
+            self::assertSame(['wiki-drafts:write'], $tool->scopes);
+            self::assertSame([['type' => 'oauth2', 'scopes' => ['wiki-drafts:write']]], $tool->definition()['securitySchemes']);
+            self::assertTrue($tool->accepts((object) ['wikiId' => $id]));
+            self::assertSame(['path' => '/api/v1/wiki/wiki/' . $id . $suffix, 'body' => null, 'query' => []], $tool->request((object) ['wikiId' => $id]));
+            $targets = ['agencyIdentifier' => null, 'groupIdentifiers' => [$id], 'talentIdentifiers' => []];
+            self::assertTrue($tool->accepts((object) ['wikiId' => $id, ...$targets]));
+            self::assertSame($targets, $tool->request((object) ['wikiId' => $id, ...$targets])['body']);
+            self::assertTrue($tool->accepts((object) ['wikiId' => $id, 'groupIdentifiers' => null, 'talentIdentifiers' => null]));
+            foreach ([[], ['wikiId' => 'bad'], ['wikiId' => $id, 'groupIdentifiers' => ['bad']], ['wikiId' => $id, 'agencyIdentifier' => 'bad'], ['wikiId' => $id, 'resourceType' => 'agency'], ['wikiId' => $id, 'X-Kpool-Visitor-Signature' => 'forged']] as $invalid) {
+                self::assertFalse($tool->accepts((object) $invalid));
+            }
+            self::assertTrue(data_get($tool->definition(), 'annotations.destructiveHint'));
+            self::assertStringNotContainsString('X-Kpool-Visitor', json_encode($tool->definition(), JSON_THROW_ON_ERROR));
+        }
+    }
+
+    public function testOptionalBodyValidatesRequiredFieldsOnlyWhenBodyArgumentsAreProvided(): void
+    {
+        $document = $this->document();
+        data_set($document, 'paths./items/{id}.patch.requestBody.required', false);
+        $tool = $this->registry(OpenApiDocument::map($document))->find('edit_item');
+        self::assertNotNull($tool);
+        self::assertTrue($tool->accepts((object) ['id' => 'item']));
+        self::assertNull($tool->request((object) ['id' => 'item'])['body']);
+        self::assertTrue($tool->accepts((object) ['id' => 'item', 'title' => 'Title']));
+        self::assertFalse($tool->accepts((object) ['id' => 'item', 'labels' => ['label']]));
+        self::assertFalse($tool->accepts((object) ['id' => 'item', 'title' => '']));
+    }
+
     public function testAllWikiToolsAreRegisteredAndEditRejectsIncompleteReplacement(): void
     {
         $registry = app(OpenApiToolRegistry::class);
-        self::assertCount(23, $registry->definitions());
+        self::assertCount(25, $registry->definitions());
         $create = $registry->find('create_wiki_draft');
         $edit = $registry->find('edit_wiki_draft');
         self::assertNotNull($create);
