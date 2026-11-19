@@ -37,6 +37,7 @@ use Application\Http\Action\Wiki\VideoLink\Command\SendVideoWatchRequest\SendVid
 use Application\Http\Action\Wiki\VideoLink\Command\UnlikeVideoLink\UnlikeVideoLinkAction;
 use Application\Http\Action\Wiki\VideoLink\Query\ListMyVideoLinkLikes\ListMyVideoLinkLikesAction;
 use Application\Http\Action\Wiki\VideoLink\Query\ListMyVideoWatchRequests\ListMyVideoWatchRequestsAction;
+use Application\Http\Action\Wiki\VideoLink\Query\ListPopularVideos\ListPopularVideosAction;
 use Application\Http\Action\Wiki\VideoLink\Query\ListVideos\ListVideosAction;
 use Application\Http\Action\Wiki\Wiki\Command\ApproveWiki\ApproveWikiAction;
 use Application\Http\Action\Wiki\Wiki\Command\AutoCreateWiki\AutoCreateWikiAction;
@@ -61,6 +62,7 @@ use Application\Http\Action\Wiki\Wiki\Query\GetSongDraftWiki\GetSongDraftWikiAct
 use Application\Http\Action\Wiki\Wiki\Query\GetSongWiki\GetSongWikiAction;
 use Application\Http\Action\Wiki\Wiki\Query\GetTalentDraftWiki\GetTalentDraftWikiAction;
 use Application\Http\Action\Wiki\Wiki\Query\GetTalentWiki\GetTalentWikiAction;
+use Application\Http\Action\Wiki\Wiki\Query\GetWikiStatistics\GetWikiStatisticsAction;
 use Application\Http\Action\Wiki\Wiki\Query\ListDraftWikis\ListDraftWikisAction;
 use Application\Http\Action\Wiki\Wiki\Query\ListMyDraftWikis\ListMyDraftWikisAction;
 use Application\Http\Action\Wiki\Wiki\Query\ListMyOwnedWikis\ListMyOwnedWikisAction;
@@ -215,6 +217,8 @@ Route::middleware(['auth.api', 'account.active', 'principal.active', 'resolve.ac
 Route::middleware('rate-limit:screen,query')->group(function () {
     // Wiki
     Route::get('/sitemap/wikis', ListSitemapWikisAction::class);
+    Route::get('/videos/popular', ListPopularVideosAction::class);
+    Route::get('/wikis/statistics', GetWikiStatisticsAction::class);
     Route::get('/wikis/{language}', ListWikisAction::class);
     Route::get('/wiki/{language}/{resourceType}/{slug}/videos', ListVideosAction::class);
     Route::get('/wiki/{language}/{slug}/related-profiles', ListRelatedProfilesAction::class);

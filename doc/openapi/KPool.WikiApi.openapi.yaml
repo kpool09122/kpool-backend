@@ -3803,6 +3803,57 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /videos/popular:
+    get:
+      operationId: PublicVideoLinkOperations_listPopularVideos
+      description: Top 20 unique videos from published wikis across all languages with at least one ordinary k-pool like. Deduplicated by provider and external video ID before the limit; the highest-ranked eligible link supplies the video metadata and source wiki. Official-owner likes are excluded. Ordered by ordinary like count descending, then creation time descending, then identifier ascending. Includes eligible videos from all wiki resource types; agency videos must be manually submitted. Viewing performs no collection or provider API requests.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  videos:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PopularVideo'
+                required:
+                  - videos
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      security:
+        - {}
   /wiki-translation-sets/masters:
     get:
       operationId: WikiTranslationSetOperations_searchTranslationSetMasterWikis
@@ -6142,6 +6193,110 @@ paths:
               $ref: '#/components/schemas/WithdrawWikiRequestBody'
       security:
         - SessionCookieAuth: []
+        - InternalApiBearerAuth: []
+  /wikis/statistics:
+    get:
+      operationId: WikiListOperations_getWikiStatistics
+      description: Public wiki page counts across all languages. Each translation counts separately; group types count group wiki pages. Drafts are excluded.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                    format: int32
+                  languages:
+                    type: object
+                    properties:
+                      ja:
+                        type: integer
+                        format: int32
+                      en:
+                        type: integer
+                        format: int32
+                      ko:
+                        type: integer
+                        format: int32
+                    required:
+                      - ja
+                      - en
+                      - ko
+                  resourceTypes:
+                    type: object
+                    properties:
+                      agency:
+                        type: integer
+                        format: int32
+                      group:
+                        type: integer
+                        format: int32
+                      talent:
+                        type: integer
+                        format: int32
+                      song:
+                        type: integer
+                        format: int32
+                    required:
+                      - agency
+                      - group
+                      - talent
+                      - song
+                  groupTypes:
+                    type: object
+                    properties:
+                      boy_group:
+                        type: integer
+                        format: int32
+                      girl_group:
+                        type: integer
+                        format: int32
+                      co_ed:
+                        type: integer
+                        format: int32
+                      unknown:
+                        type: integer
+                        format: int32
+                    required:
+                      - boy_group
+                      - girl_group
+                      - co_ed
+                      - unknown
+                required:
+                  - total
+                  - languages
+                  - resourceTypes
+                  - groupTypes
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      security:
+        - {}
         - InternalApiBearerAuth: []
   /wikis/version-inconsistencies:
     get:
@@ -8728,6 +8883,52 @@ components:
           type: string
           description: Timestamp when the policy was created.
       description: Summary of a policy.
+    PopularVideo:
+      type: object
+      required:
+        - videoLinkIdentifier
+        - provider
+        - externalVideoId
+        - url
+        - title
+        - thumbnailUrl
+        - durationSeconds
+        - likeCount
+        - language
+        - slug
+      properties:
+        videoLinkIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        provider:
+          type: string
+          enum:
+            - youtube
+            - tiktok
+        externalVideoId:
+          type: string
+        url:
+          type: string
+        title:
+          type: string
+        thumbnailUrl:
+          type: string
+          nullable: true
+        durationSeconds:
+          type: integer
+          format: int32
+          nullable: true
+        likeCount:
+          type: integer
+          format: int32
+          minimum: 1
+        language:
+          type: string
+          enum:
+            - ja
+            - ko
+            - en
+        slug:
+          type: string
     PrincipalGroupManagementSummary:
       type: object
       required:

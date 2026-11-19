@@ -23,6 +23,7 @@ readonly class AuthenticateApiRequest
         'GET api/v1/identity/auth/me' => null,
         'POST api/v1/account/accounts/switch' => null,
         'GET api/v1/wiki/wikis/{language}' => AuthorizationScope::WikiRead,
+        'GET api/v1/wiki/wikis/statistics' => AuthorizationScope::WikiRead,
         'GET api/v1/wiki/wiki/{language}/agency/{slug}' => AuthorizationScope::WikiRead,
         'GET api/v1/wiki/wiki/{language}/group/{slug}' => AuthorizationScope::WikiRead,
         'GET api/v1/wiki/wiki/{language}/song/{slug}' => AuthorizationScope::WikiRead,

@@ -108,9 +108,11 @@ use Source\Wiki\VideoLink\Application\UseCase\Command\UnlikeVideoLink\UnlikeVide
 use Source\Wiki\VideoLink\Application\UseCase\Command\UnlikeVideoLink\UnlikeVideoLinkInterface;
 use Source\Wiki\VideoLink\Application\UseCase\Query\ListMyVideoLinkLikes\ListMyVideoLinkLikesInterface;
 use Source\Wiki\VideoLink\Application\UseCase\Query\ListMyVideoWatchRequests\ListMyVideoWatchRequestsInterface;
+use Source\Wiki\VideoLink\Application\UseCase\Query\ListPopularVideos\ListPopularVideosInterface;
 use Source\Wiki\VideoLink\Application\UseCase\Query\ListVideos\ListVideosInterface;
 use Source\Wiki\VideoLink\Infrastructure\Query\ListMyVideoLinkLikes;
 use Source\Wiki\VideoLink\Infrastructure\Query\ListMyVideoWatchRequests;
+use Source\Wiki\VideoLink\Infrastructure\Query\ListPopularVideos;
 use Source\Wiki\VideoLink\Infrastructure\Query\ListVideos;
 use Source\Wiki\VideoLink\Infrastructure\Service\VideoTitleNameQueryService;
 use Source\Wiki\Wiki\Application\Service\WikiPublicationService;
@@ -153,6 +155,7 @@ use Source\Wiki\Wiki\Application\UseCase\Query\GetSongDraftWiki\GetSongDraftWiki
 use Source\Wiki\Wiki\Application\UseCase\Query\GetSongWiki\GetSongWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetTalentDraftWiki\GetTalentDraftWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Query\GetTalentWiki\GetTalentWikiInterface;
+use Source\Wiki\Wiki\Application\UseCase\Query\GetWikiStatistics\GetWikiStatisticsInterface;
 use Source\Wiki\Wiki\Application\UseCase\Query\ListDraftWikis\ListDraftWikisInterface;
 use Source\Wiki\Wiki\Application\UseCase\Query\ListMyDraftWikis\ListMyDraftWikisInterface;
 use Source\Wiki\Wiki\Application\UseCase\Query\ListMyOwnedWikis\ListMyOwnedWikisInterface;
@@ -175,6 +178,7 @@ use Source\Wiki\Wiki\Infrastructure\Query\GetSongDraftWiki;
 use Source\Wiki\Wiki\Infrastructure\Query\GetSongWiki;
 use Source\Wiki\Wiki\Infrastructure\Query\GetTalentDraftWiki;
 use Source\Wiki\Wiki\Infrastructure\Query\GetTalentWiki;
+use Source\Wiki\Wiki\Infrastructure\Query\GetWikiStatistics;
 use Source\Wiki\Wiki\Infrastructure\Query\ListDraftWikis;
 use Source\Wiki\Wiki\Infrastructure\Query\ListMyDraftWikis;
 use Source\Wiki\Wiki\Infrastructure\Query\ListMyOwnedWikis;
@@ -203,6 +207,7 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(ListMyVideoLinkLikesInterface::class, ListMyVideoLinkLikes::class);
         $this->app->singleton(ListMyVideoWatchRequestsInterface::class, ListMyVideoWatchRequests::class);
         $this->app->singleton(ListVideosInterface::class, ListVideos::class);
+        $this->app->singleton(ListPopularVideosInterface::class, ListPopularVideos::class);
         $this->app->singleton(WithdrawFromServiceInterface::class, WithdrawFromService::class);
         $this->app->singleton(DeleteAccountDataInterface::class, DeleteAccountData::class);
 
@@ -278,6 +283,7 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(ListRelatedWikisInterface::class, ListRelatedWikis::class);
         $this->app->singleton(ListVersionInconsistentWikisInterface::class, ListVersionInconsistentWikis::class);
         $this->app->singleton(ListWikisInterface::class, ListWikis::class);
+        $this->app->singleton(GetWikiStatisticsInterface::class, GetWikiStatistics::class);
         $this->app->singleton(ListSitemapWikisInterface::class, ListSitemapWikis::class);
         $this->app->singleton(SearchMasterWikisInterface::class, SearchMasterWikis::class);
         $this->app->singleton(SearchTranslationSetMasterWikisInterface::class, SearchTranslationSetMasterWikis::class);

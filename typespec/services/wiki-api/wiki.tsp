@@ -554,6 +554,20 @@ interface WikiListOperations {
   ): SearchMasterWikisResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse;
 
   @get
+  @route("/statistics")
+  @useAuth(NoAuth | InternalApiBearerAuth)
+  @doc("Public wiki page counts across all languages. Each translation counts separately; group types count group wiki pages. Drafts are excluded.")
+  getWikiStatistics(): {
+    @statusCode statusCode: 200;
+    @body body: {
+      total: int32;
+      languages: { ja: int32; en: int32; ko: int32; };
+      resourceTypes: { agency: int32; group: int32; talent: int32; song: int32; };
+      groupTypes: { boy_group: int32; girl_group: int32; co_ed: int32; `unknown`: int32; };
+    };
+  } | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+
+  @get
   @route("/{language}")
   @useAuth(NoAuth | InternalApiBearerAuth)
   @doc("List published wikis by language. Internal API Bearer scope: wiki:read.")
