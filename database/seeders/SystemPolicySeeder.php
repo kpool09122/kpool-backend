@@ -102,7 +102,7 @@ class SystemPolicySeeder extends Seeder
 
     private function createOwnWikiActionPolicies(): void
     {
-        foreach ([Action::DELETE, Action::WITHDRAW] as $action) {
+        foreach ([Action::READ, Action::DELETE, Action::WITHDRAW] as $action) {
             $this->createPolicy(
                 name: 'OWN_WIKI_' . $this->policyActionName($action),
                 effect: Effect::ALLOW,

@@ -190,6 +190,7 @@ class SystemRoleSeeder extends Seeder
     {
         return [
             ...$this->basicGlobalPolicyNames(),
+            'OWN_WIKI_READ',
             'OWN_WIKI_DELETE',
             'OWN_WIKI_WITHDRAW',
         ];
