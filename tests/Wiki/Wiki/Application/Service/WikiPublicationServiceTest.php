@@ -35,9 +35,12 @@ use Source\Wiki\Wiki\Application\UseCase\Command\RollbackWiki\RollbackWikiOutput
 use Source\Wiki\Wiki\Application\UseCase\Command\SubmitWiki\SubmitWikiInput;
 use Source\Wiki\Wiki\Application\UseCase\Command\SubmitWiki\SubmitWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Command\SubmitWiki\SubmitWikiOutput;
+use Source\Wiki\Wiki\Application\UseCase\Command\SubmitWiki\SubmitWikiTarget;
+use Source\Wiki\Wiki\Domain\Entity\WikiHistory;
 use Source\Wiki\Wiki\Domain\Repository\WikiHistoryRepositoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\WikiSnapshotRepositoryInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
+use Source\Wiki\Wiki\Infrastructure\Repository\WikiHistoryRepository;
 use Tests\Helper\CreateDraftWiki;
 use Tests\Helper\CreateWiki;
 use Tests\Helper\StrTestHelper;
@@ -224,6 +227,38 @@ class WikiPublicationServiceTest extends TestCase
         $this->assertDatabaseHas('draft_wikis', ['id' => $draftId]);
     }
 
+    public function testBatchSubmissionRollsBackStatusesAndHistoriesWhenLaterSaveFails(): void
+    {
+        $draftIds = [StrTestHelper::generateUuid(), StrTestHelper::generateUuid()];
+        foreach ($draftIds as $draftId) {
+            CreateDraftWiki::create($draftId, 'group');
+        }
+        $saved = 0;
+        $wikiHistoryRepository = Mockery::mock(WikiHistoryRepositoryInterface::class);
+        $wikiHistoryRepository->shouldReceive('save')->twice()->andReturnUsing(static function (WikiHistory $history) use (&$saved): void {
+            (new WikiHistoryRepository())->save($history);
+            if (++$saved === 2) {
+                throw new RuntimeException('second history save failed');
+            }
+        });
+        $this->app()->instance(WikiHistoryRepositoryInterface::class, $wikiHistoryRepository);
+        $input = new SubmitWikiInput(array_map(static fn (string $id): SubmitWikiTarget => new SubmitWikiTarget(
+            new DraftWikiIdentifier($id),
+            ResourceType::GROUP,
+        ), $draftIds), $this->principalIdentifier());
+
+        try {
+            DB::transaction(fn () => $this->app()->make(SubmitWikiInterface::class)->process($input, new SubmitWikiOutput()));
+            $this->fail('Expected second history save failure');
+        } catch (RuntimeException $exception) {
+            $this->assertSame('second history save failed', $exception->getMessage());
+        }
+        foreach ($draftIds as $draftId) {
+            $this->assertDatabaseHas('draft_wikis', ['id' => $draftId, 'status' => 'pending']);
+        }
+        $this->assertSame(0, WikiHistoryModel::query()->whereIn('draft_wiki_id', $draftIds)->count());
+    }
+
     public function testSubmissionAndPublicationRetainOperationContextAfterDraftDeletion(): void
     {
         $draftId = StrTestHelper::generateUuid();
@@ -234,7 +269,7 @@ class WikiPublicationServiceTest extends TestCase
             'language' => 'ja',
             'editor_id' => $editorId,
         ]);
-        $input = new SubmitWikiInput(new DraftWikiIdentifier($draftId), $this->principalIdentifier(), ResourceType::GROUP, visitorLocation: new VisitorLocation('JP', '13'));
+        $input = new SubmitWikiInput([new SubmitWikiTarget(new DraftWikiIdentifier($draftId), ResourceType::GROUP)], $this->principalIdentifier(), visitorLocation: new VisitorLocation('JP', '13'));
         $this->app()->make(SubmitWikiInterface::class)->process($input, new SubmitWikiOutput());
         $submission = WikiHistoryModel::query()->where('draft_wiki_id', $draftId)->firstOrFail();
         $this->assertSame($setId, $submission->getAttribute('translation_set_identifier'));

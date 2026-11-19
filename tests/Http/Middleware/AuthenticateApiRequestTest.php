@@ -89,6 +89,7 @@ class AuthenticateApiRequestTest extends TestCase
             'public list' => ['GET', 'api/v1/wiki/wikis/{language}', AuthorizationScope::WikiRead],
             'create' => ['POST', 'api/v1/wiki/wiki/create', AuthorizationScope::DraftWrite],
             'edit' => ['POST', 'api/v1/wiki/wiki/{wikiId}/edit', AuthorizationScope::DraftWrite],
+            'submit batch' => ['POST', 'api/v1/wiki/wiki/submit', AuthorizationScope::DraftSubmit],
             'submit' => ['POST', 'api/v1/wiki/wiki/{wikiId}/submit', AuthorizationScope::DraftSubmit],
             'draft list' => ['GET', 'api/v1/wiki/my/draft-wikis', AuthorizationScope::DraftRead],
             'all draft list' => ['GET', 'api/v1/wiki/draft-wikis', AuthorizationScope::DraftRead],

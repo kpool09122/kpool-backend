@@ -4225,6 +4225,98 @@ paths:
       security:
         - SessionCookieAuth: []
         - InternalApiBearerAuth: []
+  /wiki/submit:
+    post:
+      operationId: WikiOperations_submitWikis
+      description: 'Submit 1 to 100 distinct wiki drafts for review atomically, in request order. Any invalid, missing, disallowed or non-submittable draft rejects the entire batch; no status changes or histories are saved. Empty, oversized or duplicate submissions return 422. Internal API Bearer scope: wiki-drafts:submit.'
+      parameters:
+        - $ref: '#/components/parameters/VisitorLocationHeaders.visitorCountry'
+        - $ref: '#/components/parameters/VisitorLocationHeaders.visitorRegion'
+        - $ref: '#/components/parameters/VisitorLocationHeaders.visitorTimestamp'
+        - $ref: '#/components/parameters/VisitorLocationHeaders.visitorSignature'
+      responses:
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  draftWikis:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/DraftWikiSummary'
+                required:
+                  - draftWikis
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '419':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitWikisRequestBody'
+      security:
+        - SessionCookieAuth: []
+        - InternalApiBearerAuth: []
   /wiki/talent/{wikiIdentifier}/draft:
     get:
       operationId: WikiOperations_getTalentDraftWiki
@@ -9580,6 +9672,26 @@ components:
           items: {}
           description: Section content payloads.
       description: Detailed published song wiki payload.
+    SubmitWikiTarget:
+      type: object
+      required:
+        - wikiId
+      properties:
+        wikiId:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+      allOf:
+        - $ref: '#/components/schemas/WikiWorkflowRequestBody'
+    SubmitWikisRequestBody:
+      type: object
+      required:
+        - submissions
+      properties:
+        submissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubmitWikiTarget'
+          minItems: 1
+          maxItems: 100
     SyncOwnedWikiCertificationsRequestBody:
       type: object
       required:

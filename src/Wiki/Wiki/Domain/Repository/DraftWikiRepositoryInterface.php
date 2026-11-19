@@ -19,6 +19,12 @@ interface DraftWikiRepositoryInterface
 {
     public function findById(DraftWikiIdentifier $wikiIdentifier): ?DraftWiki;
 
+    /**
+     * @param list<DraftWikiIdentifier> $wikiIdentifiers
+     * @return list<DraftWiki> 存在する下書きのみを返す。取得順序は保証しない。
+     */
+    public function findByIds(array $wikiIdentifiers): array;
+
     public function findBySlugAndLanguage(Slug $slug, Language $language): ?DraftWiki;
 
     public function findByPublishedWikiIdentifier(WikiIdentifier $wikiIdentifier): ?DraftWiki;

@@ -52,6 +52,24 @@ readonly class DraftWikiRepository implements DraftWikiRepositoryInterface
         return $this->toDomainEntity($model);
     }
 
+    /**
+     * @param list<DraftWikiIdentifier> $wikiIdentifiers
+     * @return list<DraftWiki>
+     */
+    public function findByIds(array $wikiIdentifiers): array
+    {
+        if ($wikiIdentifiers === []) {
+            return [];
+        }
+
+        $models = DraftWikiModel::query()
+            ->with(['talentBasic.groups', 'groupBasic', 'agencyBasic', 'songBasic.groups', 'songBasic.talents'])
+            ->whereIn('id', array_map(static fn (DraftWikiIdentifier $id): string => (string) $id, $wikiIdentifiers))
+            ->get();
+
+        return array_values($models->map(fn (DraftWikiModel $model): DraftWiki => $this->toDomainEntity($model))->all());
+    }
+
     public function findBySlugAndLanguage(Slug $slug, Language $language): ?DraftWiki
     {
         $model = DraftWikiModel::query()

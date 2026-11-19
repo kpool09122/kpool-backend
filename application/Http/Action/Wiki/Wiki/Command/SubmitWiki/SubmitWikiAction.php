@@ -24,6 +24,7 @@ use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Application\UseCase\Command\SubmitWiki\SubmitWikiInput;
 use Source\Wiki\Wiki\Application\UseCase\Command\SubmitWiki\SubmitWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Command\SubmitWiki\SubmitWikiOutput;
+use Source\Wiki\Wiki\Application\UseCase\Command\SubmitWiki\SubmitWikiTarget;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
@@ -48,12 +49,14 @@ readonly class SubmitWikiAction
         try {
             try {
                 $input = new SubmitWikiInput(
-                    new DraftWikiIdentifier($request->wikiId()),
+                    array_map(static fn (array $submission): SubmitWikiTarget => new SubmitWikiTarget(
+                        new DraftWikiIdentifier($submission['wikiId']),
+                        ResourceType::from($submission['resourceType']),
+                        isset($submission['agencyIdentifier']) ? new WikiIdentifier($submission['agencyIdentifier']) : null,
+                        array_map(static fn (string $id): WikiIdentifier => new WikiIdentifier($id), $submission['groupIdentifiers'] ?? []),
+                        array_map(static fn (string $id): WikiIdentifier => new WikiIdentifier($id), $submission['talentIdentifiers'] ?? []),
+                    ), $request->submissions()),
                     $this->wikiContext->principalIdentifier,
-                    ResourceType::from($request->resourceType()),
-                    $request->agencyIdentifier() !== null ? new WikiIdentifier($request->agencyIdentifier()) : null,
-                    array_map(static fn (string $id) => new WikiIdentifier($id), $request->groupIdentifiers()),
-                    array_map(static fn (string $id) => new WikiIdentifier($id), $request->talentIdentifiers()),
                     visitorLocation: $this->visitorLocationVerifier->verify($request),
                 );
                 $output = new SubmitWikiOutput();
@@ -104,6 +107,6 @@ readonly class SubmitWikiAction
             throw new InternalServerErrorHttpException(detail: $e->getMessage(), previous: $e);
         }
 
-        return response()->json($output->toArray(), Response::HTTP_CREATED);
+        return response()->json(($request->isSingle() ? $output->toArray()[0] : ['draftWikis' => $output->toArray()]), Response::HTTP_CREATED);
     }
 }

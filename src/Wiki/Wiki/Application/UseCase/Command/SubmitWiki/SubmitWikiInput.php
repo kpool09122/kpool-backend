@@ -4,63 +4,36 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Wiki\Application\UseCase\Command\SubmitWiki;
 
-use Source\Shared\Domain\ValueObject\WikiIdentifier;
+use InvalidArgumentException;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
-use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Shared\Domain\ValueObject\VisitorLocation;
-use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 
 readonly class SubmitWikiInput implements SubmitWikiInputPort
 {
-    /**
-     * @param DraftWikiIdentifier $wikiIdentifier
-     * @param PrincipalIdentifier $principalIdentifier
-     * @param ResourceType $resourceType
-     * @param WikiIdentifier|null $agencyIdentifier
-     * @param WikiIdentifier[] $groupIdentifiers
-     * @param WikiIdentifier[] $talentIdentifiers
-     */
+    /** @param list<SubmitWikiTarget> $targets */
     public function __construct(
-        private DraftWikiIdentifier $wikiIdentifier,
+        private array $targets,
         private PrincipalIdentifier $principalIdentifier,
-        private ResourceType        $resourceType,
-        private ?WikiIdentifier     $agencyIdentifier = null,
-        private array               $groupIdentifiers = [],
-        private array               $talentIdentifiers = [],
         private VisitorLocation $visitorLocation = new VisitorLocation(),
     ) {
+        if (! array_is_list($targets) || count($targets) < 1 || count($targets) > 100) {
+            throw new InvalidArgumentException('Submit between 1 and 100 wiki drafts.');
+        }
+        $identifiers = array_map(static fn (SubmitWikiTarget $target): string => strtolower((string) $target->wikiIdentifier()), $targets);
+        if (count(array_unique($identifiers)) !== count($identifiers)) {
+            throw new InvalidArgumentException('Duplicate wiki drafts cannot be submitted.');
+        }
     }
 
-    public function wikiIdentifier(): DraftWikiIdentifier
+    /** @return list<SubmitWikiTarget> */
+    public function targets(): array
     {
-        return $this->wikiIdentifier;
+        return $this->targets;
     }
 
     public function principalIdentifier(): PrincipalIdentifier
     {
         return $this->principalIdentifier;
-    }
-
-    public function resourceType(): ResourceType
-    {
-        return $this->resourceType;
-    }
-
-    public function agencyIdentifier(): ?WikiIdentifier
-    {
-        return $this->agencyIdentifier;
-    }
-
-    /** @return WikiIdentifier[] */
-    public function groupIdentifiers(): array
-    {
-        return $this->groupIdentifiers;
-    }
-
-    /** @return WikiIdentifier[] */
-    public function talentIdentifiers(): array
-    {
-        return $this->talentIdentifiers;
     }
 
     public function visitorLocation(): VisitorLocation
