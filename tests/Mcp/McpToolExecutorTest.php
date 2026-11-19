@@ -19,6 +19,33 @@ use Tests\TestCase;
 
 class McpToolExecutorTest extends TestCase
 {
+    public function testImageMetadataReplacementUsesPutWithTheCompleteBody(): void
+    {
+        config()->set('mcp_server.api_base_url', 'https://api.example.test');
+        $imageId = '019a8fa0-3f20-7000-8000-000000000001';
+        $url = 'https://api.example.test/api/v1/wiki/image/' . $imageId . '/metadata';
+        $metadata = ['sourceUrl' => null, 'sourceName' => 'Source', 'author' => 'Author',
+            'license' => 'CC-BY-4.0', 'altText' => null, 'displayOrder' => 0];
+        $response = ['imageIdentifier' => $imageId];
+        Http::preventStrayRequests();
+        Http::fake([$url => Http::response($response)]);
+        /** @var InternalApiTokenServiceInterface&MockInterface $internalApiTokenService */
+        $internalApiTokenService = Mockery::mock(InternalApiTokenServiceInterface::class);
+        $internalApiTokenService->shouldReceive('issue')->once()->with('source-token')
+            ->andReturn(new InternalApiToken('internal-secret', new DateTimeImmutable('+1 minute')));
+        $tool = app(OpenApiToolRegistry::class)->find('update_wiki_image_metadata');
+        self::assertNotNull($tool);
+        $executor = new McpToolExecutor(new McpApiClient($internalApiTokenService), new AccountResultProjector());
+
+        self::assertSame($response, $executor->execute($tool, (object) ['imageId' => $imageId, ...$metadata], 'source-token'));
+
+        Http::assertSent(fn (Request $request): bool => $request->method() === 'PUT'
+            && $request->url() === $url
+            && $request->data() === $metadata
+            && $request->hasHeader('Authorization', 'Bearer internal-secret'));
+        Http::assertSentCount(1);
+    }
+
     public function testSubmitCallsOnlyWikiApiAndOmitsUntrustedVisitorHeaders(): void
     {
         config()->set('mcp_server.api_base_url', 'https://api.example.test');

@@ -61,7 +61,7 @@ class McpTransportTest extends TestCase
 
             return $request->method() === 'GET' && $query === ['status' => 'approved', 'page' => '2', 'perPage' => '10', 'license' => '', 'authorMissing' => 'false', 'licenseMissing' => 'true'];
         });
-        Http::assertSent(fn (ClientRequest $request): bool => $request->method() === 'PATCH'
+        Http::assertSent(fn (ClientRequest $request): bool => $request->method() === 'PUT'
             && $request->url() === 'https://api.example.test/api/v1/wiki/image/' . $id . '/metadata'
             && $request->data() === array_replace($metadata, ['altText' => 'Changed alt'])
             && $request->hasHeader('Authorization', 'Bearer internal-secret'));

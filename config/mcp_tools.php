@@ -179,10 +179,10 @@ return [
     ],
     'update_wiki_image_metadata' => [
         'document' => __DIR__ . '/../doc/openapi/KPool.WikiApi.openapi.yaml',
-        'method' => 'PATCH',
+        'method' => 'PUT',
         'path' => '/image/{imageId}/metadata',
         'scopes' => ['wiki-images:write'],
-        'instructions' => 'Requires the existing Wiki operator policy in addition to scope. Check the Account with get_account_context. First retrieve the published image from list_managed_wiki_images with status approved (requires wiki-images:read). Map imageIdentifier to imageId. Always send all six fields: sourceName, author, license, altText, displayOrder and sourceUrl. Copy the current values and apply only the requested changes; this is NOT a partial-field PATCH. If author or license is missing, ask the user for a valid value rather than inventing one. Explicit null or empty string clears sourceUrl and altText; otherwise retain their current values. sourceUrl must be HTTP or HTTPS when nonempty. Only metadata changes immediately; no file replacement, upload, approval or visibility change is performed.',
+        'instructions' => 'Requires the existing Wiki operator policy in addition to scope. Check the Account with get_account_context. First retrieve the published image from list_managed_wiki_images with status approved (requires wiki-images:read). Map imageIdentifier to imageId. Always send all six fields: sourceName, author, license, altText, displayOrder and sourceUrl. Copy the current values and apply only the requested changes; this replaces the complete metadata using PUT. If author or license is missing, ask the user for a valid value rather than inventing one. Explicit null or empty string clears sourceUrl and altText; otherwise retain their current values. sourceUrl must be HTTP or HTTPS when nonempty. Only metadata changes immediately; no file replacement, upload, approval or visibility change is performed.',
         'annotations' => ['readOnlyHint' => false, 'destructiveHint' => true, 'idempotentHint' => true, 'openWorldHint' => false],
     ],
     'submit_wiki_draft' => [
