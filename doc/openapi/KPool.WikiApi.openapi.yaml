@@ -9675,12 +9675,37 @@ components:
     SubmitWikiTarget:
       type: object
       required:
+        - resourceType
         - wikiId
       properties:
+        resourceType:
+          type: string
+          enum:
+            - agency
+            - group
+            - talent
+            - song
+          description: Resource type that the wiki belongs to.
+        agencyIdentifier:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
+          description: Associated agency identifier.
         wikiId:
           $ref: '#/components/schemas/KPool.Common.Uuid'
-      allOf:
-        - $ref: '#/components/schemas/WikiWorkflowRequestBody'
+        groupIdentifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
+          description: Associated group identifiers.
+        talentIdentifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
+          description: Associated talent identifiers.
     SubmitWikisRequestBody:
       type: object
       required:

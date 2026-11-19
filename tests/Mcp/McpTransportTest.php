@@ -137,10 +137,54 @@ class McpTransportTest extends TestCase
     {
         Http::preventStrayRequests();
         foreach ([['create_wiki_draft', ['resourceType' => 'agency', 'language' => 'ja', 'slug' => 'ag-test', 'basic' => ['name' => 'Test']], AuthorizationScope::WikiRead],
-            ['submit_wiki_draft', ['wikiId' => '019a8fa0-3f20-7000-8000-000000000001', 'resourceType' => 'agency'], AuthorizationScope::DraftWrite]] as [$name, $arguments, $scope]) {
+            ['submit_wiki_draft', ['wikiId' => '019a8fa0-3f20-7000-8000-000000000001', 'resourceType' => 'agency'], AuthorizationScope::DraftWrite],
+            ['submit_wiki_drafts', ['submissions' => [['wikiId' => '019a8fa0-3f20-7000-8000-000000000001', 'resourceType' => 'agency']]], AuthorizationScope::DraftWrite]] as [$name, $arguments, $scope]) {
             $response = $this->send(['jsonrpc' => '2.0', 'id' => 1, 'method' => 'tools/call', 'params' => ['name' => $name, 'arguments' => $arguments]], scopes: [$scope]);
             self::assertSame(403, $response->getStatusCode());
             self::assertStringContainsString('insufficient_scope', (string) $response->headers->get('WWW-Authenticate'));
+        }
+        Http::assertNothingSent();
+    }
+
+    public function testBulkSubmissionIsListedAndExecutesWithSubmitScopeInOneApiCall(): void
+    {
+        Http::preventStrayRequests();
+        $submissions = [
+            ['wikiId' => '019a8fa0-3f20-7000-8000-000000000001', 'resourceType' => 'agency'],
+            ['wikiId' => '019a8fa0-3f20-7000-8000-000000000002', 'resourceType' => 'group', 'agencyIdentifier' => null],
+        ];
+        $result = ['draftWikis' => array_map(static fn (array $submission): array => [
+            'wikiIdentifier' => $submission['wikiId'], 'resourceType' => $submission['resourceType'], 'status' => 'under_review',
+        ], $submissions)];
+        Http::fake(['https://api.example.test/api/v1/wiki/wiki/submit' => Http::response($result, 201)]);
+        $list = $this->send(['jsonrpc' => '2.0', 'id' => 1, 'method' => 'tools/list'], scopes: [AuthorizationScope::DraftSubmit]);
+        (new AssertableJsonString((string) $list->getContent()))->assertFragment(['name' => 'submit_wiki_drafts']);
+        $response = $this->send(['jsonrpc' => '2.0', 'id' => 2, 'method' => 'tools/call', 'params' => [
+            'name' => 'submit_wiki_drafts', 'arguments' => ['submissions' => $submissions],
+        ]], issueToken: true, scopes: [AuthorizationScope::DraftSubmit]);
+        $json = new AssertableJsonString((string) $response->getContent());
+        $json->assertPath('result.isError', false);
+        $json->assertPath('result.structuredContent', $result);
+        Http::assertSent(fn (ClientRequest $request): bool => $request->method() === 'POST'
+            && $request->url() === 'https://api.example.test/api/v1/wiki/wiki/submit'
+            && $request->data() === ['submissions' => $submissions]
+            && $request->hasHeader('Authorization', 'Bearer internal-secret')
+            && ! $request->hasHeader('X-Kpool-Visitor-Country')
+            && ! $request->hasHeader('X-Kpool-Visitor-Region')
+            && ! $request->hasHeader('X-Kpool-Visitor-Timestamp')
+            && ! $request->hasHeader('X-Kpool-Visitor-Signature'));
+        Http::assertSentCount(1);
+    }
+
+    public function testInvalidBulkSubmissionArgumentsNeverCallApi(): void
+    {
+        Http::preventStrayRequests();
+        $submission = ['wikiId' => '019a8fa0-3f20-7000-8000-000000000001', 'resourceType' => 'agency'];
+        foreach ([[], array_fill(0, 101, $submission), [['wikiId' => 'invalid', 'resourceType' => 'agency']]] as $submissions) {
+            $response = $this->send(['jsonrpc' => '2.0', 'id' => 1, 'method' => 'tools/call', 'params' => [
+                'name' => 'submit_wiki_drafts', 'arguments' => ['submissions' => $submissions],
+            ]], scopes: [AuthorizationScope::DraftSubmit]);
+            (new AssertableJsonString((string) $response->getContent()))->assertPath('error.code', -32602);
         }
         Http::assertNothingSent();
     }

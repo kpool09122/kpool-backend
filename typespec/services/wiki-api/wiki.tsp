@@ -83,8 +83,13 @@ model WikiWorkflowRequestBody extends WikiAssociationTargets {
   resourceType: "agency" | "group" | "talent" | "song";
 }
 
-model SubmitWikiTarget extends WikiWorkflowRequestBody {
+model SubmitWikiTarget {
+  ...OmitProperties<WikiWorkflowRequestBody, "groupIdentifiers" | "talentIdentifiers">;
   wikiId: Uuid;
+  @doc("Associated group identifiers.")
+  groupIdentifiers?: Uuid[] | null;
+  @doc("Associated talent identifiers.")
+  talentIdentifiers?: Uuid[] | null;
 }
 
 model SubmitWikisRequestBody {
