@@ -472,7 +472,7 @@ model UpdateImageMetadataRequestBody {
 
 @route("/image/{imageId}/metadata")
 interface ImageMetadataOperations {
-  @patch
+  @put
   @useAuth(SessionCookieAuth | InternalApiBearerAuth)
   @doc("Update published image metadata immediately for operators. Preserves image file, approval and visibility. Internal API Bearer scope: wiki-images:write.")
   updateImageMetadata(

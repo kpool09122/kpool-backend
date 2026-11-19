@@ -23,6 +23,7 @@ class OpenApiToolRegistryTest extends TestCase
         self::assertNotNull($edit);
         self::assertSame(['wiki-images:read'], $list->scopes);
         self::assertSame(['wiki-images:write'], $edit->scopes);
+        self::assertSame('PUT', $edit->method);
         self::assertStringContainsString('including hidden published images', OpenApiDocument::string($list->definition()['description']));
         self::assertStringContainsString('Preserves image file, approval and visibility', OpenApiDocument::string($edit->definition()['description']));
         $query = (object) ['status' => 'approved', 'page' => 2, 'perPage' => 100, 'license' => null, 'authorMissing' => true, 'licenseMissing' => false];

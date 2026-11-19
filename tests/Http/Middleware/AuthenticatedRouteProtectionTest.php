@@ -368,7 +368,7 @@ class AuthenticatedRouteProtectionTest extends TestCase
 
             // Account: signup 用の POST /accounts 以外は認証必須
             'account: get account' => ['GET', '/api/v1/account/accounts/00000000-0000-0000-0000-000000000001'],
-            'account: update account' => ['PATCH', '/api/v1/account/accounts/00000000-0000-0000-0000-000000000001'],
+            'account: update account' => ['PUT', '/api/v1/account/accounts/00000000-0000-0000-0000-000000000001'],
             'account: list my account documents' => ['GET', '/api/v1/account/my/documents'],
             'account: view request document snapshot' => ['GET', '/api/v1/account/account-category-change-requests/00000000-0000-4000-8000-000000000001/documents/business_registration'],
             'account: list account category change requests' => ['GET', '/api/v1/account/account-category-change-requests'],
@@ -432,7 +432,7 @@ class AuthenticatedRouteProtectionTest extends TestCase
             'account list my documents resolves actor and account' => ['GET', '/api/v1/account/my/documents', ['resolve.actor', 'resolve.account']],
             'account view request document snapshot resolves actor and account' => ['GET', '/api/v1/account/account-category-change-requests/00000000-0000-4000-8000-000000000001/documents/business_registration', ['resolve.actor', 'resolve.account']],
             'account list account category change requests resolves actor and account' => ['GET', '/api/v1/account/account-category-change-requests', ['resolve.actor', 'resolve.account']],
-            'account update resolves actor and account' => ['PATCH', '/api/v1/account/accounts/00000000-0000-0000-0000-000000000001', ['resolve.actor', 'resolve.account']],
+            'account update resolves actor and account' => ['PUT', '/api/v1/account/accounts/00000000-0000-0000-0000-000000000001', ['resolve.actor', 'resolve.account']],
             'site management list my contacts resolves actor' => ['GET', '/api/v1/site-management/my/contact', ['resolve.actor']],
             'wiki create playlist resolves actor and wiki' => ['POST', '/api/v1/wiki/my/playlists', ['resolve.actor', 'resolve.wiki']],
             'wiki list my playlists resolves actor and wiki' => ['GET', '/api/v1/wiki/my/playlists', ['resolve.actor', 'resolve.wiki']],

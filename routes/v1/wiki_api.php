@@ -159,7 +159,7 @@ Route::middleware(['auth.api', 'account.active', 'principal.active', 'resolve.ac
         Route::post('/wiki/{wikiId}/withdraw', WithdrawWikiAction::class);
 
         // Image
-        Route::patch('/image/{imageId}/metadata', UpdateImageMetadataAction::class);
+        Route::put('/image/{imageId}/metadata', UpdateImageMetadataAction::class);
         Route::post('/image/{imageId}/approve', ApproveImageAction::class);
         // Disabled by #605: Route::delete('/image/{imageId}', DeleteImageAction::class);
         Route::post('/image/{imageId}/reject', RejectImageAction::class);

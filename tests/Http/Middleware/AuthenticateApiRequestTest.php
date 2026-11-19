@@ -112,7 +112,7 @@ class AuthenticateApiRequestTest extends TestCase
             'managed images' => ['GET', 'api/v1/wiki/managed-images', AuthorizationScope::ImageRead],
             'uploaded images' => ['GET', 'api/v1/wiki/images', AuthorizationScope::ImageRead],
             'upload' => ['POST', 'api/v1/wiki/image/upload', AuthorizationScope::ImageWrite],
-            'metadata' => ['PATCH', 'api/v1/wiki/image/{imageId}/metadata', AuthorizationScope::ImageWrite],
+            'metadata' => ['PUT', 'api/v1/wiki/image/{imageId}/metadata', AuthorizationScope::ImageWrite],
         ];
     }
 
@@ -176,6 +176,7 @@ class AuthenticateApiRequestTest extends TestCase
             'consent deny' => ['POST', 'api/v1/identity/oauth/requests/{requestIdentifier}/deny'],
             'publish' => ['POST', 'api/v1/wiki/wiki/{wikiId}/publish'],
             'wrong method' => ['DELETE', 'api/v1/wiki/wiki/create'],
+            'metadata old method' => ['PATCH', 'api/v1/wiki/image/{imageId}/metadata'],
             'unknown' => ['GET', 'api/v1/future'],
         ];
     }

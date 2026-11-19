@@ -48,7 +48,7 @@ readonly class AuthenticateApiRequest
         'GET api/v1/wiki/draft-images' => AuthorizationScope::ImageRead,
         'GET api/v1/wiki/managed-images' => AuthorizationScope::ImageRead,
         'POST api/v1/wiki/image/upload' => AuthorizationScope::ImageWrite,
-        'PATCH api/v1/wiki/image/{imageId}/metadata' => AuthorizationScope::ImageWrite,
+        'PUT api/v1/wiki/image/{imageId}/metadata' => AuthorizationScope::ImageWrite,
     ];
 
     public function __construct(private InternalApiTokenServiceInterface $internalApiTokenService)
