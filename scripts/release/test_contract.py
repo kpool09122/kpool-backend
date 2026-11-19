@@ -44,6 +44,7 @@ class RuntimeEnvironmentTests(unittest.TestCase):
     def test_secrets_and_invalid_keys_or_values_are_rejected_without_values(self):
         from contract import runtime_environment
         for name in ('APP_KEY', 'APP_PREVIOUS_KEYS', 'DATABASE_URL', 'MAIL_URL',
+                     'PASSPORT_PRIVATE_KEY', 'PASSPORT_PUBLIC_KEY',
                      'DB_PASSWORD', 'NEW_SERVICE_CLIENT_SECRET', 'NEW_SERVICE_API_KEY',
                      'NEW_SERVICE_TOKEN', 'NEW_SERVICE_CREDENTIALS', 'NEW_SERVICE_PRIVATE_KEY',
                      'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SESSION_TOKEN',
