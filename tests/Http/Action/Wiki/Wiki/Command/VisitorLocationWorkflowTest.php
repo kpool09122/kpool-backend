@@ -24,6 +24,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Route;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use Mockery;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
@@ -41,12 +42,16 @@ use Source\Wiki\Wiki\Application\UseCase\Command\RollbackWiki\RollbackWikiInputP
 use Source\Wiki\Wiki\Application\UseCase\Command\RollbackWiki\RollbackWikiInterface;
 use Source\Wiki\Wiki\Application\UseCase\Command\SubmitWiki\SubmitWikiInputPort;
 use Source\Wiki\Wiki\Application\UseCase\Command\SubmitWiki\SubmitWikiInterface;
+use Source\Wiki\Wiki\Application\UseCase\Command\SubmitWiki\SubmitWikiOutputPort;
 use Source\Wiki\Wiki\Application\UseCase\Command\WithdrawWiki\WithdrawWikiInputPort;
 use Source\Wiki\Wiki\Application\UseCase\Command\WithdrawWiki\WithdrawWikiInterface;
 use Source\Wiki\Wiki\Domain\Entity\WikiHistory;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
+use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\WikiHistoryIdentifier;
+use Source\Wiki\Wiki\Infrastructure\Repository\DraftWikiRepository;
 use Source\Wiki\Wiki\Infrastructure\Repository\WikiHistoryRepository;
+use Tests\Helper\CreateDraftWiki;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -100,6 +105,11 @@ class VisitorLocationWorkflowTest extends TestCase
         $route->bind($request);
         $route->setParameter('wikiId', $mode === 'invalid input' ? 'invalid-id' : $wikiId);
         $request->setRouteResolver(static fn () => $route);
+        if ($request instanceof SubmitWikiRequest) {
+            // Action の直接呼び出しでは、FormRequest の検証前の入力を渡す。
+            $request->setValidator(Validator::make($request->validationData(), ['submissions' => ['array']]));
+            CreateDraftWiki::create($wikiId, 'group');
+        }
         $timestamp = (string) (time() - ($mode === 'stale' ? 301 : 0));
         $request->headers->set('X-Kpool-Visitor-Country', 'JP');
         $request->headers->set('X-Kpool-Visitor-Region', '01');
@@ -112,13 +122,18 @@ class VisitorLocationWorkflowTest extends TestCase
         if ($mode === 'invalid input') {
             $useCase->shouldNotReceive('process');
         } else {
-            $useCase->shouldReceive('process')->once()->andReturnUsing(function (SubmitWikiInputPort|ApproveWikiInputPort|RejectWikiInputPort|WithdrawWikiInputPort|PublishWikiInputPort|RollbackWikiInputPort $input) use ($wikiId, $historyId, $actor, $mode): void {
+            $useCase->shouldReceive('process')->once()->andReturnUsing(function (SubmitWikiInputPort|ApproveWikiInputPort|RejectWikiInputPort|WithdrawWikiInputPort|PublishWikiInputPort|RollbackWikiInputPort $input, $output) use ($wikiId, $historyId, $actor, $mode): void {
                 self::assertSame($actor, $input->principalIdentifier());
                 $expectedCountry = in_array($mode, ['plain', 'stale'], true) ? null : 'JP';
                 self::assertSame($expectedCountry, $input->visitorLocation()->country());
                 self::assertSame($expectedCountry === null ? null : '01', $input->visitorLocation()->region());
                 if ($mode === 'disallowed') {
                     throw new DisallowedException();
+                }
+                if ($output instanceof SubmitWikiOutputPort) {
+                    $draft = (new DraftWikiRepository())->findById(new DraftWikiIdentifier($wikiId));
+                    self::assertNotNull($draft);
+                    $output->addDraftWiki($draft);
                 }
                 DB::table('wikis')->where('id', $wikiId)->update(['version' => 2]);
                 (new WikiHistoryRepository())->save(new WikiHistory(

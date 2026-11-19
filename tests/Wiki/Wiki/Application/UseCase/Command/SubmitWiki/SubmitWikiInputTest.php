@@ -4,69 +4,50 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Wiki\Application\UseCase\Command\SubmitWiki;
 
-use Source\Shared\Domain\ValueObject\WikiIdentifier;
+use InvalidArgumentException;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Source\Wiki\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Shared\Domain\ValueObject\VisitorLocation;
 use Source\Wiki\Wiki\Application\UseCase\Command\SubmitWiki\SubmitWikiInput;
+use Source\Wiki\Wiki\Application\UseCase\Command\SubmitWiki\SubmitWikiTarget;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
 class SubmitWikiInputTest extends TestCase
 {
-    /**
-     * 正常系: インスタンスが生成されること
-     *
-     * @return void
-     */
-    public function test__construct(): void
+    #[DataProvider('counts')]
+    public function testSubmissionCount(int $count, bool $valid): void
     {
-        $wikiIdentifier = new DraftWikiIdentifier(StrTestHelper::generateUuid());
+        $targets = array_map(static fn (): SubmitWikiTarget => new SubmitWikiTarget(
+            new DraftWikiIdentifier(StrTestHelper::generateUuid()),
+            ResourceType::GROUP,
+        ), array_fill(0, $count, null));
         $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $resourceType = ResourceType::GROUP;
-        $agencyIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
-        $groupIdentifiers = [new WikiIdentifier(StrTestHelper::generateUuid())];
-        $talentIdentifiers = [new WikiIdentifier(StrTestHelper::generateUuid())];
-
-        $input = new SubmitWikiInput(
-            $wikiIdentifier,
-            $principalIdentifier,
-            $resourceType,
-            $agencyIdentifier,
-            $groupIdentifiers,
-            $talentIdentifiers,
-        );
-
-        $this->assertSame((string) $wikiIdentifier, (string) $input->wikiIdentifier());
+        $visitorLocation = new VisitorLocation('JP', '01');
+        if (! $valid) {
+            $this->expectException(InvalidArgumentException::class);
+        }
+        $input = new SubmitWikiInput($targets, $principalIdentifier, $visitorLocation);
+        $this->assertSame($targets, $input->targets());
         $this->assertSame($principalIdentifier, $input->principalIdentifier());
-        $this->assertSame($resourceType->value, $input->resourceType()->value);
-        $this->assertSame((string) $agencyIdentifier, (string) $input->agencyIdentifier());
-        $this->assertSame($groupIdentifiers, $input->groupIdentifiers());
-        $this->assertSame($talentIdentifiers, $input->talentIdentifiers());
+        $this->assertSame($visitorLocation, $input->visitorLocation());
     }
 
-    /**
-     * 正常系: オプションパラメータがデフォルト値で生成されること
-     *
-     * @return void
-     */
-    public function test__constructWithDefaults(): void
+    /** @return list<array{int, bool}> */
+    public static function counts(): array
     {
-        $wikiIdentifier = new DraftWikiIdentifier(StrTestHelper::generateUuid());
-        $principalIdentifier = new PrincipalIdentifier(StrTestHelper::generateUuid());
-        $resourceType = ResourceType::GROUP;
+        return [[0, false], [1, true], [100, true], [101, false]];
+    }
 
-        $input = new SubmitWikiInput(
-            $wikiIdentifier,
-            $principalIdentifier,
-            $resourceType,
-        );
-
-        $this->assertSame((string) $wikiIdentifier, (string) $input->wikiIdentifier());
-        $this->assertSame($principalIdentifier, $input->principalIdentifier());
-        $this->assertSame($resourceType->value, $input->resourceType()->value);
-        $this->assertNull($input->agencyIdentifier());
-        $this->assertSame([], $input->groupIdentifiers());
-        $this->assertSame([], $input->talentIdentifiers());
+    public function testDuplicateIdentifiersAreRejected(): void
+    {
+        $id = StrTestHelper::generateUuid();
+        $this->expectException(InvalidArgumentException::class);
+        new SubmitWikiInput([
+            new SubmitWikiTarget(new DraftWikiIdentifier($id), ResourceType::GROUP),
+            new SubmitWikiTarget(new DraftWikiIdentifier(strtoupper($id)), ResourceType::GROUP),
+        ], new PrincipalIdentifier(StrTestHelper::generateUuid()));
     }
 }

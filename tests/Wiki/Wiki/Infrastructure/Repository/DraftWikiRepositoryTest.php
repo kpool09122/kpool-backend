@@ -49,6 +49,59 @@ use Tests\TestCase;
 class DraftWikiRepositoryTest extends TestCase
 {
     #[Group('useDb')]
+    public function testFindByIdsEagerLoadsMixedResourceTypesWithConstantQueryCount(): void
+    {
+        $identifiers = [];
+        $types = ['agency', 'group', 'talent', 'song'];
+        for ($index = 0; $index < 100; $index++) {
+            $id = StrTestHelper::generateUuid();
+            CreateDraftWiki::create($id, $types[$index % 4]);
+            $identifiers[] = new DraftWikiIdentifier($id);
+        }
+        $repository = $this->app()->make(DraftWikiRepositoryInterface::class);
+        DB::enableQueryLog();
+
+        try {
+            DB::flushQueryLog();
+            $smallBatch = $repository->findByIds(array_slice($identifiers, 0, 4));
+            $smallBatchQueryCount = count(DB::getQueryLog());
+            DB::flushQueryLog();
+            $largeBatch = $repository->findByIds($identifiers);
+            $largeBatchQueryCount = count(DB::getQueryLog());
+        } finally {
+            DB::disableQueryLog();
+            DB::flushQueryLog();
+        }
+        $this->assertCount(4, $smallBatch);
+        $this->assertCount(100, $largeBatch);
+        $this->assertGreaterThan(0, $smallBatchQueryCount);
+        $this->assertSame($smallBatchQueryCount, $largeBatchQueryCount);
+        $this->assertEqualsCanonicalizing(
+            array_map(static fn (DraftWikiIdentifier $id): string => (string) $id, $identifiers),
+            array_map(static fn (DraftWiki $wiki): string => (string) $wiki->wikiIdentifier(), $largeBatch),
+        );
+        foreach ($largeBatch as $wiki) {
+            $this->assertNotSame('', (string) $wiki->basic()->name());
+        }
+    }
+
+    #[Group('useDb')]
+    public function testFindByIdsReturnsOnlyExistingDrafts(): void
+    {
+        $id = StrTestHelper::generateUuid();
+        CreateDraftWiki::create($id, 'group');
+        CreateDraftWiki::create(StrTestHelper::generateUuid(), 'group');
+        $repository = $this->app()->make(DraftWikiRepositoryInterface::class);
+        $wikis = $repository->findByIds([
+            new DraftWikiIdentifier(StrTestHelper::generateUuid()),
+            new DraftWikiIdentifier($id),
+        ]);
+        $this->assertCount(1, $wikis);
+        $this->assertSame($id, (string) $wikis[0]->wikiIdentifier());
+        $this->assertSame([], $repository->findByIds([]));
+    }
+
+    #[Group('useDb')]
     public function testTranslationSourceSurvivesSavingAndReloading(): void
     {
         $wikiId = StrTestHelper::generateUuid();

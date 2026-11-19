@@ -194,4 +194,13 @@ return [
         'instructions' => 'Submitting is separate from creating or editing; obtain the user intention to submit. No trusted visitor location is available over MCP, so managed visitor headers are omitted and the API records unknown location. Check the Account using get_account_context when starting work or after switching Accounts.',
         'annotations' => ['readOnlyHint' => false, 'destructiveHint' => false, 'openWorldHint' => false],
     ],
+    'submit_wiki_drafts' => [
+        'document' => __DIR__ . '/../doc/openapi/KPool.WikiApi.openapi.yaml',
+        'method' => 'POST',
+        'path' => '/wiki/submit',
+        'scopes' => ['wiki-drafts:submit'],
+        'managedHeaders' => ['X-Kpool-Visitor-Country', 'X-Kpool-Visitor-Region', 'X-Kpool-Visitor-Timestamp', 'X-Kpool-Visitor-Signature'],
+        'instructions' => 'Submit 1 to 100 distinct draft identifiers in submissions. Each item has its own resourceType and association targets. Any rejected item fails the entire batch; no draft status or history changes are saved. Submitting is separate from creating or editing; obtain the user intention to submit. No trusted visitor location is available over MCP, so managed visitor headers are omitted and the API records unknown location. Check the Account using get_account_context when starting work or after switching Accounts.',
+        'annotations' => ['readOnlyHint' => false, 'destructiveHint' => false, 'openWorldHint' => false],
+    ],
 ];

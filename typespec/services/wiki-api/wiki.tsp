@@ -83,6 +83,26 @@ model WikiWorkflowRequestBody extends WikiAssociationTargets {
   resourceType: "agency" | "group" | "talent" | "song";
 }
 
+model SubmitWikiTarget {
+  ...OmitProperties<WikiWorkflowRequestBody, "groupIdentifiers" | "talentIdentifiers">;
+  wikiId: Uuid;
+  @doc("Associated group identifiers.")
+  groupIdentifiers?: Uuid[] | null;
+  @doc("Associated talent identifiers.")
+  talentIdentifiers?: Uuid[] | null;
+}
+
+model SubmitWikisRequestBody {
+  @minItems(1)
+  @maxItems(100)
+  submissions: SubmitWikiTarget[];
+}
+
+model SubmitWikisResponse {
+  @statusCode statusCode: 201;
+  @body body: { draftWikis: DraftWikiSummary[]; };
+}
+
 @doc("Request body for rejecting a wiki draft.")
 model RejectWikiRequestBody extends WikiAssociationTargets {
   @doc("Resource type that the wiki belongs to.")
@@ -682,6 +702,15 @@ interface WikiOperations {
     @path wikiId: Uuid,
     @body body: RollbackWikiRequestBody,
   ): RollbackWikiResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+
+  @post
+  @route("/submit")
+  @useAuth(SessionCookieAuth | InternalApiBearerAuth)
+  @doc("Submit 1 to 100 distinct wiki drafts for review atomically, in request order. Any invalid, missing, disallowed or non-submittable draft rejects the entire batch; no status changes or histories are saved. Empty, oversized or duplicate submissions return 422. Internal API Bearer scope: wiki-drafts:submit.")
+  submitWikis(
+    ...VisitorLocationHeaders,
+    @body body: SubmitWikisRequestBody,
+  ): SubmitWikisResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse | KPool.Common.UnauthorizedProblemResponse;
 
   @post
   @route("/{wikiId}/submit")

@@ -196,10 +196,35 @@ class OpenApiToolRegistryTest extends TestCase
         self::assertSame(['resourceType' => 'group'], $submit->request($args)['body']);
     }
 
+    public function testBulkSubmissionUsesSubmitScopeAndOpenApiArrayConstraints(): void
+    {
+        $tool = app(OpenApiToolRegistry::class)->find('submit_wiki_drafts');
+        self::assertNotNull($tool);
+        self::assertSame(['wiki-drafts:submit'], $tool->scopes);
+        self::assertSame([['type' => 'oauth2', 'scopes' => ['wiki-drafts:submit']]], $tool->definition()['securitySchemes']);
+        $submission = (object) ['wikiId' => '019a8fa0-3f20-7000-8000-000000000001', 'resourceType' => 'group',
+            'agencyIdentifier' => null, 'groupIdentifiers' => [], 'talentIdentifiers' => null];
+        $arguments = (object) ['submissions' => [$submission]];
+        self::assertTrue($tool->accepts($arguments));
+        self::assertSame(['path' => '/api/v1/wiki/wiki/submit', 'body' => ['submissions' => [$submission]], 'query' => []], $tool->request($arguments));
+        $submissions = array_map(static fn (int $index): stdClass => (object) [
+            'wikiId' => sprintf('019a8fa0-3f20-7000-8000-%012d', $index), 'resourceType' => 'agency',
+        ], range(1, 100));
+        self::assertTrue($tool->accepts((object) ['submissions' => $submissions]));
+        self::assertFalse($tool->accepts((object) ['submissions' => [...$submissions, $submission]]));
+        self::assertFalse($tool->accepts((object) ['submissions' => []]));
+        self::assertFalse($tool->accepts(new stdClass()));
+        foreach ([['wikiId' => 'bad', 'resourceType' => 'group'], ['wikiId' => $submission->wikiId], ['wikiId' => $submission->wikiId, 'resourceType' => 'unknown']] as $invalid) {
+            self::assertFalse($tool->accepts((object) ['submissions' => [(object) $invalid]]));
+        }
+        self::assertFalse($tool->accepts((object) ['submissions' => [$submission], 'X-Kpool-Visitor-Signature' => 'forged']));
+        self::assertStringNotContainsString('X-Kpool-Visitor', json_encode($tool->definition(), JSON_THROW_ON_ERROR));
+    }
+
     public function testAllWikiToolsAreRegisteredAndEditRejectsIncompleteReplacement(): void
     {
         $registry = app(OpenApiToolRegistry::class);
-        self::assertCount(22, $registry->definitions());
+        self::assertCount(23, $registry->definitions());
         $create = $registry->find('create_wiki_draft');
         $edit = $registry->find('edit_wiki_draft');
         self::assertNotNull($create);

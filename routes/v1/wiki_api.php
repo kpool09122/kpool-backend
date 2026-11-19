@@ -153,6 +153,7 @@ Route::middleware(['auth.api', 'account.active', 'principal.active', 'resolve.ac
         Route::post('/wiki/{wikiId}/publish-same-version', PublishWikiAtSameVersionAction::class);
         Route::post('/wiki/{wikiId}/reject', RejectWikiAction::class);
         // Disabled by #605: Route::post('/wiki/{wikiId}/rollback', RollbackWikiAction::class);
+        Route::post('/wiki/submit', SubmitWikiAction::class);
         Route::post('/wiki/{wikiId}/submit', SubmitWikiAction::class);
         Route::post('/wiki/{wikiId}/translate', TranslateWikiAction::class);
         Route::post('/wiki/{wikiId}/withdraw', WithdrawWikiAction::class);

@@ -42,10 +42,20 @@ readonly class SubmitWiki implements SubmitWikiInterface
      */
     public function process(SubmitWikiInputPort $input, SubmitWikiOutputPort $output): void
     {
-        $wiki = $this->draftWikiRepository->findById($input->wikiIdentifier());
+        $targets = $input->targets();
+        $wikiIdentifiers = array_map(static fn (SubmitWikiTarget $target): DraftWikiIdentifier => $target->wikiIdentifier(), $targets);
+        $wikisById = [];
+        foreach ($this->draftWikiRepository->findByIds($wikiIdentifiers) as $wiki) {
+            $wikisById[strtolower((string) $wiki->wikiIdentifier())] = $wiki;
+        }
 
-        if ($wiki === null) {
-            throw new WikiNotFoundException();
+        $wikis = [];
+        foreach ($wikiIdentifiers as $wikiIdentifier) {
+            $wiki = $wikisById[strtolower((string) $wikiIdentifier)] ?? null;
+            if ($wiki === null) {
+                throw new WikiNotFoundException();
+            }
+            $wikis[] = $wiki;
         }
 
         $principal = $this->principalRepository->findById($input->principalIdentifier());
@@ -53,52 +63,57 @@ readonly class SubmitWiki implements SubmitWikiInterface
             throw new PrincipalNotFoundException();
         }
 
-        $resource = new Resource(
-            type: $input->resourceType(),
-            agencyId: $input->agencyIdentifier() ? (string) $input->agencyIdentifier() : null,
-            groupIds: array_map(
-                static fn (WikiIdentifier $id) => (string) $id,
-                $input->groupIdentifiers(),
-            ),
-            talentIds: array_map(
-                static fn (WikiIdentifier $id) => (string) $id,
-                $input->talentIdentifiers(),
-            ),
-        );
+        foreach ($targets as $index => $target) {
+            $wiki = $wikis[$index];
+            $resource = new Resource(
+                type: $target->resourceType(),
+                agencyId: $target->agencyIdentifier() ? (string) $target->agencyIdentifier() : null,
+                groupIds: array_map(
+                    static fn (WikiIdentifier $id) => (string) $id,
+                    $target->groupIdentifiers(),
+                ),
+                talentIds: array_map(
+                    static fn (WikiIdentifier $id) => (string) $id,
+                    $target->talentIdentifiers(),
+                ),
+            );
 
-        if (! $this->policyEvaluator->evaluate($principal, Action::SUBMIT, $resource)) {
-            throw new DisallowedException();
+            if (! $this->policyEvaluator->evaluate($principal, Action::SUBMIT, $resource)) {
+                throw new DisallowedException();
+            }
+
+            if ($wiki->status() !== ApprovalStatus::Pending
+            && $wiki->status() !== ApprovalStatus::Rejected) {
+                throw new InvalidStatusException();
+            }
         }
 
-        if ($wiki->status() !== ApprovalStatus::Pending
-        && $wiki->status() !== ApprovalStatus::Rejected) {
-            throw new InvalidStatusException();
+        foreach ($wikis as $wiki) {
+            $previousStatus = $wiki->status();
+            $wiki->setStatus(ApprovalStatus::UnderReview);
+
+            $this->draftWikiRepository->save($wiki);
+
+            $history = $this->wikiHistoryFactory->create(
+                actionType: HistoryActionType::DraftStatusChange,
+                actorIdentifier: $input->principalIdentifier(),
+                submitterIdentifier: $wiki->editorIdentifier(),
+                wikiIdentifier: $wiki->publishedWikiIdentifier(),
+                draftWikiIdentifier: new DraftWikiIdentifier((string) $wiki->wikiIdentifier()),
+                fromStatus: $previousStatus,
+                toStatus: $wiki->status(),
+                fromVersion: null,
+                toVersion: null,
+                subjectName: $wiki->basic()->name(),
+                visitorLocation: $input->visitorLocation(),
+                translationSetIdentifier: $wiki->translationSetIdentifier(),
+                language: $wiki->language(),
+                resourceType: $wiki->resourceType(),
+                actorIdentityIdentifier: $principal->identityIdentifier(),
+            );
+            $this->wikiHistoryRepository->save($history);
+
+            $output->addDraftWiki($wiki);
         }
-
-        $previousStatus = $wiki->status();
-        $wiki->setStatus(ApprovalStatus::UnderReview);
-
-        $this->draftWikiRepository->save($wiki);
-
-        $history = $this->wikiHistoryFactory->create(
-            actionType: HistoryActionType::DraftStatusChange,
-            actorIdentifier: $input->principalIdentifier(),
-            submitterIdentifier: $wiki->editorIdentifier(),
-            wikiIdentifier: $wiki->publishedWikiIdentifier(),
-            draftWikiIdentifier: new DraftWikiIdentifier((string) $wiki->wikiIdentifier()),
-            fromStatus: $previousStatus,
-            toStatus: $wiki->status(),
-            fromVersion: null,
-            toVersion: null,
-            subjectName: $wiki->basic()->name(),
-            visitorLocation: $input->visitorLocation(),
-            translationSetIdentifier: $wiki->translationSetIdentifier(),
-            language: $wiki->language(),
-            resourceType: $wiki->resourceType(),
-            actorIdentityIdentifier: $principal->identityIdentifier(),
-        );
-        $this->wikiHistoryRepository->save($history);
-
-        $output->setDraftWiki($wiki);
     }
 }

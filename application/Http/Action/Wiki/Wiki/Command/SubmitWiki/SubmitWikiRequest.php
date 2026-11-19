@@ -5,70 +5,50 @@ declare(strict_types=1);
 namespace Application\Http\Action\Wiki\Wiki\Command\SubmitWiki;
 
 use Application\Http\Action\Concerns\ResolvesLanguage;
-use Application\Http\Action\Support\RequestValue;
 use Illuminate\Foundation\Http\FormRequest;
 
 class SubmitWikiRequest extends FormRequest
 {
     use ResolvesLanguage;
 
-    /**
-     * @return array<array-key, mixed>
-     */
-    public function validationData(): array
+    public function isSingle(): bool
     {
-        return [
-            ...parent::validationData(),
-            'wikiId' => $this->route('wikiId'),
-        ];
+        return $this->route('wikiId') !== null;
     }
 
-    /**
-     * @return array<string, mixed>
-     */
+    /** @return array<array-key, mixed> */
+    public function validationData(): array
+    {
+        $data = parent::validationData();
+        if ($this->isSingle()) {
+            $data['submissions'] = [[...$data, 'wikiId' => $this->route('wikiId')]];
+        }
+
+        return $data;
+    }
+
+    /** @return array<string, mixed> */
     public function rules(): array
     {
         return [
-            'wikiId' => ['required', 'uuid'],
-            'resourceType' => ['required', 'string'],
-            'agencyIdentifier' => ['nullable', 'uuid'],
-            'groupIdentifiers' => ['nullable', 'array'],
-            'groupIdentifiers.*' => ['uuid'],
-            'talentIdentifiers' => ['nullable', 'array'],
-            'talentIdentifiers.*' => ['uuid'],
+            'submissions' => ['required', 'array', 'list', 'min:1', 'max:100'],
+            'submissions.*' => ['required', 'array'],
+            'submissions.*.wikiId' => ['required', 'uuid', 'distinct:ignore_case'],
+            'submissions.*.resourceType' => ['required', 'string', 'in:agency,group,talent,song'],
+            'submissions.*.agencyIdentifier' => ['nullable', 'uuid'],
+            'submissions.*.groupIdentifiers' => ['nullable', 'array', 'list'],
+            'submissions.*.groupIdentifiers.*' => ['uuid'],
+            'submissions.*.talentIdentifiers' => ['nullable', 'array', 'list'],
+            'submissions.*.talentIdentifiers.*' => ['uuid'],
         ];
     }
 
-    public function wikiId(): string
+    /** @return list<array{wikiId: string, resourceType: string, agencyIdentifier?: ?string, groupIdentifiers?: ?list<string>, talentIdentifiers?: ?list<string>}> */
+    public function submissions(): array
     {
-        return (string) $this->route('wikiId');
-    }
+        /** @var list<array{wikiId: string, resourceType: string, agencyIdentifier?: ?string, groupIdentifiers?: ?list<string>, talentIdentifiers?: ?list<string>}> $submissions */
+        $submissions = $this->validated('submissions');
 
-    public function resourceType(): string
-    {
-        return RequestValue::string($this->input('resourceType'));
-    }
-
-    public function agencyIdentifier(): ?string
-    {
-        $value = $this->input('agencyIdentifier');
-
-        return $value !== null ? RequestValue::string($value) : null;
-    }
-
-    /**
-     * @return string[]
-     */
-    public function groupIdentifiers(): array
-    {
-        return RequestValue::strings($this->input('groupIdentifiers') ?? []);
-    }
-
-    /**
-     * @return string[]
-     */
-    public function talentIdentifiers(): array
-    {
-        return RequestValue::strings($this->input('talentIdentifiers') ?? []);
+        return $submissions;
     }
 }

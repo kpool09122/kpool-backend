@@ -60,19 +60,19 @@ class SubmitWikiOutputTest extends TestCase
         );
 
         $output = new SubmitWikiOutput();
-        $output->setDraftWiki($draftWiki);
+        $output->addDraftWiki($draftWiki);
 
         $result = $output->toArray();
 
-        $this->assertSame((string) $draftWiki->wikiIdentifier(), $result['wikiIdentifier']);
-        $this->assertSame('ko', $result['language']);
-        $this->assertSame('TWICE', $result['name']);
-        $this->assertSame('group', $result['resourceType']);
-        $this->assertSame('pending', $result['status']);
+        $this->assertSame((string) $draftWiki->wikiIdentifier(), $result[0]['wikiIdentifier']);
+        $this->assertSame('ko', $result[0]['language']);
+        $this->assertSame('TWICE', $result[0]['name']);
+        $this->assertSame('group', $result[0]['resourceType']);
+        $this->assertSame('pending', $result[0]['status']);
     }
 
     /**
-     * 正常系: DraftWikiがセットされていない場合、toArrayが全てnullの配列を返すこと.
+     * 正常系: DraftWikiが追加されていない場合、toArrayが空の配列を返すこと.
      *
      * @return void
      */
@@ -82,12 +82,6 @@ class SubmitWikiOutputTest extends TestCase
 
         $result = $output->toArray();
 
-        $this->assertSame([
-            'wikiIdentifier' => null,
-            'language' => null,
-            'name' => null,
-            'resourceType' => null,
-            'status' => null,
-        ], $result);
+        $this->assertSame([], $result);
     }
 }
