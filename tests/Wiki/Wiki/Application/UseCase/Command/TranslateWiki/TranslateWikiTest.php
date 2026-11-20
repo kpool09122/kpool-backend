@@ -238,6 +238,49 @@ class TranslateWikiTest extends TestCase
     /**
      * 異常系：指定したIDのWikiが見つからない場合、例外がスローされること.
      */
+    public function testPersistsSourceKeysAndSharesThemAcrossTranslationsAndRepeatedRequests(): void
+    {
+        $data = $this->createTranslateWikiTestData();
+        $data->wiki->setSections(new SectionContentCollection([
+            new Section('Heading', 0, new SectionContentCollection([new TextBlock(0, 'Body')])),
+        ]));
+        $wikiRepository = Mockery::mock(WikiRepositoryInterface::class);
+        $wikiRepository->shouldReceive('findById')->twice()->with($data->wikiIdentifier)->andReturn($data->wiki);
+        $wikiRepository->shouldReceive('findByTranslationSetIdentifierAndLanguages')->twice()->andReturn([]);
+        $savedSections = null;
+        $wikiRepository->shouldReceive('save')->once()->with($data->wiki)->andReturnUsing(static function (Wiki $wiki) use (&$savedSections): void {
+            $savedSections = $wiki->sections();
+            self::assertNotNull($savedSections->sections()[0]->key());
+            self::assertNotNull($savedSections->sections()[0]->contents()->blocks()[0]->key());
+        });
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')->twice()->andReturn(new Principal(
+            $data->principalIdentifier,
+            new IdentityIdentifier(StrTestHelper::generateUuid()),
+            new AccountIdentifier(StrTestHelper::generateUuid()),
+        ));
+        $translationService = Mockery::mock(TranslationServiceInterface::class);
+        $translationService->shouldReceive('translateWiki')->times(4)->andReturnUsing(static function (Wiki $wiki, Language $language): TranslatedWikiData {
+            self::assertNotNull($wiki->sections()->sections()[0]->key());
+
+            return new TranslatedWikiData($wiki->basic(), $wiki->sections());
+        });
+        $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
+        $draftWikiRepository->shouldReceive('save')->times(4)->andReturnUsing(static function (DraftWiki $draft) use (&$savedSections): void {
+            self::assertNotNull($savedSections);
+            self::assertSame($savedSections->sections()[0]->key(), $draft->sections()->sections()[0]->key());
+            self::assertSame($savedSections->sections()[0]->contents()->blocks()[0]->key(), $draft->sections()->sections()[0]->contents()->blocks()[0]->key());
+        });
+        $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+        $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
+        $this->app()->instance(TranslationServiceInterface::class, $translationService);
+        $this->app()->instance(DraftWikiRepositoryInterface::class, $draftWikiRepository);
+        $useCase = $this->app()->make(TranslateWikiInterface::class);
+        $input = new TranslateWikiInput($data->wikiIdentifier, $data->principalIdentifier, ResourceType::TALENT);
+        $useCase->process($input, new TranslateWikiOutput());
+        $useCase->process($input, new TranslateWikiOutput());
+    }
+
     public function testWhenWikiNotFound(): void
     {
         $wikiIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
@@ -462,7 +505,7 @@ class TranslateWikiTest extends TestCase
             ->with($sourceSet, [Language::JAPANESE])->andReturn([$target]);
         $wikiRepository->shouldReceive('findByTranslationSetIdentifierAndLanguages')
             ->with($untranslatedSet, [Language::JAPANESE])->andReturn([]);
-        $text = new TextBlock(1, '翻訳済みの本文');
+        $text = new TextBlock(1, '翻訳済みの本文', key: 'kept-text-key');
         $profiles = new ProfileCardListBlock(
             3,
             [$sourceId, $targetId, $untranslatedId, $missingId],

@@ -14,6 +14,15 @@ final readonly class HistoryBlock implements BlockInterface
     ) {
     }
 
+    public function withKey(string $key): self
+    {
+        return new self(
+            displayOrder: $this->displayOrder,
+            entries: $this->entries,
+            key: $key,
+        );
+    }
+
     public function key(): ?string
     {
         return $this->key;

@@ -19,6 +19,7 @@ use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Wiki\Application\Exception\ExistsApprovedDraftWikiException;
 use Source\Wiki\Wiki\Application\Exception\InconsistentVersionException;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
+use Source\Wiki\Wiki\Application\Service\WikiContentKeyService;
 use Source\Wiki\Wiki\Application\Service\WikiWorkflowNotificationServiceInterface;
 use Source\Wiki\Wiki\Domain\Factory\WikiHistoryFactoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
@@ -30,6 +31,7 @@ use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 readonly class ApproveWiki implements ApproveWikiInterface
 {
     public function __construct(
+        private WikiContentKeyService $wikiContentKeyService,
         private DraftWikiRepositoryInterface   $draftWikiRepository,
         private WikiRepositoryInterface        $wikiRepository,
         private WikiServiceInterface           $wikiService,
@@ -107,6 +109,7 @@ readonly class ApproveWiki implements ApproveWikiInterface
         $wiki->setApproverIdentifier($input->principalIdentifier());
         $wiki->setApprovedAt(new DateTimeImmutable());
 
+        $wiki->setSections($this->wikiContentKeyService->assignMissingKeys($wiki->sections()));
         $this->draftWikiRepository->save($wiki);
 
         $history = $this->wikiHistoryFactory->create(

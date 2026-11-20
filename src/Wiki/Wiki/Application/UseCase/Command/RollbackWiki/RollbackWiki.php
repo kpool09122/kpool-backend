@@ -16,6 +16,7 @@ use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
+use Source\Wiki\Wiki\Application\Service\WikiContentKeyService;
 use Source\Wiki\Wiki\Domain\Factory\WikiHistoryFactoryInterface;
 use Source\Wiki\Wiki\Domain\Factory\WikiSnapshotFactoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\WikiHistoryRepositoryInterface;
@@ -25,6 +26,7 @@ use Source\Wiki\Wiki\Domain\Repository\WikiSnapshotRepositoryInterface;
 readonly class RollbackWiki implements RollbackWikiInterface
 {
     public function __construct(
+        private WikiContentKeyService $wikiContentKeyService,
         private WikiRepositoryInterface $wikiRepository,
         private WikiSnapshotRepositoryInterface $wikiSnapshotRepository,
         private WikiSnapshotFactoryInterface $snapshotFactory,
@@ -135,6 +137,7 @@ readonly class RollbackWiki implements RollbackWikiInterface
             $w->updateVersion();
 
             // 保存
+            $w->setSections($this->wikiContentKeyService->assignMissingKeys($w->sections()));
             $this->wikiRepository->save($w);
 
             // スナップショット保存（ロールバック後の状態を保存）

@@ -50,6 +50,14 @@ final readonly class SectionContentCollection
         return $sorted;
     }
 
+    /** @param callable(SectionContentInterface): SectionContentInterface $map */
+    public function map(callable $map): self
+    {
+        $contents = array_map($map, $this->contents);
+
+        return $contents === $this->contents ? $this : new self($contents, $this->allowBlocks);
+    }
+
     public function count(): int
     {
         return count($this->contents);

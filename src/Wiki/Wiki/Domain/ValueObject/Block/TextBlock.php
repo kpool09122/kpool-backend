@@ -13,6 +13,15 @@ final readonly class TextBlock implements BlockInterface
     ) {
     }
 
+    public function withKey(string $key): self
+    {
+        return new self(
+            displayOrder: $this->displayOrder,
+            content: $this->content,
+            key: $key,
+        );
+    }
+
     public function key(): ?string
     {
         return $this->key;

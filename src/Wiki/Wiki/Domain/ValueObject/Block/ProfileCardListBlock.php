@@ -20,6 +20,17 @@ final readonly class ProfileCardListBlock implements BlockInterface
     ) {
     }
 
+    public function withKey(string $key): self
+    {
+        return new self(
+            displayOrder: $this->displayOrder,
+            wikiIdentifiers: $this->wikiIdentifiers,
+            cardShape: $this->cardShape,
+            title: $this->title,
+            key: $key,
+        );
+    }
+
     public function key(): ?string
     {
         return $this->key;

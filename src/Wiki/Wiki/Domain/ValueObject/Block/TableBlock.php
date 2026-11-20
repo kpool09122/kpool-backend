@@ -19,6 +19,17 @@ final readonly class TableBlock implements BlockInterface
     ) {
     }
 
+    public function withKey(string $key): self
+    {
+        return new self(
+            displayOrder: $this->displayOrder,
+            rowCells: $this->rowCells,
+            headerCells: $this->headerCells,
+            tableWidth: $this->tableWidth,
+            key: $key,
+        );
+    }
+
     public function key(): ?string
     {
         return $this->key;

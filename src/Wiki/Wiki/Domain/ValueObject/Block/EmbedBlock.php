@@ -15,6 +15,17 @@ final readonly class EmbedBlock implements BlockInterface
     ) {
     }
 
+    public function withKey(string $key): self
+    {
+        return new self(
+            displayOrder: $this->displayOrder,
+            provider: $this->provider,
+            embedId: $this->embedId,
+            caption: $this->caption,
+            key: $key,
+        );
+    }
+
     public function key(): ?string
     {
         return $this->key;

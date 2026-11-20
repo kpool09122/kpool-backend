@@ -27,6 +27,18 @@ final readonly class ImageBlock implements BlockInterface
         return $this->imageWidth;
     }
 
+    public function withKey(string $key): self
+    {
+        return new self(
+            displayOrder: $this->displayOrder,
+            imageIdentifier: $this->imageIdentifier,
+            caption: $this->caption,
+            alt: $this->alt,
+            imageWidth: $this->imageWidth,
+            key: $key,
+        );
+    }
+
     public function key(): ?string
     {
         return $this->key;

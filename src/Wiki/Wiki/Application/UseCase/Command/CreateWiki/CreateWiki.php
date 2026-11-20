@@ -13,6 +13,7 @@ use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Wiki\Application\Service\WikiContentKeyService;
 use Source\Wiki\Wiki\Domain\Exception\NgWordDetectedException;
 use Source\Wiki\Wiki\Domain\Factory\DraftWikiFactoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
@@ -22,6 +23,7 @@ use Source\Wiki\Wiki\Domain\Service\WikiNgWordValidationServiceInterface;
 readonly class CreateWiki implements CreateWikiInterface
 {
     public function __construct(
+        private WikiContentKeyService $wikiContentKeyService,
         private DraftWikiFactoryInterface            $draftWikiFactory,
         private WikiRepositoryInterface              $wikiRepository,
         private DraftWikiRepositoryInterface         $draftWikiRepository,
@@ -103,6 +105,7 @@ readonly class CreateWiki implements CreateWikiInterface
         $wiki->setMetaDescription($input->metaDescription());
         $wiki->setKeywords($input->keywords());
 
+        $wiki->setSections($this->wikiContentKeyService->assignMissingKeys($wiki->sections()));
         $this->draftWikiRepository->save($wiki);
 
         $output->setDraftWiki($wiki);

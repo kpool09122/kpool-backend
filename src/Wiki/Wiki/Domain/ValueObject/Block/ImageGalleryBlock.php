@@ -29,6 +29,17 @@ final readonly class ImageGalleryBlock implements BlockInterface
         return $this->imageWidth;
     }
 
+    public function withKey(string $key): self
+    {
+        return new self(
+            displayOrder: $this->displayOrder,
+            imageIdentifiers: $this->imageIdentifiers,
+            caption: $this->caption,
+            imageWidth: $this->imageWidth,
+            key: $key,
+        );
+    }
+
     public function key(): ?string
     {
         return $this->key;

@@ -17,6 +17,16 @@ final readonly class ListBlock implements BlockInterface
     ) {
     }
 
+    public function withKey(string $key): self
+    {
+        return new self(
+            displayOrder: $this->displayOrder,
+            listType: $this->listType,
+            items: $this->items,
+            key: $key,
+        );
+    }
+
     public function key(): ?string
     {
         return $this->key;
