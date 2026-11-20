@@ -145,7 +145,7 @@ class WikiPublicationServiceTest extends TestCase
         $this->assertDatabaseHas('wiki_histories', ['draft_wiki_id' => $draftId, 'translation_set_identifier' => $setId, 'language' => 'ja', 'resource_type' => $type->value]);
     }
 
-    public function testPublicationPersistsGeneratedKeysAndLeavesLegacyHistoryUnchanged(): void
+    public function testPublicationPreservesContentWithoutGeneratingKeys(): void
     {
         $wikiId = StrTestHelper::generateUuid();
         $setId = StrTestHelper::generateUuid();
@@ -169,8 +169,9 @@ class WikiPublicationServiceTest extends TestCase
         $published = $repository->findById(new WikiIdentifier($wikiId));
         self::assertNotNull($published);
         $section = $published->sections()->sections()[0];
-        self::assertNotNull($section->key());
-        self::assertNotNull($section->contents()->blocks()[0]->key());
+        self::assertNull($section->key());
+        self::assertNull($section->contents()->blocks()[0]->key());
+        self::assertEquals($before->sections(), $published->sections());
         $reloaded = $repository->findById(new WikiIdentifier($wikiId));
         self::assertNotNull($reloaded);
         self::assertEquals($published->sections(), $reloaded->sections());

@@ -12,7 +12,6 @@ use Source\Wiki\Shared\Domain\Exception\UnauthorizedException;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
-use Source\Wiki\Wiki\Application\Service\WikiContentKeyService;
 use Source\Wiki\Wiki\Domain\Exception\NgWordDetectedException;
 use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
 use Source\Wiki\Wiki\Domain\Service\WikiNgWordValidationServiceInterface;
@@ -20,7 +19,6 @@ use Source\Wiki\Wiki\Domain\Service\WikiNgWordValidationServiceInterface;
 readonly class MergeWiki implements MergeWikiInterface
 {
     public function __construct(
-        private WikiContentKeyService $wikiContentKeyService,
         private DraftWikiRepositoryInterface         $draftWikiRepository,
         private PrincipalRepositoryInterface         $principalRepository,
         private PolicyEvaluatorInterface             $policyEvaluator,
@@ -86,7 +84,6 @@ readonly class MergeWiki implements MergeWikiInterface
         $wiki->setMergerIdentifier($input->principalIdentifier());
         $wiki->setMergedAt($input->mergedAt());
 
-        $wiki->setSections($this->wikiContentKeyService->assignMissingKeys($wiki->sections()));
         $this->draftWikiRepository->save($wiki);
 
         $output->setDraftWiki($wiki);

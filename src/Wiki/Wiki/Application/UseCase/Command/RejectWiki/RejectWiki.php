@@ -15,7 +15,6 @@ use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\HistoryActionType;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
-use Source\Wiki\Wiki\Application\Service\WikiContentKeyService;
 use Source\Wiki\Wiki\Application\Service\WikiWorkflowNotificationServiceInterface;
 use Source\Wiki\Wiki\Domain\Factory\WikiHistoryFactoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
@@ -25,7 +24,6 @@ use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 readonly class RejectWiki implements RejectWikiInterface
 {
     public function __construct(
-        private WikiContentKeyService $wikiContentKeyService,
         private DraftWikiRepositoryInterface   $draftWikiRepository,
         private WikiHistoryRepositoryInterface $wikiHistoryRepository,
         private WikiHistoryFactoryInterface    $wikiHistoryFactory,
@@ -82,7 +80,6 @@ readonly class RejectWiki implements RejectWikiInterface
         $wiki->setStatus(ApprovalStatus::Rejected);
         $wiki->setRejectionReason($input->rejectionReason());
 
-        $wiki->setSections($this->wikiContentKeyService->assignMissingKeys($wiki->sections()));
         $this->draftWikiRepository->save($wiki);
 
         $history = $this->wikiHistoryFactory->create(

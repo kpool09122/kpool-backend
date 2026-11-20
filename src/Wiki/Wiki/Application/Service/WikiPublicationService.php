@@ -26,7 +26,6 @@ use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 readonly class WikiPublicationService implements WikiPublicationServiceInterface
 {
     public function __construct(
-        private WikiContentKeyService $wikiContentKeyService,
         private WikiRepositoryInterface           $wikiRepository,
         private DraftWikiRepositoryInterface      $draftWikiRepository,
         private WikiFactoryInterface              $wikiFactory,
@@ -92,7 +91,6 @@ readonly class WikiPublicationService implements WikiPublicationServiceInterface
         $publishedWiki->setApprovedAt($wiki->approvedAt());
         $publishedWiki->setPublishedAt(new DateTimeImmutable());
 
-        $publishedWiki->setSections($this->wikiContentKeyService->assignMissingKeys($publishedWiki->sections()));
         $this->wikiRepository->save($publishedWiki);
         $this->videoLinkCollectionRegistrationService->register(
             $publishedWiki->resourceType(),

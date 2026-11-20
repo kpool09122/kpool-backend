@@ -16,7 +16,6 @@ use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
 use Source\Wiki\Wiki\Application\Service\TranslationServiceInterface;
-use Source\Wiki\Wiki\Application\Service\WikiContentKeyService;
 use Source\Wiki\Wiki\Domain\Exception\NgWordDetectedException;
 use Source\Wiki\Wiki\Domain\Factory\DraftWikiFactoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
@@ -31,7 +30,6 @@ use Source\Wiki\Wiki\Domain\ValueObject\TranslationSource;
 readonly class TranslateWiki implements TranslateWikiInterface
 {
     public function __construct(
-        private WikiContentKeyService $wikiContentKeyService,
         private WikiRepositoryInterface              $wikiRepository,
         private DraftWikiRepositoryInterface         $draftWikiRepository,
         private TranslationServiceInterface          $translationService,
@@ -80,9 +78,6 @@ readonly class TranslateWiki implements TranslateWikiInterface
         if (! $this->policyEvaluator->evaluate($principal, Action::TRANSLATE, $resource)) {
             throw new DisallowedException();
         }
-
-        $sourceSections = $wiki->sections();
-        $wiki->setSections($this->wikiContentKeyService->assignMissingKeys($sourceSections));
 
         $languages = Language::allExcept($wiki->language());
         $publishedWikiIdentifierMap = [];
@@ -133,12 +128,7 @@ readonly class TranslateWiki implements TranslateWikiInterface
             $wikiDrafts[] = $wikiDraft;
         }
 
-        if ($wiki->sections() !== $sourceSections) {
-            $this->wikiRepository->save($wiki);
-        }
-
         foreach ($wikiDrafts as $wikiDraft) {
-            $wikiDraft->setSections($this->wikiContentKeyService->assignMissingKeys($wikiDraft->sections()));
             $this->draftWikiRepository->save($wikiDraft);
         }
 
