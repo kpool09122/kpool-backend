@@ -36,20 +36,34 @@ class ListPopularVideosTest extends TestCase
         }
         $officialOnly = $this->video($wiki, 0);
         $this->like($officialOnly, true);
-        $this->video($wiki, 0);
+        $unliked = $this->video($wiki, 0);
         $foreign = $this->video($foreignWiki, 5);
         $this->video($unpublishedWiki, 5);
         $this->video($agency, 5, 'agency');
 
         $videos = app(ListPopularVideosInterface::class)->process();
-        self::assertSame([$foreign, $first, $second], array_map(static fn ($video): string => $video->videoLinkIdentifier, $videos));
-        self::assertSame([5, 3, 1], array_map(static fn ($video): int => $video->likeCount, $videos));
-        self::assertSame(['en', 'ja', 'ja'], array_map(static fn ($video): string => $video->language, $videos));
+        $zeroLikeIds = [$officialOnly, $unliked];
+        sort($zeroLikeIds);
+        self::assertSame([$foreign, $first, $second, ...$zeroLikeIds], array_map(static fn ($video): string => $video->videoLinkIdentifier, $videos));
+        self::assertSame([5, 3, 1, 0, 0], array_map(static fn ($video): int => $video->likeCount, $videos));
+        self::assertSame(['en', 'ja', 'ja', 'ja', 'ja'], array_map(static fn ($video): string => $video->language, $videos));
     }
 
-    public function testReturnsAnEmptyListWhenNoVideosAreLiked(): void
+    public function testReturnsAnEmptyListWhenNoVideosExist(): void
     {
         self::assertSame([], app(ListPopularVideosInterface::class)->process());
+    }
+
+    public function testReturnsVideosEvenWhenNoLikesExist(): void
+    {
+        $wiki = StrTestHelper::generateUuid();
+        CreateWiki::create($wiki, 'talent', ['language' => 'ja', 'published_at' => '2026-01-01']);
+        $identifier = $this->video($wiki, 0);
+
+        $videos = app(ListPopularVideosInterface::class)->process();
+        self::assertCount(1, $videos);
+        self::assertSame($identifier, $videos[0]->videoLinkIdentifier);
+        self::assertSame(0, $videos[0]->likeCount);
     }
 
     public function testReturnsAtMostTwentyWithStableTieOrdering(): void

@@ -3806,7 +3806,7 @@ paths:
   /videos/popular:
     get:
       operationId: PublicVideoLinkOperations_listPopularVideos
-      description: Top 20 unique videos from published wikis across all languages with at least one ordinary k-pool like. Deduplicated by provider and external video ID before the limit; the highest-ranked eligible link supplies the video metadata and source wiki. Official-owner likes are excluded. Ordered by ordinary like count descending, then creation time descending, then identifier ascending. Includes eligible videos from all wiki resource types; agency videos must be manually submitted. Viewing performs no collection or provider API requests.
+      description: Top 20 unique videos from published wikis across all languages, including videos with zero likes. Deduplicated by provider and external video ID before the limit; the highest-ranked eligible link supplies the video metadata and source wiki. Official-owner likes are excluded. Ordered by ordinary like count descending, then creation time descending, then identifier ascending. Includes eligible videos from all wiki resource types; agency videos must be manually submitted. Viewing performs no collection or provider API requests.
       parameters: []
       responses:
         '200':
@@ -8920,7 +8920,7 @@ components:
         likeCount:
           type: integer
           format: int32
-          minimum: 1
+          minimum: 0
         language:
           type: string
           enum:

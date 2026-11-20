@@ -29,7 +29,6 @@ readonly class ListPopularVideos implements ListPopularVideosInterface
             ->where(static fn (Builder $query) => $query
                 ->whereIn('resource_type', [ResourceType::GROUP->value, ResourceType::TALENT->value, ResourceType::SONG->value])
                 ->orWhereNotNull('creator_principal_id'))
-            ->whereHas('likes', static fn (Builder $query) => $query->where('is_official_owner', false))
             ->withCount(['likes' => static fn (Builder|HasMany $query) => $query->where('is_official_owner', false)])
             ->with('wiki:id,language,slug')
             ->orderByDesc('likes_count')->orderByDesc('created_at')->orderBy('id')
