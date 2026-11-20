@@ -61,6 +61,7 @@ model PopularVideo {
   title: string;
   thumbnailUrl: string | null;
   durationSeconds: int32 | null;
+  @doc("Ordinary k-pool likes received in the rolling calendar month ending at request time, including both boundaries. The start uses calendar-month subtraction without day overflow; official-owner likes are excluded.")
   @minValue(0) likeCount: int32;
   language: "ja" | "ko" | "en";
   slug: string;
@@ -70,7 +71,7 @@ interface PublicVideoLinkOperations {
   @get
   @route("/videos/popular")
   @useAuth(NoAuth)
-  @doc("Top 10 unique videos from published wikis across all languages, including videos with zero likes. Deduplicated by provider and external video ID before the limit; the highest-ranked eligible link supplies the video metadata and source wiki. Official-owner likes are excluded. Ordered by ordinary like count descending, then creation time descending, then identifier ascending. Includes eligible videos from all wiki resource types; agency videos must be manually submitted. Viewing performs no collection or provider API requests.")
+  @doc("Top 10 unique videos from published wikis across all languages, including videos with zero likes. Deduplicated by provider and external video ID before the limit; the highest-ranked eligible link supplies the video metadata and source wiki. Official-owner likes are excluded. Ordered by ordinary likes received in the rolling calendar month ending at request time descending, then creation time descending, then identifier ascending. Includes eligible videos from all wiki resource types; agency videos must be manually submitted. Viewing performs no collection or provider API requests.")
   listPopularVideos(): {
     @statusCode statusCode: 200;
     @body body: { @maxItems(10) videos: PopularVideo[]; };

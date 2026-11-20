@@ -3806,7 +3806,7 @@ paths:
   /videos/popular:
     get:
       operationId: PublicVideoLinkOperations_listPopularVideos
-      description: Top 10 unique videos from published wikis across all languages, including videos with zero likes. Deduplicated by provider and external video ID before the limit; the highest-ranked eligible link supplies the video metadata and source wiki. Official-owner likes are excluded. Ordered by ordinary like count descending, then creation time descending, then identifier ascending. Includes eligible videos from all wiki resource types; agency videos must be manually submitted. Viewing performs no collection or provider API requests.
+      description: Top 10 unique videos from published wikis across all languages, including videos with zero likes. Deduplicated by provider and external video ID before the limit; the highest-ranked eligible link supplies the video metadata and source wiki. Official-owner likes are excluded. Ordered by ordinary likes received in the rolling calendar month ending at request time descending, then creation time descending, then identifier ascending. Includes eligible videos from all wiki resource types; agency videos must be manually submitted. Viewing performs no collection or provider API requests.
       parameters: []
       responses:
         '200':
@@ -6298,7 +6298,6 @@ paths:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
       security:
         - {}
-        - InternalApiBearerAuth: []
   /wikis/version-inconsistencies:
     get:
       operationId: WikiListOperations_listVersionInconsistentWikis
@@ -8922,6 +8921,7 @@ components:
           type: integer
           format: int32
           minimum: 0
+          description: Ordinary k-pool likes received in the rolling calendar month ending at request time, including both boundaries. The start uses calendar-month subtraction without day overflow; official-owner likes are excluded.
         language:
           type: string
           enum:

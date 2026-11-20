@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Wiki\VideoLink\Infrastructure\Query;
 
 use Application\Models\Wiki\VideoLink as VideoLinkModel;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Source\Shared\Infrastructure\Support\ImageUrl;
@@ -21,6 +22,9 @@ readonly class ListPopularVideos implements ListPopularVideosInterface
 
     public function process(): array
     {
+        $now = CarbonImmutable::now();
+        $since = $now->subMonthNoOverflow();
+
         return array_values(VideoLinkModel::query()
             ->whereHas('wiki', static fn (Builder $query) => $query
                 ->whereNotNull('published_at')
@@ -29,7 +33,8 @@ readonly class ListPopularVideos implements ListPopularVideosInterface
             ->where(static fn (Builder $query) => $query
                 ->whereIn('resource_type', [ResourceType::GROUP->value, ResourceType::TALENT->value, ResourceType::SONG->value])
                 ->orWhereNotNull('creator_principal_id'))
-            ->withCount(['likes' => static fn (Builder|HasMany $query) => $query->where('is_official_owner', false)])
+            ->withCount(['likes' => static fn (Builder|HasMany $query) => $query
+                ->where('is_official_owner', false)->whereBetween('created_at', [$since, $now])])
             ->with('wiki:id,language,slug')
             ->orderByDesc('likes_count')->orderByDesc('created_at')->orderBy('id')
             ->lazy(100)

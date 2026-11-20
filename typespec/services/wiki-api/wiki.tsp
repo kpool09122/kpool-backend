@@ -555,7 +555,7 @@ interface WikiListOperations {
 
   @get
   @route("/statistics")
-  @useAuth(NoAuth | InternalApiBearerAuth)
+  @useAuth(NoAuth)
   @doc("Public wiki page counts across all languages. Each translation counts separately; group types count group wiki pages. Drafts are excluded.")
   getWikiStatistics(): {
     @statusCode statusCode: 200;

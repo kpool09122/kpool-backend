@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\VideoLink\Infrastructure\Query;
 
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -115,6 +116,33 @@ class ListPopularVideosTest extends TestCase
         self::assertSame([$winner], array_map(static fn ($video): string => $video->videoLinkIdentifier, $videos));
     }
 
+    public function testRanksByLikesInTheLastCalendarMonthAndExcludesOlderAndFutureLikes(): void
+    {
+        CarbonImmutable::setTestNow('2026-03-31 12:00:00 UTC');
+
+        try {
+            $wiki = StrTestHelper::generateUuid();
+            CreateWiki::create($wiki, 'talent', ['language' => 'ja', 'published_at' => '2026-01-01']);
+            $lifetimePopular = $this->video($wiki, 1);
+            for ($i = 0; $i < 3; ++$i) {
+                $this->like($lifetimePopular, createdAt: '2026-02-28 11:59:59');
+            }
+            $recentlyPopular = $this->video($wiki, 2);
+            $boundary = $this->video($wiki, 0);
+            $this->like($boundary, createdAt: '2026-02-28 12:00:00');
+            $this->like($boundary, createdAt: '2026-02-28 11:59:59');
+            $this->like($boundary, createdAt: '2026-03-31 12:00:01');
+            $tied = [$lifetimePopular, $boundary];
+            sort($tied);
+
+            $videos = app(ListPopularVideosInterface::class)->process();
+            self::assertSame([$recentlyPopular, ...$tied], array_map(static fn ($video): string => $video->videoLinkIdentifier, $videos));
+            self::assertSame([2, 1, 1], array_map(static fn ($video): int => $video->likeCount, $videos));
+        } finally {
+            CarbonImmutable::setTestNow();
+        }
+    }
+
     private function video(string $wiki, int $likes, string $resourceType = 'talent', ?string $url = null): string
     {
         $id = StrTestHelper::generateUuid();
@@ -126,7 +154,7 @@ class ListPopularVideosTest extends TestCase
         return $id;
     }
 
-    private function like(string $video, bool $official = false): void
+    private function like(string $video, bool $official = false, ?string $createdAt = null): void
     {
         $identity = new IdentityIdentifier(StrTestHelper::generateUuid());
         $principal = new PrincipalIdentifier(StrTestHelper::generateUuid());
@@ -135,7 +163,7 @@ class ListPopularVideosTest extends TestCase
         DB::table('wiki_video_link_likes')->insert([
             'id' => StrTestHelper::generateUuid(), 'video_link_id' => $video,
             'principal_id' => (string) $principal, 'is_official_owner' => $official,
-            'created_at' => now(),
+            'created_at' => $createdAt ?? CarbonImmutable::now(),
         ]);
     }
 }
