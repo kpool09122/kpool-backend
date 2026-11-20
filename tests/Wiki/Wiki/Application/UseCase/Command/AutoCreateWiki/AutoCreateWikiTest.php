@@ -123,7 +123,8 @@ class AutoCreateWikiTest extends TestCase
                 && (string) $draftWiki->editorIdentifier() === (string) $principalIdentifier
                 && (string) $draftWiki->title() === 'TWICEのプロフィール'
                 && (string) $draftWiki->metaDescription() === 'TWICEの活動と歴史を紹介します。'
-                && $draftWiki->keywords()?->values() === ['TWICE', 'K-POP']))
+                && $draftWiki->keywords()?->values() === ['TWICE', 'K-POP']
+                && $draftWiki->sections()->all()[0]->key() !== null))
             ->andReturn(null);
 
         $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);

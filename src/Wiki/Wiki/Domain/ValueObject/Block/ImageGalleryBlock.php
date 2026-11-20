@@ -17,6 +17,7 @@ final readonly class ImageGalleryBlock implements BlockInterface
         private array $imageIdentifiers,
         private ?string $caption = null,
         private ?int $imageWidth = null,
+        private ?string $key = null,
     ) {
         if ($imageWidth !== null && $imageWidth < 1) {
             throw new InvalidArgumentException('Image width must be a positive pixel value.');
@@ -26,6 +27,22 @@ final readonly class ImageGalleryBlock implements BlockInterface
     public function imageWidth(): ?int
     {
         return $this->imageWidth;
+    }
+
+    public function withKey(string $key): self
+    {
+        return new self(
+            displayOrder: $this->displayOrder,
+            imageIdentifiers: $this->imageIdentifiers,
+            caption: $this->caption,
+            imageWidth: $this->imageWidth,
+            key: $key,
+        );
+    }
+
+    public function key(): ?string
+    {
+        return $this->key;
     }
 
     public function displayOrder(): int

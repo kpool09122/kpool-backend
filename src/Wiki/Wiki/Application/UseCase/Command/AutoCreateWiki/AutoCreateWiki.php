@@ -15,6 +15,7 @@ use Source\Wiki\Shared\Domain\Service\NormalizationServiceInterface;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Wiki\Application\Service\WikiContentKeyService;
 use Source\Wiki\Wiki\Domain\Exception\NgWordDetectedException;
 use Source\Wiki\Wiki\Domain\Factory\DraftWikiFactoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
@@ -25,6 +26,7 @@ use Source\Wiki\Wiki\Domain\Service\WikiNgWordValidationServiceInterface;
 readonly class AutoCreateWiki implements AutoCreateWikiInterface
 {
     public function __construct(
+        private WikiContentKeyService $wikiContentKeyService,
         private AutoWikiCreationServiceInterface     $autoWikiCreationService,
         private DraftWikiFactoryInterface            $draftWikiFactory,
         private DraftWikiRepositoryInterface         $draftWikiRepository,
@@ -107,6 +109,7 @@ readonly class AutoCreateWiki implements AutoCreateWikiInterface
         $draftWiki->setMetaDescription($generatedData->metaDescription());
         $draftWiki->setKeywords($generatedData->keywords());
 
+        $draftWiki->setSections($this->wikiContentKeyService->assignMissingKeys($draftWiki->sections()));
         $this->draftWikiRepository->save($draftWiki);
 
         $output->setDraftWiki($draftWiki);

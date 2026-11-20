@@ -70,6 +70,63 @@ class TranslationServiceTest extends TestCase
         $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
     }
 
+    public function testKeysDistinguishSameShapedSectionsWhenOnlySourcesChange(): void
+    {
+        $overview = new Section('소개', 0, new SectionContentCollection([new TextBlock(0, '소개 본문', key: 'overview-body')]), key: 'overview');
+        $career = new Section('활동', 1, new SectionContentCollection([new TextBlock(0, '활동 본문', key: 'career-body')]), key: 'career');
+        $baseline = $this->createTalentWiki(new SectionContentCollection([
+            $overview, $career,
+            new Section('출처', 2, new SectionContentCollection([new TextBlock(0, '이전 출처', key: 'sources-body')]), key: 'sources'),
+        ]));
+        $existing = $this->existingTranslation($baseline, new SectionContentCollection([
+            new Section('活動', 0, new SectionContentCollection([new TextBlock(0, '保持した活動', key: 'career-body')]), key: 'career'),
+            new Section('紹介', 1, new SectionContentCollection([new TextBlock(0, '保持した紹介', key: 'overview-body')]), key: 'overview'),
+            new Section('出典', 2, new SectionContentCollection([new TextBlock(0, '以前の出典', key: 'sources-body')]), key: 'sources'),
+        ]));
+        $current = clone $baseline;
+        $current->setVersion(new Version(2));
+        $current->setSections(new SectionContentCollection([
+            $overview, $career,
+            new Section('출처', 2, new SectionContentCollection([new TextBlock(0, '새 출처', key: 'sources-body')]), key: 'sources'),
+        ]));
+        $this->configureComparison($current, $baseline, $existing);
+        $this->expectTranslationTexts(['출처', '새 출처'], ['出典', '新しい出典']);
+        $sections = $this->app()->make(TranslationServiceInterface::class)->translateWiki($current, Language::JAPANESE)->translatedSections()->all();
+        [$overviewSection, $careerSection, $sourcesSection] = $sections;
+        self::assertInstanceOf(Section::class, $overviewSection);
+        self::assertInstanceOf(Section::class, $careerSection);
+        self::assertInstanceOf(Section::class, $sourcesSection);
+        self::assertSame('紹介', $overviewSection->title());
+        self::assertSame('活動', $careerSection->title());
+        self::assertSame(['overview', 'career', 'sources'], array_map(static fn ($section) => $section->key(), $sections));
+        self::assertSame('sources-body', $sourcesSection->contents()->all()[0]->key());
+    }
+
+    public function testAddingKeysPreservesUnambiguousLegacyTranslations(): void
+    {
+        $baseline = $this->createTalentWiki(new SectionContentCollection([
+            new Section('소개', 0, new SectionContentCollection([new TextBlock(0, '본문')])),
+        ]));
+        $existing = $this->existingTranslation($baseline, new SectionContentCollection([
+            new Section('保持した紹介', 0, new SectionContentCollection([new TextBlock(0, '保持した本文')])),
+        ]));
+        $current = clone $baseline;
+        $current->setVersion(new Version(2));
+        $current->setSections(new SectionContentCollection([
+            new Section('소개', 0, new SectionContentCollection([new TextBlock(0, '본문', key: 'body-key')]), key: 'overview-key'),
+        ]));
+        $this->configureComparison($current, $baseline, $existing);
+        $this->expectTranslationTexts([], []);
+        $section = $this->app()->make(TranslationServiceInterface::class)->translateWiki($current, Language::JAPANESE)->translatedSections()->all()[0];
+        self::assertInstanceOf(Section::class, $section);
+        self::assertSame('保持した紹介', $section->title());
+        self::assertSame('overview-key', $section->key());
+        $body = $section->contents()->all()[0];
+        self::assertInstanceOf(TextBlock::class, $body);
+        self::assertSame('保持した本文', $body->content());
+        self::assertSame('body-key', $body->key());
+    }
+
     public function testReusesUnchangedFieldsWithoutCallingTranslationApi(): void
     {
         $wiki = $this->createTalentWiki();

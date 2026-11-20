@@ -149,13 +149,13 @@ readonly class TranslationService implements TranslationServiceInterface
 
     private function scopeKey(SectionContentInterface $content): string
     {
-        return SectionTranslationFingerprint::of($content);
+        return ($content->key() === null ? '' : $content->key() . ':') . SectionTranslationFingerprint::of($content);
     }
 
     /**
-     * Match snapshot scopes to translations only when their complete subtree shape
-     * is unique among siblings on both sides. Position and translated titles are
-     * not identity; indistinguishable siblings must be translated again.
+     * Match scopes by their preserved key. Legacy scopes without keys are matched
+     * only when their complete subtree shape is unique among siblings on both sides.
+     * Position and translated titles are not identity.
      * @param array<string, list<SectionContentInterface>> $reuse
      */
     private function indexSectionTranslations(SectionContentCollection $baseline, SectionContentCollection $existing, array &$reuse): void
@@ -163,10 +163,10 @@ readonly class TranslationService implements TranslationServiceInterface
         $sources = [];
         $targets = [];
         foreach ($baseline->all() as $content) {
-            $sources[$this->treeShape($content)][] = $content;
+            $sources[$content->key() === null ? 'shape:' . $this->treeShape($content) : 'key:' . $content->key()][] = $content;
         }
         foreach ($existing->all() as $content) {
-            $targets[$this->treeShape($content)][] = $content;
+            $targets[$content->key() === null ? 'shape:' . $this->treeShape($content) : 'key:' . $content->key()][] = $content;
         }
         foreach ($sources as $shape => $candidates) {
             $translations = $targets[$shape] ?? [];
@@ -203,6 +203,10 @@ readonly class TranslationService implements TranslationServiceInterface
         foreach ($sections->all() as $content) {
             $key = $this->scopeKey($content);
             $counts[$key] = ($counts[$key] ?? 0) + 1;
+            if ($content->key() !== null) {
+                $legacyKey = SectionTranslationFingerprint::of($content);
+                $counts[$legacyKey] = ($counts[$legacyKey] ?? 0) + 1;
+            }
             if ($content instanceof Section) {
                 $this->countSectionScopes($content->contents(), $counts);
             }
@@ -219,7 +223,8 @@ readonly class TranslationService implements TranslationServiceInterface
         $mapped = [];
         foreach ($sections->all() as $content) {
             $key = $this->scopeKey($content);
-            $candidates = $reuse[$key] ?? [];
+            $legacyKey = SectionTranslationFingerprint::of($content);
+            $candidates = $reuse[$key] ?? (($counts[$legacyKey] ?? 0) === 1 ? ($reuse[$legacyKey] ?? []) : []);
             $texts = count($candidates) === 1 && $counts[$key] === 1 && $this->scopeShape($content) === $this->scopeShape($candidates[0]) ? $this->scopeTexts($candidates[0]) : [];
             $offset = 0;
             $scopeTranslate = static function (string $text, ?int $maxLength) use ($translate, $texts, &$offset): string {
@@ -242,6 +247,7 @@ readonly class TranslationService implements TranslationServiceInterface
                     $content->displayOrder(),
                     new SectionContentCollection($children),
                     $content->depth(),
+                    key: $content->key(),
                 );
 
             } else {
@@ -397,35 +403,60 @@ readonly class TranslationService implements TranslationServiceInterface
                 $content->displayOrder(),
                 $this->mapSections($content->contents(), $targetLanguage, $translate),
                 $content->depth(),
+                key: $content->key(),
             );
         }
         if ($content instanceof TextBlock) {
-            return new TextBlock($content->displayOrder(), $translate($content->content(), null));
+            return new TextBlock(
+                $content->displayOrder(),
+                $translate($content->content(), null),
+                key: $content->key(),
+            );
         }
         if ($content instanceof QuoteBlock) {
-            return new QuoteBlock($content->displayOrder(), $translate($content->content(), null), $this->mapOptionalText($content->source(), $translate));
+            return new QuoteBlock(
+                $content->displayOrder(),
+                $translate($content->content(), null),
+                $this->mapOptionalText($content->source(), $translate),
+                key: $content->key(),
+            );
         }
         if ($content instanceof ListBlock) {
-            return new ListBlock($content->displayOrder(), $content->listType(), array_map(
-                static fn (string $item): string => $translate($item, null),
-                $content->items(),
-            ));
+            return new ListBlock(
+                $content->displayOrder(),
+                $content->listType(),
+                array_map(
+                    static fn (string $item): string => $translate($item, null),
+                    $content->items(),
+                ),
+                key: $content->key(),
+            );
         }
         if ($content instanceof HistoryBlock) {
-            return new HistoryBlock($content->displayOrder(), array_map(
-                fn (HistoryEntry $entry): HistoryEntry => new HistoryEntry(
-                    $entry->year,
-                    $translate($entry->title, null),
-                    $this->mapOptionalText($entry->detail, $translate),
+            return new HistoryBlock(
+                $content->displayOrder(),
+                array_map(
+                    fn (HistoryEntry $entry): HistoryEntry => new HistoryEntry(
+                        $entry->year,
+                        $translate($entry->title, null),
+                        $this->mapOptionalText($entry->detail, $translate),
+                    ),
+                    $content->entries(),
                 ),
-                $content->entries(),
-            ));
+                key: $content->key(),
+            );
         }
         if ($content instanceof TableBlock) {
             $headers = $this->mapTableCells($content->headerCells(), $translate);
             $rows = array_map(fn (array $row): array => $this->mapTableCells($row, $translate) ?? [], $content->rowCells());
 
-            return new TableBlock($content->displayOrder(), $rows, $headers, $content->tableWidth());
+            return new TableBlock(
+                $content->displayOrder(),
+                $rows,
+                $headers,
+                $content->tableWidth(),
+                key: $content->key(),
+            );
         }
         if ($content instanceof ImageBlock) {
             return new ImageBlock(
@@ -434,13 +465,26 @@ readonly class TranslationService implements TranslationServiceInterface
                 $this->mapOptionalText($content->caption(), $translate),
                 $this->mapOptionalText($content->alt(), $translate),
                 $content->imageWidth(),
+                key: $content->key(),
             );
         }
         if ($content instanceof ImageGalleryBlock) {
-            return new ImageGalleryBlock($content->displayOrder(), $content->imageIdentifiers(), $this->mapOptionalText($content->caption(), $translate), $content->imageWidth());
+            return new ImageGalleryBlock(
+                $content->displayOrder(),
+                $content->imageIdentifiers(),
+                $this->mapOptionalText($content->caption(), $translate),
+                $content->imageWidth(),
+                key: $content->key(),
+            );
         }
         if ($content instanceof EmbedBlock) {
-            return new EmbedBlock($content->displayOrder(), $content->provider(), $content->embedId(), $this->mapOptionalText($content->caption(), $translate));
+            return new EmbedBlock(
+                $content->displayOrder(),
+                $content->provider(),
+                $content->embedId(),
+                $this->mapOptionalText($content->caption(), $translate),
+                key: $content->key(),
+            );
         }
         if ($content instanceof ProfileCardListBlock) {
             return new ProfileCardListBlock(
@@ -448,6 +492,7 @@ readonly class TranslationService implements TranslationServiceInterface
                 $content->wikiIdentifiers(),
                 $content->cardShape(),
                 $this->mapOptionalText($content->title(), $translate),
+                key: $content->key(),
             );
         }
 

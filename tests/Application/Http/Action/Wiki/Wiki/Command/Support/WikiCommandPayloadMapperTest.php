@@ -26,10 +26,12 @@ class WikiCommandPayloadMapperTest extends TestCase
             [
                 'type' => 'section',
                 'title' => 'Overview',
+                'sectionKey' => 'overview-key',
                 'displayOrder' => 1,
                 'contents' => [
                     [
                         'type' => 'text',
+                        'blockKey' => 'body-key',
                         'displayOrder' => 1,
                         'content' => 'Hello World',
                     ],
@@ -52,11 +54,13 @@ class WikiCommandPayloadMapperTest extends TestCase
         $section = $sections->sorted()[0];
         $this->assertInstanceOf(Section::class, $section);
         $this->assertSame(1, $section->displayOrder());
+        $this->assertSame('overview-key', $section->key());
 
         [$block, $image, $gallery] = $section->contents()->sorted();
         $this->assertInstanceOf(TextBlock::class, $block);
         $this->assertSame(1, $block->displayOrder());
         $this->assertSame('Hello World', $block->content());
+        $this->assertSame('body-key', $block->key());
         $this->assertInstanceOf(ImageBlock::class, $image);
         $this->assertSame(450, $image->imageWidth());
         $this->assertInstanceOf(ImageGalleryBlock::class, $gallery);

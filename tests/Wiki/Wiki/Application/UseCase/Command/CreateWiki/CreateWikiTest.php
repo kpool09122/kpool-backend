@@ -37,9 +37,11 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Emoji;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\FandomName;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\RepresentativeSymbol;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\TextBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 use Source\Wiki\Wiki\Domain\ValueObject\HexColor;
 use Source\Wiki\Wiki\Domain\ValueObject\MetaDescription;
+use Source\Wiki\Wiki\Domain\ValueObject\Section\Section;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoKeywords;
 use Source\Wiki\Wiki\Domain\ValueObject\SeoTitle;
@@ -256,12 +258,17 @@ class CreateWikiTest extends TestCase
         $metaDescription = new MetaDescription('Profile for TWICE.');
         $keywords = new SeoKeywords(['TWICE', 'K-pop']);
 
+        $sections = new SectionContentCollection([
+            new Section('Overview', 0, new SectionContentCollection([
+                new TextBlock(0, 'Body'),
+            ]), key: 'provided-section-key'),
+        ]);
         $input = new CreateWikiInput(
             $testData->publishedWikiIdentifier,
             $testData->language,
             $testData->resourceType,
             $testData->basic,
-            $testData->sections,
+            $sections,
             $testData->themeColor,
             $testData->slug,
             $principalIdentifier,
@@ -309,7 +316,11 @@ class CreateWikiTest extends TestCase
         $draftWikiRepository = Mockery::mock(DraftWikiRepositoryInterface::class);
         $draftWikiRepository->shouldReceive('save')
             ->once()
-            ->with($testData->draftWiki)
+            ->with(Mockery::on(static function (DraftWiki $draft): bool {
+                $section = $draft->sections()->sections()[0];
+
+                return $section->key() === 'provided-section-key' && $section->contents()->blocks()[0]->key() !== null;
+            }))
             ->andReturn(null);
 
         $this->app()->instance(PrincipalRepositoryInterface::class, $principalRepository);
@@ -330,6 +341,10 @@ class CreateWikiTest extends TestCase
         $this->assertSame($title, $testData->draftWiki->title());
         $this->assertSame($metaDescription, $testData->draftWiki->metaDescription());
         $this->assertSame($keywords, $testData->draftWiki->keywords());
+        $section = $testData->draftWiki->sections()->sections()[0];
+        $this->assertSame('provided-section-key', $section->key());
+        $this->assertNotNull($section->contents()->blocks()[0]->key());
+        $this->assertNull($sections->sections()[0]->contents()->blocks()[0]->key());
     }
 
     public function testNewWikiWithUnusedSlugIsCreated(): void

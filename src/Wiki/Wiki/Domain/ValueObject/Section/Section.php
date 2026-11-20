@@ -15,6 +15,7 @@ final readonly class Section implements SectionContentInterface
         private int $displayOrder,
         private SectionContentCollection $contents,
         private int $depth = 1,
+        private ?string $key = null,
     ) {
         $this->validateDepth($depth);
     }
@@ -33,9 +34,30 @@ final readonly class Section implements SectionContentInterface
         return $this->title;
     }
 
+    public function withKey(string $key): self
+    {
+        return new self(
+            title: $this->title,
+            displayOrder: $this->displayOrder,
+            contents: $this->contents,
+            depth: $this->depth,
+            key: $key,
+        );
+    }
+
+    public function key(): ?string
+    {
+        return $this->key;
+    }
+
     public function displayOrder(): int
     {
         return $this->displayOrder;
+    }
+
+    public function withContents(SectionContentCollection $contents): self
+    {
+        return new self($this->title, $this->displayOrder, $contents, $this->depth, $this->key);
     }
 
     public function contents(): SectionContentCollection

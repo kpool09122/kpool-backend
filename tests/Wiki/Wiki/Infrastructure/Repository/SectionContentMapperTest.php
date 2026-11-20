@@ -28,6 +28,44 @@ use Tests\Helper\StrTestHelper;
 
 class SectionContentMapperTest extends TestCase
 {
+    public function testPreservesKeysForEveryBlockAndNestedSection(): void
+    {
+        $image = new ImageIdentifier(StrTestHelper::generateUuid());
+        $blocks = [
+            new TextBlock(0, 'Body', key: 'text-key'),
+            new ImageBlock(1, $image, key: 'image-key'),
+            new ImageGalleryBlock(2, [$image], key: 'gallery-key'),
+            new EmbedBlock(3, EmbedProvider::YOUTUBE, 'video', key: 'embed-key'),
+            new QuoteBlock(4, 'Quote', key: 'quote-key'),
+            new ListBlock(5, ListType::BULLET, ['Item'], key: 'list-key'),
+            new HistoryBlock(6, [new HistoryEntry(2026, 'Event')], key: 'history-key'),
+            new TableBlock(7, [[new TableCell('Cell')]], key: 'table-key'),
+            new ProfileCardListBlock(8, [], ProfileCardShape::SQUARE, key: 'profiles-key'),
+            new Section('Child', 9, new SectionContentCollection(), 2, key: 'child-key'),
+        ];
+        $collection = new SectionContentCollection([
+            new Section('Overview', 0, new SectionContentCollection($blocks), key: 'overview-key'),
+        ]);
+        $stored = SectionContentMapper::collectionToArray($collection);
+        self::assertSame('overview-key', $stored[0]['section_key']);
+        $restored = SectionContentMapper::collectionFromArray($stored);
+        self::assertSame($stored, SectionContentMapper::collectionToArray($restored));
+        $section = $restored->all()[0];
+        self::assertInstanceOf(Section::class, $section);
+        self::assertSame('overview-key', $section->key());
+        self::assertSame(array_map(static fn ($block) => $block->key(), $blocks), array_map(static fn ($block) => $block->key(), $section->contents()->all()));
+    }
+
+    public function testLegacyContentWithoutKeysRemainsReadableAndUnchanged(): void
+    {
+        $data = [['type' => 'section', 'title' => 'Overview', 'display_order' => 0, 'contents' => [
+            ['block_type' => 'text', 'display_order' => 0, 'content' => 'Unchanged body'],
+        ]]];
+        $restored = SectionContentMapper::collectionFromArray($data);
+        self::assertNull($restored->all()[0]->key());
+        self::assertSame($data, SectionContentMapper::collectionToArray($restored));
+    }
+
     /**
      * 正常系: TextBlockが正しく変換・復元されること.
      */

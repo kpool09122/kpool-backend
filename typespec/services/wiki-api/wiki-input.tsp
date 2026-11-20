@@ -136,6 +136,10 @@ union WikiBasicInput {
 @doc("Content node. Use type=section with title/contents for a section, or a block type with its corresponding fields. contents contains nodes of this same shape; nested nodes remain arbitrary JSON to avoid a depth limit. Preserve existing nodes and displayOrder when editing. The existing API validates block-specific rules.")
 model WikiContentInput {
   type: "section" | "text" | "image" | "image_gallery" | "embed" | "quote" | "list" | "history" | "table" | "profile_card_list";
+  @doc("Stable section key, preserved through editing and translation. Optional for legacy content.")
+  sectionKey?: string | null;
+  @doc("Stable block key, preserved through editing and translation. Optional for legacy content.")
+  blockKey?: string | null;
   displayOrder?: int32;
   title?: string | null;
   contents?: unknown[];

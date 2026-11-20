@@ -38,6 +38,7 @@ use Source\Wiki\Wiki\Application\UseCase\Command\SubmitWiki\SubmitWikiOutput;
 use Source\Wiki\Wiki\Application\UseCase\Command\SubmitWiki\SubmitWikiTarget;
 use Source\Wiki\Wiki\Domain\Entity\WikiHistory;
 use Source\Wiki\Wiki\Domain\Repository\WikiHistoryRepositoryInterface;
+use Source\Wiki\Wiki\Domain\Repository\WikiRepositoryInterface;
 use Source\Wiki\Wiki\Domain\Repository\WikiSnapshotRepositoryInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\DraftWikiIdentifier;
 use Source\Wiki\Wiki\Infrastructure\Repository\WikiHistoryRepository;
@@ -142,6 +143,42 @@ class WikiPublicationServiceTest extends TestCase
         $this->assertDatabaseHas('wikis', ['id' => $wikiId, 'owner_account_id' => $official ? $ownerId : null]);
         $this->assertDatabaseMissing('draft_wikis', ['id' => $draftId]);
         $this->assertDatabaseHas('wiki_histories', ['draft_wiki_id' => $draftId, 'translation_set_identifier' => $setId, 'language' => 'ja', 'resource_type' => $type->value]);
+    }
+
+    public function testPublicationPreservesContentWithoutGeneratingKeys(): void
+    {
+        $wikiId = StrTestHelper::generateUuid();
+        $setId = StrTestHelper::generateUuid();
+        $legacySections = json_encode([[
+            'type' => 'section', 'title' => 'Overview', 'display_order' => 0,
+            'contents' => [['block_type' => 'text', 'display_order' => 0, 'content' => 'Body']],
+        ]], JSON_THROW_ON_ERROR);
+        CreateWiki::create($wikiId, 'group', ['translation_set_identifier' => $setId, 'sections' => $legacySections]);
+        $draftId = $this->createDraft($wikiId, $setId, 'Updated');
+        DB::table('draft_wikis')->where('id', $draftId)->update(['sections' => $legacySections]);
+        $repository = $this->app()->make(WikiRepositoryInterface::class);
+        $before = $repository->findById(new WikiIdentifier($wikiId));
+        self::assertNotNull($before);
+        self::assertNull($before->sections()->sections()[0]->key());
+
+        DB::transaction(fn () => $this->app()->make(PublishWikiInterface::class)->process(
+            new PublishWikiInput(new DraftWikiIdentifier($draftId), $this->principalIdentifier(), ResourceType::GROUP),
+            new PublishWikiOutput(),
+        ));
+
+        $published = $repository->findById(new WikiIdentifier($wikiId));
+        self::assertNotNull($published);
+        $section = $published->sections()->sections()[0];
+        self::assertNull($section->key());
+        self::assertNull($section->contents()->blocks()[0]->key());
+        self::assertEquals($before->sections(), $published->sections());
+        $reloaded = $repository->findById(new WikiIdentifier($wikiId));
+        self::assertNotNull($reloaded);
+        self::assertEquals($published->sections(), $reloaded->sections());
+        $snapshot = $this->app()->make(WikiSnapshotRepositoryInterface::class)->findByWikiAndVersion(new WikiIdentifier($wikiId), new Version(1));
+        self::assertNotNull($snapshot);
+        self::assertNull($snapshot->sections()->sections()[0]->key());
+        self::assertNull($snapshot->sections()->sections()[0]->contents()->blocks()[0]->key());
     }
 
     public function testUpdatingOfficialWikiPreservesItsOwner(): void

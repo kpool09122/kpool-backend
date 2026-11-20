@@ -42,6 +42,7 @@ final class SectionContentMapper
                 if ($content instanceof Section) {
                     return [
                         'type' => 'section',
+                        ...($content->key() === null ? [] : ['section_key' => $content->key()]),
                         'title' => $content->title(),
                         'display_order' => $content->displayOrder(),
                         'contents' => self::collectionToArray($content->contents()),
@@ -52,11 +53,13 @@ final class SectionContentMapper
                     return match ($content::class) {
                         TextBlock::class => [
                             'block_type' => $content->blockType()->value,
+                            ...($content->key() === null ? [] : ['block_key' => $content->key()]),
                             'display_order' => $content->displayOrder(),
                             'content' => $content->content(),
                         ],
                         ImageBlock::class => [
                             'block_type' => $content->blockType()->value,
+                            ...($content->key() === null ? [] : ['block_key' => $content->key()]),
                             'display_order' => $content->displayOrder(),
                             'image_identifier' => (string) $content->imageIdentifier(),
                             'image_width' => $content->imageWidth(),
@@ -66,6 +69,7 @@ final class SectionContentMapper
                         ImageGalleryBlock::class => [
                             'image_width' => $content->imageWidth(),
                             'block_type' => $content->blockType()->value,
+                            ...($content->key() === null ? [] : ['block_key' => $content->key()]),
                             'display_order' => $content->displayOrder(),
                             'image_identifiers' => array_map(
                                 static fn (ImageIdentifier $id): string => (string) $id,
@@ -75,6 +79,7 @@ final class SectionContentMapper
                         ],
                         EmbedBlock::class => [
                             'block_type' => $content->blockType()->value,
+                            ...($content->key() === null ? [] : ['block_key' => $content->key()]),
                             'display_order' => $content->displayOrder(),
                             'provider' => $content->provider()->value,
                             'embed_id' => $content->embedId(),
@@ -82,23 +87,27 @@ final class SectionContentMapper
                         ],
                         QuoteBlock::class => [
                             'block_type' => $content->blockType()->value,
+                            ...($content->key() === null ? [] : ['block_key' => $content->key()]),
                             'display_order' => $content->displayOrder(),
                             'content' => $content->content(),
                             'source' => $content->source(),
                         ],
                         ListBlock::class => [
                             'block_type' => $content->blockType()->value,
+                            ...($content->key() === null ? [] : ['block_key' => $content->key()]),
                             'display_order' => $content->displayOrder(),
                             'list_type' => $content->listType()->value,
                             'items' => $content->items(),
                         ],
                         HistoryBlock::class => [
                             'block_type' => $content->blockType()->value,
+                            ...($content->key() === null ? [] : ['block_key' => $content->key()]),
                             'display_order' => $content->displayOrder(),
                             'entries' => array_map(static fn (HistoryEntry $entry): array => $entry->toArray(), $content->entries()),
                         ],
                         TableBlock::class => [
                             'block_type' => $content->blockType()->value,
+                            ...($content->key() === null ? [] : ['block_key' => $content->key()]),
                             'display_order' => $content->displayOrder(),
                             'header_cells' => self::tableCellsToArray($content->headerCells()),
                             'row_cells' => array_map(
@@ -109,6 +118,7 @@ final class SectionContentMapper
                         ],
                         ProfileCardListBlock::class => [
                             'block_type' => $content->blockType()->value,
+                            ...($content->key() === null ? [] : ['block_key' => $content->key()]),
                             'display_order' => $content->displayOrder(),
                             'wiki_identifiers' => array_map(
                                 static fn (WikiIdentifier $id) => (string) $id,
@@ -140,6 +150,7 @@ final class SectionContentMapper
                         displayOrder: TypedValue::int($contentData['display_order'] ?? 0),
                         contents: self::collectionFromArray(self::arrayRows($contentData['contents'] ?? []), $currentDepth + 1),
                         depth: $currentDepth,
+                        key: TypedValue::nullableString($contentData['section_key'] ?? null),
                     );
                 }
 
@@ -148,10 +159,12 @@ final class SectionContentMapper
                 return match ($blockType) {
                     BlockType::TEXT => new TextBlock(
                         displayOrder: TypedValue::int($contentData['display_order'] ?? 0),
+                        key: TypedValue::nullableString($contentData['block_key'] ?? null),
                         content: TypedValue::string($contentData['content'] ?? ''),
                     ),
                     BlockType::IMAGE => new ImageBlock(
                         displayOrder: TypedValue::int($contentData['display_order'] ?? 0),
+                        key: TypedValue::nullableString($contentData['block_key'] ?? null),
                         imageIdentifier: new ImageIdentifier(TypedValue::string($contentData['image_identifier'] ?? '')),
                         caption: TypedValue::nullableString($contentData['caption'] ?? null),
                         alt: TypedValue::nullableString($contentData['alt'] ?? null),
@@ -160,6 +173,7 @@ final class SectionContentMapper
                     BlockType::IMAGE_GALLERY => new ImageGalleryBlock(
                         imageWidth: TypedValue::nullableInt($contentData['image_width'] ?? null),
                         displayOrder: TypedValue::int($contentData['display_order'] ?? 0),
+                        key: TypedValue::nullableString($contentData['block_key'] ?? null),
                         imageIdentifiers: array_map(
                             static fn (string $id): ImageIdentifier => new ImageIdentifier($id),
                             TypedValue::stringArray($contentData['image_identifiers'] ?? []),
@@ -168,22 +182,26 @@ final class SectionContentMapper
                     ),
                     BlockType::EMBED => new EmbedBlock(
                         displayOrder: TypedValue::int($contentData['display_order'] ?? 0),
+                        key: TypedValue::nullableString($contentData['block_key'] ?? null),
                         provider: EmbedProvider::from(TypedValue::string($contentData['provider'] ?? '')),
                         embedId: TypedValue::string($contentData['embed_id'] ?? ''),
                         caption: TypedValue::nullableString($contentData['caption'] ?? null),
                     ),
                     BlockType::QUOTE => new QuoteBlock(
                         displayOrder: TypedValue::int($contentData['display_order'] ?? 0),
+                        key: TypedValue::nullableString($contentData['block_key'] ?? null),
                         content: TypedValue::string($contentData['content'] ?? ''),
                         source: TypedValue::nullableString($contentData['source'] ?? null),
                     ),
                     BlockType::LIST => new ListBlock(
                         displayOrder: TypedValue::int($contentData['display_order'] ?? 0),
+                        key: TypedValue::nullableString($contentData['block_key'] ?? null),
                         listType: ListType::from(TypedValue::string($contentData['list_type'] ?? 'bullet')),
                         items: TypedValue::stringArray($contentData['items'] ?? []),
                     ),
                     BlockType::HISTORY => new HistoryBlock(
                         displayOrder: TypedValue::int($contentData['display_order'] ?? 0),
+                        key: TypedValue::nullableString($contentData['block_key'] ?? null),
                         entries: array_values(array_map(
                             static fn (array $entry): HistoryEntry => new HistoryEntry(
                                 year: TypedValue::int($entry['year'] ?? null),
@@ -195,6 +213,7 @@ final class SectionContentMapper
                     ),
                     BlockType::TABLE => new TableBlock(
                         displayOrder: TypedValue::int($contentData['display_order'] ?? 0),
+                        key: TypedValue::nullableString($contentData['block_key'] ?? null),
                         rowCells: array_map(
                             static fn (mixed $rowCells): array => self::tableCellsFromArray($rowCells) ?? [],
                             TypedValue::array($contentData['row_cells'] ?? []),
@@ -204,6 +223,7 @@ final class SectionContentMapper
                     ),
                     BlockType::PROFILE_CARD_LIST => new ProfileCardListBlock(
                         displayOrder: TypedValue::int($contentData['display_order'] ?? 0),
+                        key: TypedValue::nullableString($contentData['block_key'] ?? null),
                         wikiIdentifiers: array_map(
                             static fn (string $id) => new WikiIdentifier($id),
                             TypedValue::stringArray($contentData['wiki_identifiers'] ?? []),

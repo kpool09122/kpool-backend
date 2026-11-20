@@ -187,6 +187,7 @@ final class WikiCommandPayloadMapper
         if ($type === 'section') {
             return [
                 'type' => 'section',
+                'section_key' => $content['sectionKey'] ?? null,
                 'title' => $content['title'] ?? '',
                 'display_order' => $content['displayOrder'] ?? 0,
                 'contents' => self::sectionContents(RequestValue::values($content['contents'] ?? []), $path . '.contents'),
@@ -207,6 +208,7 @@ final class WikiCommandPayloadMapper
 
         return [
             'block_type' => $type,
+            'block_key' => $content['blockKey'] ?? null,
             'display_order' => $content['displayOrder'] ?? 0,
             'content' => $content['content'] ?? '',
             'image_identifier' => $content['imageIdentifier'] ?? null,
