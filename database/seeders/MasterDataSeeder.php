@@ -18,6 +18,7 @@ class MasterDataSeeder extends Seeder
                 AccountAuthorizationSeeder::class,
                 SiteManagementAuthorizationSeeder::class,
                 AnalyzeAuthorizationSeeder::class,
+                MonetizationAuthorizationSeeder::class,
             ]);
         });
     }
