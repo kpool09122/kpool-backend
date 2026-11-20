@@ -551,6 +551,8 @@ class AuthenticatedRouteProtectionTest extends TestCase
             'api/v1/wiki/wiki/{language}/song/{slug}',
             'api/v1/wiki/wiki/{language}/talent/{slug}',
             'api/v1/wiki/wikis/{language}',
+            'api/v1/wiki/wikis/statistics',
+            'api/v1/wiki/videos/popular',
             'api/v1/wiki/sitemap/wikis',
         ];
     }
