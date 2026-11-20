@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Wiki\Infrastructure\Query;
 
+use Application\Models\Wiki\DraftWiki;
 use Mockery;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
@@ -31,6 +33,58 @@ use Tests\TestCase;
 
 class ListDraftWikisTest extends TestCase
 {
+    /** @return array<string, array{?string, ?string}> */
+    public static function cursorDates(): array
+    {
+        return [
+            'same dates' => ['2026-05-01 00:00:00', '2026-05-01 00:00:00'],
+            'null dates' => [null, null],
+            'null before dated items' => [null, '2026-05-01 00:00:00'],
+        ];
+    }
+
+    #[Group('useDb')]
+    #[DataProvider('cursorDates')]
+    public function testCursorDoesNotSkipItemsWhenTheLastLoadedItemIsRemoved(?string $date, ?string $remainingDate): void
+    {
+        $ids = [
+            '01965bb2-bcc9-7c6f-8b90-89f7f217f801',
+            '01965bb2-bcc9-7c6f-8b90-89f7f217f802',
+            '01965bb2-bcc9-7c6f-8b90-89f7f217f803',
+            '01965bb2-bcc9-7c6f-8b90-89f7f217f804',
+        ];
+        foreach (array_reverse($ids) as $id) {
+            $itemDate = in_array($id, array_slice($ids, 0, 2), true) ? $date : $remainingDate;
+            CreateDraftWiki::create($id, 'talent', [
+                'edited_at' => $itemDate,
+                'updated_at' => $itemDate,
+                'editor_id' => '01965bb2-bcc9-7c6f-8b90-89f7f217f701',
+                'status' => ApprovalStatus::UnderReview->value,
+            ]);
+        }
+
+        $first = $this->process(new ListDraftWikisInput(
+            statuses: [ApprovalStatus::UnderReview],
+            principalIdentifier: $this->defaultPrincipalIdentifier(),
+            perPage: 2,
+        ))->toArray();
+        $this->assertSame(array_slice($ids, 0, 2), array_column($first['wikis'], 'wikiIdentifier'));
+        $this->assertNotNull($first['next_cursor']);
+
+        // The cursor must work even when its original row no longer exists.
+        DraftWiki::query()->whereIn('id', array_slice($ids, 0, 2))->delete();
+
+        $second = $this->process(new ListDraftWikisInput(
+            statuses: [ApprovalStatus::UnderReview],
+            principalIdentifier: $this->defaultPrincipalIdentifier(),
+            perPage: 2,
+            cursor: $first['next_cursor'],
+        ))->toArray();
+        $this->assertSame(array_slice($ids, 2), array_column($second['wikis'], 'wikiIdentifier'));
+        $this->assertNull($second['next_cursor']);
+        $this->assertSame(2, $second['total']);
+    }
+
     #[Group('useDb')]
     public function testProcessFiltersByStatusSortedByEditedAtDesc(): void
     {
@@ -65,8 +119,7 @@ class ListDraftWikisTest extends TestCase
             principalIdentifier: $this->defaultPrincipalIdentifier(),
         ))->toArray();
 
-        $this->assertSame(1, $payload['current_page']);
-        $this->assertSame(1, $payload['last_page']);
+        $this->assertNull($payload['next_cursor']);
         $this->assertSame(3, $payload['total']);
         $this->assertSame(10, $payload['per_page']);
         $this->assertSame([
@@ -200,7 +253,7 @@ class ListDraftWikisTest extends TestCase
 
         $this->assertCount(2, $payload['wikis']);
         $this->assertSame(2, $payload['per_page']);
-        $this->assertSame(2, $payload['last_page']);
+        $this->assertNotNull($payload['next_cursor']);
         $this->assertSame(3, $payload['total']);
     }
 

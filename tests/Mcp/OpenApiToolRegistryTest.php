@@ -186,9 +186,10 @@ class OpenApiToolRegistryTest extends TestCase
         self::assertNotNull($submit);
         self::assertTrue($list->accepts((object) ['statuses' => ['pending', 'rejected']]));
         self::assertFalse($list->accepts((object) ['statuses' => ['bad']]));
-        self::assertSame(['statuses' => 'pending,rejected', 'page' => 2], $list->request((object) ['statuses' => ['pending', 'rejected'], 'page' => 2])['query']);
+        self::assertTrue($list->accepts((object) ['statuses' => ['pending', 'rejected'], 'cursor' => 'next-cursor']));
+        self::assertSame(['statuses' => 'pending,rejected', 'cursor' => 'next-cursor'], $list->request((object) ['statuses' => ['pending', 'rejected'], 'cursor' => 'next-cursor'])['query']);
         self::assertFalse($list->accepts((object) ['statuses' => []]));
-        self::assertFalse($list->accepts((object) ['statuses' => ['pending'], 'page' => 0]));
+        self::assertFalse($list->accepts((object) ['statuses' => ['pending'], 'cursor' => 2]));
         self::assertFalse($list->accepts((object) ['statuses' => ['pending'], 'perPage' => 101]));
         $args = (object) ['wikiId' => '019a8fa0-3f20-7000-8000-000000000001', 'resourceType' => 'group'];
         self::assertTrue($submit->accepts($args));

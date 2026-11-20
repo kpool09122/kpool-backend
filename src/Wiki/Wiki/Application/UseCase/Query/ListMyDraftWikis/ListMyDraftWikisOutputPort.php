@@ -11,7 +11,7 @@ interface ListMyDraftWikisOutputPort
     /**
      * @param list<DraftWikiListItemReadModel> $wikis
      */
-    public function output(array $wikis, int $currentPage, int $lastPage, int $total, int $perPage): void;
+    public function output(array $wikis, ?string $nextCursor, int $total, int $perPage): void;
 
     /**
      * @return array<string, mixed>

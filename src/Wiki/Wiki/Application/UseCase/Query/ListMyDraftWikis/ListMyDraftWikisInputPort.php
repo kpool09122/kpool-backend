@@ -11,6 +11,8 @@ use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 
 interface ListMyDraftWikisInputPort
 {
+    public function cursor(): ?string;
+
     public function perPage(): int;
 
     public function translationSetIdentifier(): ?TranslationSetIdentifier;

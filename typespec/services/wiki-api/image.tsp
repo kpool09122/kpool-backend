@@ -223,10 +223,8 @@ model ListImageDeletionRequestsResponseBody {
 model ListDraftImagesResponseBody {
   @doc("Draft images for the requested page.")
   images: DraftImageListItem[];
-  @doc("Current page number.")
-  current_page: int32;
-  @doc("Last page number.")
-  last_page: int32;
+  @doc("Opaque cursor for the next batch; null when no more items remain.")
+  next_cursor: string | null;
   @doc("Total number of draft images.")
   total: int32;
   @doc("Number of images per page.")
@@ -410,7 +408,8 @@ interface DraftImageListOperations {
   listDraftImages(
     @query translationSetIdentifier?: Uuid | null,
     @query status: DraftImageStatus,
-    @query perPage?: int32,
+    @minValue(1) @maxValue(100) @query perPage?: int32 | null,
+    @maxLength(2048) @query cursor?: string | null,
   ): ListDraftImagesResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse | KPool.Common.ForbiddenProblemResponse;
 }
 @route("/image-deletion-requests")

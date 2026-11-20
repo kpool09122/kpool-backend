@@ -34,12 +34,11 @@ class ListDraftImagesOutputTest extends TestCase
         );
 
         $output = new ListDraftImagesOutput();
-        $output->output([$image], 1, 3, 5, 2);
+        $output->output([$image], 'next-cursor', 5, 2);
 
         $this->assertSame([
             'images' => [$image->toArray()],
-            'current_page' => 1,
-            'last_page' => 3,
+            'next_cursor' => 'next-cursor',
             'total' => 5,
             'per_page' => 2,
         ], $output->toArray());

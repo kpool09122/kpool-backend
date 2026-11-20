@@ -34,6 +34,7 @@ class ListMyDraftWikisRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'cursor' => ['nullable', 'string', 'max:2048'],
             'perPage' => ['nullable', 'integer', 'min:1', 'max:100'],
             'translationSetIdentifier' => ['nullable', 'uuid'],
             'statuses' => ['required', 'array', 'min:1'],
@@ -45,6 +46,13 @@ class ListMyDraftWikisRequest extends FormRequest
                 ResourceType::SONG->value,
             ])],
         ];
+    }
+
+    public function cursor(): ?string
+    {
+        $cursor = $this->query('cursor');
+
+        return $cursor === null ? null : (string) $cursor;
     }
 
     public function perPage(): ?int

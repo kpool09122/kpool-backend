@@ -424,10 +424,8 @@ model ListMyOwnedWikisResponseBody {
 model ListDraftWikisResponseBody {
   @doc("Draft wikis for the requested page.")
   wikis: DraftWikiListItem[];
-  @doc("Current page number.")
-  current_page: int32;
-  @doc("Last page number.")
-  last_page: int32;
+  @doc("Opaque cursor for the next batch; null when no more items remain.")
+  next_cursor: string | null;
   @doc("Total number of draft wikis.")
   total: int32;
   @doc("Number of wikis per page.")
@@ -613,8 +611,8 @@ interface MyDraftWikiListOperations {
   @useAuth(SessionCookieAuth | InternalApiBearerAuth)
   @doc("List draft wikis edited by the current principal. Internal API Bearer scope: wiki-drafts:read.")
   listMyDraftWikis(
-    @doc("Page number; default 1. Uses the existing Laravel paginator.")
-    @minValue(1) @query page?: int32 | null,
+    @doc("Opaque next_cursor from the previous response. Omit for the first batch.")
+    @maxLength(2048) @query cursor?: string | null,
     @minValue(1) @maxValue(100) @query perPage?: int32 | null,
     @query translationSetIdentifier?: Uuid,
     @minItems(1) @query statuses: DraftWikiStatus[],
@@ -628,8 +626,8 @@ interface DraftWikiListOperations {
   @useAuth(SessionCookieAuth | InternalApiBearerAuth)
   @doc("List draft wikis with read policy authorization. Internal API Bearer scope: wiki-drafts:read.")
   listDraftWikis(
-    @doc("Page number; default 1. Uses the existing Laravel paginator.")
-    @minValue(1) @query page?: int32 | null,
+    @doc("Opaque next_cursor from the previous response. Omit for the first batch.")
+    @maxLength(2048) @query cursor?: string | null,
     @minValue(1) @maxValue(100) @query perPage?: int32 | null,
     @query translationSetIdentifier?: Uuid,
     @minItems(1) @query statuses: DraftWikiStatus[],

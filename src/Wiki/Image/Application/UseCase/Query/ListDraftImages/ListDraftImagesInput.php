@@ -13,7 +13,13 @@ readonly class ListDraftImagesInput implements ListDraftImagesInputPort
         private ApprovalStatus $status,
         private ?TranslationSetIdentifier $translationSetIdentifier = null,
         private ?int $perPage = null,
+        private ?string $cursor = null,
     ) {
+    }
+
+    public function cursor(): ?string
+    {
+        return $this->cursor;
     }
 
     public function perPage(): int
