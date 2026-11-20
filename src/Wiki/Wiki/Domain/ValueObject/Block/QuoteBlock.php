@@ -10,7 +10,13 @@ final readonly class QuoteBlock implements BlockInterface
         private int $displayOrder,
         private string $content,
         private ?string $source = null,
+        private ?string $key = null,
     ) {
+    }
+
+    public function key(): ?string
+    {
+        return $this->key;
     }
 
     public function displayOrder(): int

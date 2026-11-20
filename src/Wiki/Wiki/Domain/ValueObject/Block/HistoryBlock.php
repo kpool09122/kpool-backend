@@ -10,7 +10,13 @@ final readonly class HistoryBlock implements BlockInterface
     public function __construct(
         private int $displayOrder,
         private array $entries,
+        private ?string $key = null,
     ) {
+    }
+
+    public function key(): ?string
+    {
+        return $this->key;
     }
 
     public function displayOrder(): int

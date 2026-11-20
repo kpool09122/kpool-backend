@@ -11032,6 +11032,14 @@ components:
             - history
             - table
             - profile_card_list
+        sectionKey:
+          type: string
+          nullable: true
+          description: Stable section key, preserved through editing and translation. Optional for legacy content.
+        blockKey:
+          type: string
+          nullable: true
+          description: Stable block key, preserved through editing and translation. Optional for legacy content.
         displayOrder:
           type: integer
           format: int32

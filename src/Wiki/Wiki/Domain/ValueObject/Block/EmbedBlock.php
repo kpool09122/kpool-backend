@@ -11,7 +11,13 @@ final readonly class EmbedBlock implements BlockInterface
         private EmbedProvider $provider,
         private string $embedId,
         private ?string $caption = null,
+        private ?string $key = null,
     ) {
+    }
+
+    public function key(): ?string
+    {
+        return $this->key;
     }
 
     public function displayOrder(): int

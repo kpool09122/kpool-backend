@@ -13,7 +13,13 @@ final readonly class ListBlock implements BlockInterface
         private int $displayOrder,
         private ListType $listType,
         private array $items,
+        private ?string $key = null,
     ) {
+    }
+
+    public function key(): ?string
+    {
+        return $this->key;
     }
 
     public function displayOrder(): int

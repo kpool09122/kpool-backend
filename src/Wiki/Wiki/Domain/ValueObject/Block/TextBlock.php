@@ -9,7 +9,13 @@ final readonly class TextBlock implements BlockInterface
     public function __construct(
         private int $displayOrder,
         private string $content,
+        private ?string $key = null,
     ) {
+    }
+
+    public function key(): ?string
+    {
+        return $this->key;
     }
 
     public function displayOrder(): int

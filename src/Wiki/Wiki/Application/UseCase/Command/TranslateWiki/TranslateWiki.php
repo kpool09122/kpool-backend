@@ -169,6 +169,7 @@ readonly class TranslateWiki implements TranslateWikiInterface
                     $content->displayOrder(),
                     $this->resolveTranslatedSections($content->contents(), $language),
                     $content->depth(),
+                    key: $content->key(),
                 );
             } elseif ($content instanceof ProfileCardListBlock) {
                 $identifiers = [];
@@ -186,6 +187,7 @@ readonly class TranslateWiki implements TranslateWikiInterface
                     ),
                     $content->cardShape(),
                     $content->title(),
+                    key: $content->key(),
                 );
             }
             $resolved[] = $content;
