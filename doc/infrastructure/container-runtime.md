@@ -4,7 +4,7 @@
 
 ```sh
 task container:build                 # --platform linux/arm64 --target production
-task container:smoke                 # PHP 8.5 / GD WebP / PostgreSQL / Redis / PCNTL / 開発依存除外
+task container:smoke                 # PHP 8.5.13 / Nginx >=1.31.9,<1.32 / 設定構文 / 拡張 / 開発依存除外
 task container:verify                # Python 3 + Docker。専用DB/Redis/ネットワークを作成・削除
 task check                           # 既存開発用ステージで整形・PHPStan・全PHPUnit
 ```
@@ -12,6 +12,14 @@ task check                           # 既存開発用ステージで整形・PH
 production ステージはソース・composer.lock に基づく `--no-dev` vendor・PHP・nginx・MeCabを内包する。Composerはビルド専用で、起動時の取得やホストのソース/vendorマウントは不要。ネイティブ拡張も指定プラットフォーム上でビルドする。PHPUnit、PHPStan実行ツール、CS Fixer、PCOVは含めない（本番ライブラリが依存する `phpstan/phpdoc-parser` は解析データ用ライブラリであり開発ツールではない）。
 
 development ステージが Dockerfile の既定。既存 Compose も `target: development` を明示し、開発用エントリーポイントとPCOV・Composerを維持する。
+
+### PHP・Nginxの更新
+
+PHPは開発・本番とも `8.5.13-fpm-trixie` に固定する。Nginxはローカル・本番とも **1.31系の最新パッチ（1.31.9以上）**を使う。本番は署名検証付きのNginx公式mainline APTから `nginx=1.31.*` を取得し、ビルド時に下限を検証する。ローカルは `nginx:1.31-alpine` を起動時に再取得し、同じバージョン検証スクリプトをentrypointで実行する。
+
+`task container:build` とリリースworkflowは `--pull --no-cache` でビルドし、新しいパッチを取り込む。公開前に `container:smoke` でPHP・NginxのバージョンとNginx設定構文を確認する。稼働中の本番への反映には新しいイメージのデプロイが必要。既存digestの再配備は、そのイメージのバージョンを維持する。
+
+ローカルのPHP更新時は `docker-compose build --pull php` 後に `docker-compose up -d --no-deps php nginx` で再作成する。Nginxのパッチ更新だけなら `docker-compose up -d --no-deps nginx` で再取得・再作成する。
 
 ## #156 へのタスク定義引き渡し
 
