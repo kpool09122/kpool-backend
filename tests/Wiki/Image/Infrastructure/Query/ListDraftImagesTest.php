@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Image\Infrastructure\Query;
 
+use Application\Models\Wiki\DraftWikiImage;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Shared\Domain\ValueObject\TranslationSetIdentifier;
 use Source\Wiki\Image\Application\UseCase\Query\ListDraftImages\ListDraftImagesInput;
@@ -16,6 +17,42 @@ use Tests\TestCase;
 
 class ListDraftImagesTest extends TestCase
 {
+    #[Group('useDb')]
+    public function testCursorDoesNotSkipItemsWhenTheLastLoadedItemIsRemoved(): void
+    {
+        $ids = [
+            '01965bb2-bcc9-7c6f-8b90-89f7f217f801',
+            '01965bb2-bcc9-7c6f-8b90-89f7f217f802',
+            '01965bb2-bcc9-7c6f-8b90-89f7f217f803',
+            '01965bb2-bcc9-7c6f-8b90-89f7f217f804',
+        ];
+        foreach (array_reverse($ids) as $id) {
+            CreateDraftImage::create($id, [
+                'uploaded_at' => '2026-05-01 00:00:00',
+                'status' => ApprovalStatus::UnderReview->value,
+            ]);
+        }
+
+        $first = $this->process(new ListDraftImagesInput(
+            status: ApprovalStatus::UnderReview,
+            perPage: 2,
+        ))->toArray();
+        $this->assertSame(array_slice($ids, 0, 2), array_column($first['images'], 'imageIdentifier'));
+        $this->assertNotNull($first['next_cursor']);
+
+        // The cursor must work even when its original row no longer exists.
+        DraftWikiImage::query()->whereIn('id', array_slice($ids, 0, 2))->delete();
+
+        $second = $this->process(new ListDraftImagesInput(
+            status: ApprovalStatus::UnderReview,
+            perPage: 2,
+            cursor: $first['next_cursor'],
+        ))->toArray();
+        $this->assertSame(array_slice($ids, 2), array_column($second['images'], 'imageIdentifier'));
+        $this->assertNull($second['next_cursor']);
+        $this->assertSame(2, $second['total']);
+    }
+
     #[Group('useDb')]
     public function testProcessFiltersByStatusSortedByUploadedAtDesc(): void
     {
@@ -46,8 +83,7 @@ class ListDraftImagesTest extends TestCase
             status: ApprovalStatus::UnderReview,
         ))->toArray();
 
-        $this->assertSame(1, $payload['current_page']);
-        $this->assertSame(1, $payload['last_page']);
+        $this->assertNull($payload['next_cursor']);
         $this->assertSame(3, $payload['total']);
         $this->assertSame(10, $payload['per_page']);
         $this->assertSame([
@@ -123,7 +159,7 @@ class ListDraftImagesTest extends TestCase
 
         $this->assertCount(2, $payload['images']);
         $this->assertSame(2, $payload['per_page']);
-        $this->assertSame(2, $payload['last_page']);
+        $this->assertNotNull($payload['next_cursor']);
         $this->assertSame(3, $payload['total']);
     }
 

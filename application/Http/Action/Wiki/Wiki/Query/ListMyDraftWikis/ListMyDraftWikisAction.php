@@ -44,6 +44,7 @@ readonly class ListMyDraftWikisAction
                     translationSetIdentifier: $request->translationSetIdentifier() !== null ? new TranslationSetIdentifier($request->translationSetIdentifier()) : null,
                     resourceType: $request->resourceType() !== null ? ResourceType::from($request->resourceType()) : null,
                     perPage: $request->perPage(),
+                    cursor: $request->cursor(),
                 );
                 $output = new ListMyDraftWikisOutput();
                 $this->listMyDraftWikis->process($input, $output);

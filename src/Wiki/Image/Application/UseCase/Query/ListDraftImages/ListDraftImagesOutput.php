@@ -11,9 +11,7 @@ class ListDraftImagesOutput implements ListDraftImagesOutputPort
     /** @var list<DraftImageReadModel> */
     private array $images = [];
 
-    private ?int $currentPage = null;
-
-    private ?int $lastPage = null;
+    private ?string $nextCursor = null;
 
     private ?int $total = null;
 
@@ -22,24 +20,22 @@ class ListDraftImagesOutput implements ListDraftImagesOutputPort
     /**
      * @param list<DraftImageReadModel> $images
      */
-    public function output(array $images, int $currentPage, int $lastPage, int $total, int $perPage): void
+    public function output(array $images, ?string $nextCursor, int $total, int $perPage): void
     {
         $this->images = $images;
-        $this->currentPage = $currentPage;
-        $this->lastPage = $lastPage;
+        $this->nextCursor = $nextCursor;
         $this->total = $total;
         $this->perPage = $perPage;
     }
 
     /**
-     * @return array{images: list<array{imageIdentifier: string, publishedImageIdentifier: string|null, url: string, resourceType: string, translationSetIdentifier: string, displayOrder: int, sourceUrl: string, sourceName: string, author: string|null, license: string|null, altText: string, wiki: array{names: array<string, string>, slug: string}, status: string, uploadedAt: string|null}>, current_page: int|null, last_page: int|null, total: int|null, per_page: int|null}
+     * @return array{images: list<array{imageIdentifier: string, publishedImageIdentifier: string|null, url: string, resourceType: string, translationSetIdentifier: string, displayOrder: int, sourceUrl: string, sourceName: string, author: string|null, license: string|null, altText: string, wiki: array{names: array<string, string>, slug: string}, status: string, uploadedAt: string|null}>, next_cursor: string|null, total: int|null, per_page: int|null}
      */
     public function toArray(): array
     {
         return [
             'images' => array_map(static fn (DraftImageReadModel $image): array => $image->toArray(), $this->images),
-            'current_page' => $this->currentPage,
-            'last_page' => $this->lastPage,
+            'next_cursor' => $this->nextCursor,
             'total' => $this->total,
             'per_page' => $this->perPage,
         ];

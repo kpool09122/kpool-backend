@@ -7,7 +7,7 @@ namespace Source\Wiki\Image\Infrastructure\Query;
 use Application\Models\Wiki\DraftWikiImage;
 use Application\Models\Wiki\Wiki;
 use DateTimeInterface;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Contracts\Pagination\CursorPaginator;
 use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Infrastructure\Support\ImageUrl;
 use Source\Wiki\Image\Application\UseCase\Query\DraftImageReadModel;
@@ -27,23 +27,28 @@ readonly class ListDraftImages implements ListDraftImagesInterface
                 'wikis.songBasic',
             ])
             ->where('status', $input->status()->value)
-            ->orderBy('uploaded_at', 'desc');
+            ->orderBy('uploaded_at', 'desc')
+            ->orderBy('id');
 
         if ($input->translationSetIdentifier() !== null) {
             $query->where('translation_set_identifier', (string) $input->translationSetIdentifier());
         }
 
-        /** @var LengthAwarePaginator<int, DraftWikiImage> $paginator */
-        $paginator = $query->paginate($input->perPage());
+        $total = (clone $query)->count();
+
+        /** @var CursorPaginator<int, DraftWikiImage> $paginator */
+        $paginator = $query->cursorPaginate(
+            perPage: $input->perPage(),
+            cursor: $input->cursor(),
+        );
 
         $output->output(
             array_map(
                 fn (DraftWikiImage $image): DraftImageReadModel => $this->toReadModel($image),
                 array_values($paginator->items()),
             ),
-            $paginator->currentPage(),
-            $paginator->lastPage(),
-            $paginator->total(),
+            $paginator->nextCursor()?->encode(),
+            $total,
             $paginator->perPage(),
         );
     }

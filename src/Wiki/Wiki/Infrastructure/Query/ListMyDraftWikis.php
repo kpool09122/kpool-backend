@@ -10,7 +10,7 @@ use Application\Models\Wiki\DraftWikiGroupBasic;
 use Application\Models\Wiki\DraftWikiSongBasic;
 use Application\Models\Wiki\DraftWikiTalentBasic;
 use DateTimeInterface;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Contracts\Pagination\CursorPaginator;
 use InvalidArgumentException;
 use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Infrastructure\Support\ImageUrl;
@@ -47,8 +47,13 @@ readonly class ListMyDraftWikis implements ListMyDraftWikisInterface
                 array_map(static fn (ApprovalStatus $status): string => $status->value, $input->statuses()),
             )
             ->where('draft_wikis.editor_id', (string) $input->editorIdentifier())
-            ->orderBy('draft_wikis.edited_at', 'desc')
-            ->orderBy('draft_wikis.updated_at', 'desc');
+            ->select('draft_wikis.*')
+            // PostgreSQL DESC puts null dates first. Cursor comparisons need non-null values.
+            ->selectRaw("COALESCE(draft_wikis.edited_at, 'infinity'::timestamp) as cursor_edited_at")
+            ->selectRaw("COALESCE(draft_wikis.updated_at, 'infinity'::timestamp) as cursor_updated_at")
+            ->orderBy('cursor_edited_at', 'desc')
+            ->orderBy('cursor_updated_at', 'desc')
+            ->orderBy('id');
 
         if ($input->translationSetIdentifier() !== null) {
             $query->where('draft_wikis.translation_set_identifier', (string) $input->translationSetIdentifier());
@@ -60,17 +65,21 @@ readonly class ListMyDraftWikis implements ListMyDraftWikisInterface
             $query->whereIn('draft_wikis.resource_type', array_keys(self::BASIC_RELATIONS));
         }
 
-        /** @var LengthAwarePaginator<int, DraftWiki> $paginator */
-        $paginator = $query->paginate($input->perPage());
+        $total = (clone $query)->count();
+
+        /** @var CursorPaginator<int, DraftWiki> $paginator */
+        $paginator = $query->cursorPaginate(
+            perPage: $input->perPage(),
+            cursor: $input->cursor(),
+        );
 
         $output->output(
             array_map(
                 fn (DraftWiki $wiki): DraftWikiListItemReadModel => $this->toReadModel($wiki),
                 array_values($paginator->items()),
             ),
-            $paginator->currentPage(),
-            $paginator->lastPage(),
-            $paginator->total(),
+            $paginator->nextCursor()?->encode(),
+            $total,
             $paginator->perPage(),
         );
     }

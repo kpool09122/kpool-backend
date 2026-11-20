@@ -33,6 +33,7 @@ readonly class ListDraftImagesAction
                 translationSetIdentifier: $request->translationSetIdentifier() !== null ? new TranslationSetIdentifier($request->translationSetIdentifier()) : null,
                 status: ApprovalStatus::from($request->status()),
                 perPage: $request->perPage(),
+                cursor: $request->cursor(),
             );
             $output = new ListDraftImagesOutput();
             $this->listDraftImages->process($input, $output);

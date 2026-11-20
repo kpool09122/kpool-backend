@@ -9,6 +9,8 @@ use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 
 interface ListDraftImagesInputPort
 {
+    public function cursor(): ?string;
+
     public function perPage(): int;
 
     public function translationSetIdentifier(): ?TranslationSetIdentifier;

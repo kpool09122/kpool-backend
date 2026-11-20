@@ -46,6 +46,7 @@ readonly class ListDraftWikisAction
                     resourceType: $request->resourceType() !== null ? ResourceType::from($request->resourceType()) : null,
                     principalIdentifier: $this->wikiContext->principalIdentifier,
                     perPage: $request->perPage(),
+                    cursor: $request->cursor(),
                 );
                 $output = new ListDraftWikisOutput();
                 $this->listDraftWikis->process($input, $output);

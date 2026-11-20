@@ -11,7 +11,7 @@ interface ListDraftImagesOutputPort
     /**
      * @param list<DraftImageReadModel> $images
      */
-    public function output(array $images, int $currentPage, int $lastPage, int $total, int $perPage): void;
+    public function output(array $images, ?string $nextCursor, int $total, int $perPage): void;
 
     /**
      * @return array<string, mixed>

@@ -36,12 +36,11 @@ class ListMyDraftWikisOutputTest extends TestCase
         );
 
         $output = new ListMyDraftWikisOutput();
-        $output->output([$item], 1, 3, 5, 2);
+        $output->output([$item], 'next-cursor', 5, 2);
 
         $this->assertSame([
             'wikis' => [$item->toArray()],
-            'current_page' => 1,
-            'last_page' => 3,
+            'next_cursor' => 'next-cursor',
             'total' => 5,
             'per_page' => 2,
         ], $output->toArray());

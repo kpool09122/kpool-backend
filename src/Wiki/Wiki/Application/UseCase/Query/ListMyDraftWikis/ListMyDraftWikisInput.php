@@ -18,7 +18,13 @@ readonly class ListMyDraftWikisInput implements ListMyDraftWikisInputPort
         private ?TranslationSetIdentifier $translationSetIdentifier = null,
         private ?ResourceType $resourceType = null,
         private ?int $perPage = null,
+        private ?string $cursor = null,
     ) {
+    }
+
+    public function cursor(): ?string
+    {
+        return $this->cursor;
     }
 
     public function perPage(): int
