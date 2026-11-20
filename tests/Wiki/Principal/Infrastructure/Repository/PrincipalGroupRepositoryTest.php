@@ -564,6 +564,11 @@ class PrincipalGroupRepositoryTest extends TestCase
         CreatePrincipalGroupMembership::create($principalGroupId, $principalId1);
         CreatePrincipalGroupMembership::create($principalGroupId, $principalId2);
 
+        DB::table('wiki_principal_group_memberships')->where('principal_group_id', $principalGroupId)->update([
+            'created_at' => '2020-01-01 00:00:00',
+            'updated_at' => '2020-01-01 00:00:00',
+        ]);
+
         // 事前確認
         $this->assertDatabaseHas('wiki_principal_group_memberships', [
             'principal_group_id' => $principalGroupId,
@@ -595,6 +600,15 @@ class PrincipalGroupRepositoryTest extends TestCase
             'principal_group_id' => $principalGroupId,
             'principal_id' => $principalId2,
         ]);
+        $this->assertDatabaseMissing('wiki_principal_group_memberships', [
+            'principal_group_id' => $principalGroupId,
+            'principal_id' => $principalId1,
+            'created_at' => '2020-01-01 00:00:00',
+        ]);
+
+        $principalGroup->replaceMembers([]);
+        $repository->save($principalGroup);
+        $this->assertDatabaseMissing('wiki_principal_group_memberships', ['principal_group_id' => $principalGroupId]);
     }
 
     /**

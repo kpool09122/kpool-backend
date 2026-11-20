@@ -194,37 +194,21 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
     {
         $principalGroupId = (string) $principalGroup->principalGroupIdentifier();
 
-        $existingMemberIds = PrincipalGroupMembershipEloquent::query()
+        PrincipalGroupMembershipEloquent::query()
             ->where('principal_group_id', $principalGroupId)
-            ->pluck('principal_id')
-            ->map(static fn (mixed $id): string => TypedValue::string($id))
-            ->all();
+            ->delete();
 
-        $currentMemberIds = array_map(
-            static fn (PrincipalIdentifier $identifier) => (string) $identifier,
-            $principalGroup->members()
+        $records = array_map(
+            static fn (PrincipalIdentifier $principalIdentifier): array => [
+                'principal_group_id' => $principalGroupId,
+                'principal_id' => (string) $principalIdentifier,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            $principalGroup->members(),
         );
 
-        $toAdd = array_diff($currentMemberIds, $existingMemberIds);
-        $toRemove = array_diff($existingMemberIds, $currentMemberIds);
-
-        if (! empty($toRemove)) {
-            PrincipalGroupMembershipEloquent::query()
-                ->where('principal_group_id', $principalGroupId)
-                ->whereIn('principal_id', $toRemove)
-                ->delete();
-        }
-
-        if (! empty($toAdd)) {
-            $records = array_map(
-                static fn (string $principalId) => [
-                    'principal_group_id' => $principalGroupId,
-                    'principal_id' => $principalId,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ],
-                $toAdd
-            );
+        if ($records !== []) {
             PrincipalGroupMembershipEloquent::query()->insert($records);
         }
     }
