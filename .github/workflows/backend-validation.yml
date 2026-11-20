@@ -100,7 +100,8 @@ jobs:
           RDS_CA_SHA256: ${{ vars.RDS_CA_SHA256 }}
         run: |
           python3 -B control/scripts/release/cli.py prepare-ca
-          docker build --platform linux/arm64 --target production --secret id=rds_ca,src=release/rds-ca.pem --build-arg "RDS_CA_SHA256=$RDS_CA_SHA256" -t "kpool-release:$SOURCE_SHA" source
+          docker build --pull --no-cache --platform linux/arm64 --target production --secret id=rds_ca,src=release/rds-ca.pem --build-arg "RDS_CA_SHA256=$RDS_CA_SHA256" -t "kpool-release:$SOURCE_SHA" source
+          task --dir source container:smoke image="kpool-release:$SOURCE_SHA"
           docker save --output release/backend-image.tar "kpool-release:$SOURCE_SHA"
           python3 -B control/scripts/release/cli.py build-record
           rm release/rds-ca.pem

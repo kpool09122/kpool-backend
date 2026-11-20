@@ -13,7 +13,7 @@ tasks:
   container:build:
     desc: Build self-contained production image for Linux ARM64
     cmds:
-      - docker build --platform linux/arm64 --target production -t {{.image | default "kpool-backend:production"}} .
+      - docker build --pull --no-cache --platform linux/arm64 --target production -t {{.image | default "kpool-backend:production"}} .
 
   container:smoke:
     desc: Check production PHP extensions and absence of development dependencies
