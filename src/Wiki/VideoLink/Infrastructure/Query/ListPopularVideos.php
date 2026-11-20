@@ -38,7 +38,7 @@ readonly class ListPopularVideos implements ListPopularVideosInterface
 
                 return $url->provider() . ':' . $url->externalVideoId();
             })
-            ->take(20)
+            ->take(10)
             ->map(function (VideoLinkModel $video): PopularVideoReadModel {
                 $wiki = $video->wiki;
                 assert($wiki !== null);

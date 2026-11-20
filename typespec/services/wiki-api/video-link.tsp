@@ -70,10 +70,10 @@ interface PublicVideoLinkOperations {
   @get
   @route("/videos/popular")
   @useAuth(NoAuth)
-  @doc("Top 20 unique videos from published wikis across all languages, including videos with zero likes. Deduplicated by provider and external video ID before the limit; the highest-ranked eligible link supplies the video metadata and source wiki. Official-owner likes are excluded. Ordered by ordinary like count descending, then creation time descending, then identifier ascending. Includes eligible videos from all wiki resource types; agency videos must be manually submitted. Viewing performs no collection or provider API requests.")
+  @doc("Top 10 unique videos from published wikis across all languages, including videos with zero likes. Deduplicated by provider and external video ID before the limit; the highest-ranked eligible link supplies the video metadata and source wiki. Official-owner likes are excluded. Ordered by ordinary like count descending, then creation time descending, then identifier ascending. Includes eligible videos from all wiki resource types; agency videos must be manually submitted. Viewing performs no collection or provider API requests.")
   listPopularVideos(): {
     @statusCode statusCode: 200;
-    @body body: { videos: PopularVideo[]; };
+    @body body: { @maxItems(10) videos: PopularVideo[]; };
   } | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
 
   @get

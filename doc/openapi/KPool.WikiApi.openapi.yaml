@@ -3806,7 +3806,7 @@ paths:
   /videos/popular:
     get:
       operationId: PublicVideoLinkOperations_listPopularVideos
-      description: Top 20 unique videos from published wikis across all languages, including videos with zero likes. Deduplicated by provider and external video ID before the limit; the highest-ranked eligible link supplies the video metadata and source wiki. Official-owner likes are excluded. Ordered by ordinary like count descending, then creation time descending, then identifier ascending. Includes eligible videos from all wiki resource types; agency videos must be manually submitted. Viewing performs no collection or provider API requests.
+      description: Top 10 unique videos from published wikis across all languages, including videos with zero likes. Deduplicated by provider and external video ID before the limit; the highest-ranked eligible link supplies the video metadata and source wiki. Official-owner likes are excluded. Ordered by ordinary like count descending, then creation time descending, then identifier ascending. Includes eligible videos from all wiki resource types; agency videos must be manually submitted. Viewing performs no collection or provider API requests.
       parameters: []
       responses:
         '200':
@@ -3820,6 +3820,7 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/PopularVideo'
+                    maxItems: 10
                 required:
                   - videos
         '422':

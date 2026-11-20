@@ -66,7 +66,7 @@ class ListPopularVideosTest extends TestCase
         self::assertSame(0, $videos[0]->likeCount);
     }
 
-    public function testReturnsAtMostTwentyWithStableTieOrdering(): void
+    public function testReturnsAtMostTenWithStableTieOrdering(): void
     {
         $wiki = StrTestHelper::generateUuid();
         CreateWiki::create($wiki, 'talent', ['language' => 'ja', 'published_at' => '2026-01-01']);
@@ -76,17 +76,17 @@ class ListPopularVideosTest extends TestCase
         }
         sort($identifiers);
         $videos = app(ListPopularVideosInterface::class)->process();
-        self::assertSame(array_slice($identifiers, 0, 20), array_map(static fn ($video): string => $video->videoLinkIdentifier, $videos));
+        self::assertSame(array_slice($identifiers, 0, 10), array_map(static fn ($video): string => $video->videoLinkIdentifier, $videos));
     }
 
-    public function testDeduplicatesVideoIdentityAcrossWikisAndUrlFormatsBeforeTakingTwenty(): void
+    public function testDeduplicatesVideoIdentityAcrossWikisAndUrlFormatsBeforeTakingTen(): void
     {
         $wiki = StrTestHelper::generateUuid();
         $foreignWiki = StrTestHelper::generateUuid();
         CreateWiki::create($wiki, 'talent', ['language' => 'ja', 'published_at' => '2026-01-01']);
         CreateWiki::create($foreignWiki, 'group', ['language' => 'ko', 'published_at' => '2026-01-01']);
         $winner = $this->video($foreignWiki, 4, 'group', 'https://www.youtube.com/watch?v=abcdefghijk');
-        // More than twenty higher-ranked duplicate links must not crowd out unique videos.
+        // Higher-ranked duplicate links must not crowd out unique videos.
         for ($i = 0; $i < 25; ++$i) {
             $this->video($wiki, 2, 'talent', $i % 2 === 0
                 ? 'https://youtu.be/abcdefghijk?t=' . $i
@@ -99,8 +99,8 @@ class ListPopularVideosTest extends TestCase
         sort($unique);
 
         $videos = app(ListPopularVideosInterface::class)->process();
-        self::assertSame([$winner, ...array_slice($unique, 0, 19)], array_map(static fn ($video): string => $video->videoLinkIdentifier, $videos));
-        self::assertCount(20, array_unique(array_map(static fn ($video): string => $video->provider . ':' . $video->externalVideoId, $videos)));
+        self::assertSame([$winner, ...array_slice($unique, 0, 9)], array_map(static fn ($video): string => $video->videoLinkIdentifier, $videos));
+        self::assertCount(10, array_unique(array_map(static fn ($video): string => $video->provider . ':' . $video->externalVideoId, $videos)));
         self::assertSame('ko', $videos[0]->language);
     }
 
