@@ -47,7 +47,7 @@ class SectionContentMapperTest extends TestCase
             new Section('Overview', 0, new SectionContentCollection($blocks), key: 'overview-key'),
         ]);
         $stored = SectionContentMapper::collectionToArray($collection);
-        self::assertSame('overview-key', $stored[0]['section_key']);
+        self::assertSame('overview-key', $stored[0]['sectionKey']);
         $restored = SectionContentMapper::collectionFromArray($stored);
         self::assertSame($stored, SectionContentMapper::collectionToArray($restored));
         $section = $restored->all()[0];
@@ -63,7 +63,41 @@ class SectionContentMapperTest extends TestCase
         ]]];
         $restored = SectionContentMapper::collectionFromArray($data);
         self::assertNull($restored->all()[0]->key());
-        self::assertSame($data, SectionContentMapper::collectionToArray($restored));
+        self::assertSame([['type' => 'section', 'title' => 'Overview', 'displayOrder' => 0, 'contents' => [
+            ['type' => 'text', 'displayOrder' => 0, 'content' => 'Unchanged body'],
+        ]]], SectionContentMapper::collectionToArray($restored));
+    }
+
+    public function testLegacyKeysAndNestedTableContentSurviveResavingAsCamelCase(): void
+    {
+        $legacy = [[
+            'type' => 'section', 'section_key' => 'overview-key', 'title' => 'Overview', 'display_order' => 0,
+            'contents' => [[
+                'type' => 'section', 'section_key' => 'child-key', 'title' => 'Child', 'display_order' => 0,
+                'contents' => [[
+                    'block_type' => 'table', 'block_key' => 'table-key', 'display_order' => 0,
+                    'header_cells' => null,
+                    'row_cells' => [[['content' => 'section_key is text', 'colspan' => 2]]],
+                    'table_width' => '640',
+                ]],
+            ]],
+        ]];
+
+        $canonical = SectionContentMapper::collectionToArray(SectionContentMapper::collectionFromArray($legacy));
+
+        self::assertSame([[
+            'type' => 'section', 'sectionKey' => 'overview-key', 'title' => 'Overview', 'displayOrder' => 0,
+            'contents' => [[
+                'type' => 'section', 'sectionKey' => 'child-key', 'title' => 'Child', 'displayOrder' => 0,
+                'contents' => [[
+                    'type' => 'table', 'blockKey' => 'table-key', 'displayOrder' => 0,
+                    'headerCells' => null,
+                    'rowCells' => [[['content' => 'section_key is text', 'colspan' => 2]]],
+                    'tableWidth' => '640',
+                ]],
+            ]],
+        ]], $canonical);
+        self::assertSame($canonical, SectionContentMapper::collectionToArray(SectionContentMapper::collectionFromArray($canonical)));
     }
 
     /**
@@ -96,8 +130,8 @@ class SectionContentMapperTest extends TestCase
         ]);
 
         $array = SectionContentMapper::collectionToArray($collection);
-        $this->assertSame($imageId, $array[0]['image_identifier']);
-        $this->assertSame(450, $array[0]['image_width']);
+        $this->assertSame($imageId, $array[0]['imageIdentifier']);
+        $this->assertSame(450, $array[0]['imageWidth']);
 
         $restored = SectionContentMapper::collectionFromArray($array);
 
@@ -126,8 +160,8 @@ class SectionContentMapperTest extends TestCase
         ]);
 
         $array = SectionContentMapper::collectionToArray($collection);
-        $this->assertSame([$imageId1, $imageId2], $array[0]['image_identifiers']);
-        $this->assertSame(700, $array[0]['image_width']);
+        $this->assertSame([$imageId1, $imageId2], $array[0]['imageIdentifiers']);
+        $this->assertSame(700, $array[0]['imageWidth']);
 
         $restored = SectionContentMapper::collectionFromArray($array);
 
@@ -147,8 +181,8 @@ class SectionContentMapperTest extends TestCase
 
         $data = SectionContentMapper::collectionToArray(new SectionContentCollection([$block]));
         $this->assertSame([[
-            'block_type' => 'history',
-            'display_order' => 3,
+            'type' => 'history',
+            'displayOrder' => 3,
             'entries' => [
                 ['year' => 2024, 'title' => 'Debut', 'detail' => null],
                 ['year' => 2025, 'title' => 'First concert', 'detail' => 'Seoul'],
@@ -161,8 +195,8 @@ class SectionContentMapperTest extends TestCase
     {
         $imageId = StrTestHelper::generateUuid();
         $contents = SectionContentMapper::collectionFromArray([
-            ['block_type' => 'image', 'image_identifier' => $imageId],
-            ['block_type' => 'image_gallery', 'image_identifiers' => [$imageId]],
+            ['type' => 'image', 'imageIdentifier' => $imageId],
+            ['type' => 'image_gallery', 'imageIdentifiers' => [$imageId]],
         ]);
 
         [$image, $gallery] = $contents->all();
@@ -292,13 +326,13 @@ class SectionContentMapperTest extends TestCase
     {
         $collection = SectionContentMapper::collectionFromArray([
             [
-                'block_type' => 'profile_card_list',
-                'display_order' => 1,
-                'wiki_identifiers' => [],
+                'type' => 'profile_card_list',
+                'displayOrder' => 1,
+                'wikiIdentifiers' => [],
             ],
         ]);
 
-        $this->assertSame('portrait', SectionContentMapper::collectionToArray($collection)[0]['card_shape']);
+        $this->assertSame('portrait', SectionContentMapper::collectionToArray($collection)[0]['cardShape']);
     }
 
     /**

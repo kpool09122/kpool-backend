@@ -89,7 +89,7 @@ class WikiContentKeyServiceTest extends TestCase
             self::assertNotSame('', $block->key());
             self::assertNull($blocks[$index]->key());
             $stored = SectionContentMapper::collectionToArray(new SectionContentCollection([$block]));
-            unset($stored[0]['block_key']);
+            unset($stored[0]['blockKey']);
             self::assertSame(SectionContentMapper::collectionToArray(new SectionContentCollection([$blocks[$index]])), $stored);
         }
         self::assertCount(count($blocks), array_unique($keys));

@@ -211,7 +211,7 @@ model DraftWikiDetail {
   heroImage: DraftWikiHeroImage;
   @doc("Basic wiki content payload.")
   basic: GroupDraftWikiBasic;
-  @doc("Section content payloads.")
+  @doc("Section content nodes use camelCase fields, matching WikiContentInput. The type field identifies sections and blocks. Preserve sectionKey and blockKey when editing.")
   sections: unknown[];
 }
 
@@ -248,7 +248,7 @@ model WikiDetail {
   heroImage: WikiHeroImage;
   @doc("Basic wiki content payload.")
   basic: GroupDraftWikiBasic;
-  @doc("Section content payloads.")
+  @doc("Section content nodes use camelCase fields, matching WikiContentInput. The type field identifies sections and blocks. Preserve sectionKey and blockKey when editing.")
   sections: unknown[];
 }
 
@@ -355,7 +355,7 @@ model TalentDraftWikiDetail {
   heroImage: DraftWikiHeroImage;
   @doc("Basic talent wiki content payload.")
   basic: TalentDraftWikiBasic;
-  @doc("Section content payloads.")
+  @doc("Section content nodes use camelCase fields, matching WikiContentInput. The type field identifies sections and blocks. Preserve sectionKey and blockKey when editing.")
   sections: unknown[];
 }
 
@@ -392,7 +392,7 @@ model TalentWikiDetail {
   heroImage: WikiHeroImage;
   @doc("Basic talent wiki content payload.")
   basic: TalentDraftWikiBasic;
-  @doc("Section content payloads.")
+  @doc("Section content nodes use camelCase fields, matching WikiContentInput. The type field identifies sections and blocks. Preserve sectionKey and blockKey when editing.")
   sections: unknown[];
 }
 
@@ -537,7 +537,7 @@ model SongDraftWikiDetail {
   heroImage: DraftWikiHeroImage;
   @doc("Basic song wiki content payload.")
   basic: SongDraftWikiBasic;
-  @doc("Section content payloads.")
+  @doc("Section content nodes use camelCase fields, matching WikiContentInput. The type field identifies sections and blocks. Preserve sectionKey and blockKey when editing.")
   sections: unknown[];
 }
 
@@ -574,7 +574,7 @@ model SongWikiDetail {
   heroImage: WikiHeroImage;
   @doc("Basic song wiki content payload.")
   basic: SongDraftWikiBasic;
-  @doc("Section content payloads.")
+  @doc("Section content nodes use camelCase fields, matching WikiContentInput. The type field identifies sections and blocks. Preserve sectionKey and blockKey when editing.")
   sections: unknown[];
 }
 
@@ -631,7 +631,7 @@ model AgencyDraftWikiDetail {
   heroImage: DraftWikiHeroImage;
   @doc("Basic agency wiki content payload.")
   basic: AgencyDraftWikiBasic;
-  @doc("Section content payloads.")
+  @doc("Section content nodes use camelCase fields, matching WikiContentInput. The type field identifies sections and blocks. Preserve sectionKey and blockKey when editing.")
   sections: unknown[];
 }
 
@@ -668,7 +668,7 @@ model AgencyWikiDetail {
   heroImage: WikiHeroImage;
   @doc("Basic agency wiki content payload.")
   basic: AgencyDraftWikiBasic;
-  @doc("Section content payloads.")
+  @doc("Section content nodes use camelCase fields, matching WikiContentInput. The type field identifies sections and blocks. Preserve sectionKey and blockKey when editing.")
   sections: unknown[];
 }
 
