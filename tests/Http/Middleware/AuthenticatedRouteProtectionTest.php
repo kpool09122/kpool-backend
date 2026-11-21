@@ -49,7 +49,7 @@ class AuthenticatedRouteProtectionTest extends TestCase
         RouteFacade::middleware(['api', 'session'])
             ->prefix('api/v1/identity')
             ->group($routePath('identity_api.php'));
-        RouteFacade::middleware(['api', 'session', 'auth.api', 'account.active', 'principal.active', 'resolve.actor'])
+        RouteFacade::middleware(['api', 'session'])
             ->prefix('api/v1/monetization')
             ->group($routePath('monetization_api.php'));
         RouteFacade::middleware(['api', 'session'])
@@ -67,6 +67,22 @@ class AuthenticatedRouteProtectionTest extends TestCase
         RouteFacade::middleware(['api', 'session'])->prefix('api/v1/analyze')->group($routePath('analyze_api.php'));
         RouteFacade::prefix('webhook')
             ->group(__DIR__ . '/../../../routes/webhook.php');
+    }
+
+    public function testMonetizationEnrollmentAndSnapshotAreTheOnlyEnabledRoutes(): void
+    {
+        $routes = array_values(array_filter(RouteFacade::getRoutes()->getRoutes(), static fn (Route $route): bool => str_starts_with($route->uri(), 'api/v1/monetization/')));
+        self::assertCount(2, $routes);
+        foreach ($routes as $route) {
+            foreach (['auth.api', 'resolve.actor', 'resolve.account'] as $middleware) {
+                self::assertContains($middleware, $route->gatherMiddleware());
+            }
+            self::assertNotContains('resolve.monetization', $route->gatherMiddleware());
+        }
+        $snapshot = $this->routeFor('GET', '/api/v1/monetization/principal/me');
+        self::assertSame(['api', 'session', 'auth.api', 'resolve.actor', 'resolve.account', 'rate-limit:screen,query'], $snapshot->gatherMiddleware());
+        $enrollment = $this->routeFor('POST', '/api/v1/monetization/principals');
+        self::assertSame(['api', 'session', 'auth.api', 'account.active', 'principal.active', 'resolve.actor', 'resolve.account', 'rate-limit:screen,command'], $enrollment->gatherMiddleware());
     }
 
     public function testAnalyzeRoutesAreProtectedAndEnrollmentDoesNotRequirePriorActivation(): void

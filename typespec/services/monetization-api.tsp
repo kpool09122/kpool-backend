@@ -5,6 +5,66 @@ using KPool.Common;
 @server("/api/v1/monetization", "Laravel route prefix from bootstrap/app.php.")
 namespace KPool.MonetizationApi;
 
+@doc("Authorization principal created for the original authenticated identity in the effective Account. This is not a billing account or a payment capability.")
+model PrincipalSummary {
+  principalIdentifier: Uuid;
+  identityIdentifier: Uuid;
+}
+
+model CreatePrincipalResponse {
+  @statusCode statusCode: 201;
+  @body body: PrincipalSummary;
+}
+
+model PrincipalConditionClause {
+  field: "resource:accountId";
+  operator: "eq" | "ne" | "in" | "not_in";
+  value: string | string[];
+}
+
+model PrincipalPolicyStatement {
+  effect: "allow" | "deny";
+  actions: ("principal_group_read" | "principal_group_manage")[];
+  resourceTypes: "principal_group"[];
+  condition: { clauses: PrincipalConditionClause[] } | null;
+}
+
+model PrincipalPolicySummary {
+  policyIdentifier: Uuid;
+  name: string;
+  statements: PrincipalPolicyStatement[];
+}
+
+model PrincipalSnapshot {
+  principalIdentifier: Uuid;
+  identityIdentifier: Uuid;
+  status: "active" | "suspended" | "forced_stop";
+  @doc("Number of Monetization principals belonging to the current account, including the current principal and suspended or forcibly stopped principals.")
+  @minValue(1)
+  accountPrincipalCount: int32;
+  @doc("Granted policies deduplicated and ordered by policy identifier. This snapshot does not grant data access or override Deny or suspension.")
+  policies: PrincipalPolicySummary[];
+}
+
+model GetCurrentPrincipalResponse {
+  @statusCode statusCode: 200;
+  @body body: PrincipalSnapshot;
+}
+
+interface PrincipalOperations {
+  @route("/principals")
+  @useAuth(SessionCookieAuth)
+  @post
+  @doc("Explicitly enable Monetization for the original authenticated identity and current effective Account. No identity or account input is accepted. Requires active direct membership. All members join Default with General; Account Owners also join Owners with Owner. Duplicate enrollment returns 409 without restoring status or permissions. Does not enable payment, billing or settlement APIs.")
+  createPrincipal(): CreatePrincipalResponse | UnauthorizedProblemResponse | ForbiddenProblemResponse | ConflictProblemResponse | CsrfTokenMismatchProblemResponse | TooManyRequestsProblemResponse | InternalServerErrorProblemResponse | ServiceUnavailableProblemResponse;
+
+  @route("/principal/me")
+  @useAuth(SessionCookieAuth)
+  @get
+  @doc("Return the original authenticated identity's Monetization principal for the current effective Account. No arbitrary account selection is accepted. Returns 404 when not enabled. Account, Account Principal and Monetization Principal suspension does not prevent reading this snapshot. Does not require group management permissions.")
+  getCurrentPrincipal(): GetCurrentPrincipalResponse | UnauthorizedProblemResponse | ForbiddenProblemResponse | NotFoundProblemResponse | TooManyRequestsProblemResponse | InternalServerErrorProblemResponse | ServiceUnavailableProblemResponse;
+}
+
 @doc("Supported currency codes used by monetization value objects.")
 enum CurrencyCode {
   JPY,

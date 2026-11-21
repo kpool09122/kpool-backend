@@ -7,6 +7,7 @@ namespace Source\Monetization\Principal\Infrastructure\Repository;
 use Application\Models\Monetization\PrincipalGroup as PrincipalGroupEloquent;
 use Application\Models\Monetization\PrincipalGroupMembership as MembershipEloquent;
 use Application\Models\Monetization\PrincipalGroupRoleAttachment as AttachmentEloquent;
+use Source\Monetization\Principal\Application\Service\MonetizationContextServiceInterface;
 use Source\Monetization\Principal\Domain\Entity\PrincipalGroup;
 use Source\Monetization\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
 use Source\Monetization\Principal\Domain\ValueObject\PrincipalGroupIdentifier;
@@ -58,6 +59,7 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
     public function delete(PrincipalGroup $principalGroup): void
     {
         PrincipalGroupEloquent::query()->where('id', (string) $principalGroup->principalGroupIdentifier())->delete();
+        app(MonetizationContextServiceInterface::class)->forgetForAccount($principalGroup->accountIdentifier());
     }
 
     public function save(PrincipalGroup $principalGroup): void
@@ -93,6 +95,7 @@ class PrincipalGroupRepository implements PrincipalGroupRepositoryInterface
         if ($memberRecords !== []) {
             MembershipEloquent::query()->insert($memberRecords);
         }
+        app(MonetizationContextServiceInterface::class)->forgetForAccount($principalGroup->accountIdentifier());
     }
 
     /** @return PrincipalGroup[] */

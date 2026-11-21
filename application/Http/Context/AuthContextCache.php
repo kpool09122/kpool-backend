@@ -14,6 +14,7 @@ use Source\Account\Shared\Domain\ValueObject\AccountType;
 use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier as AccountPrincipalIdentifier;
 use Source\Identity\Application\Service\ApiAuthenticationContext;
 use Source\Identity\Domain\ValueObject\AuthorizationConnectionIdentifier;
+use Source\Monetization\Principal\Domain\ValueObject\PrincipalIdentifier as MonetizationPrincipalIdentifier;
 use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
@@ -29,6 +30,7 @@ class AuthContextCache
     private const int TTL_SECONDS = 3600;
     private const string ACTOR_KEY_PREFIX = 'auth-context:actor:';
     private const string ACCOUNT_KEY_PREFIX = 'auth-context:account:';
+    private const string MONETIZATION_KEY_PREFIX = 'auth-context:monetization:';
     private const string WIKI_KEY_PREFIX = 'auth-context:wiki:';
     private const string SITE_MANAGEMENT_KEY_PREFIX = 'auth-context:site-management:';
 
@@ -92,6 +94,28 @@ class AuthContextCache
             'delegationIdentifier' => $context->delegationIdentifier() !== null
                 ? (string) $context->delegationIdentifier()
                 : null,
+        ]);
+
+        return $context;
+    }
+
+    /** @param callable(): MonetizationContext $dbResolver */
+    public function resolveMonetization(
+        IdentityIdentifier $identityIdentifier,
+        AccountIdentifier $accountIdentifier,
+        callable $dbResolver,
+    ): MonetizationContext {
+        $cached = $this->read($this->monetizationKey($identityIdentifier, $accountIdentifier));
+        if ($cached !== null) {
+            $context = $this->monetizationFromPayload($cached);
+            if ($context !== null) {
+                return $context;
+            }
+        }
+
+        $context = $dbResolver();
+        $this->write($this->monetizationKey($identityIdentifier, $accountIdentifier), [
+            'principalIdentifier' => (string) $context->principalIdentifier,
         ]);
 
         return $context;
@@ -163,6 +187,19 @@ class AuthContextCache
         $this->delete($this->accountKey($identityIdentifier));
     }
 
+    public function forgetMonetization(IdentityIdentifier $identityIdentifier, ?AccountIdentifier $accountIdentifier = null): void
+    {
+        if ($accountIdentifier !== null) {
+            $this->delete($this->monetizationKey($identityIdentifier, $accountIdentifier));
+
+            return;
+        }
+
+        foreach ($this->keys(self::MONETIZATION_KEY_PREFIX . $identityIdentifier . ':*') as $key) {
+            $this->delete($key);
+        }
+    }
+
     public function forgetWiki(IdentityIdentifier $identityIdentifier, ?AccountIdentifier $accountIdentifier = null): void
     {
         if ($accountIdentifier !== null) {
@@ -208,6 +245,11 @@ class AuthContextCache
         $sessionId = $request->hasSession() ? $request->session()->getId() : 'stateless';
 
         return self::ACCOUNT_KEY_PREFIX . $identityIdentifier . ':' . $sessionId;
+    }
+
+    private function monetizationKey(IdentityIdentifier $identityIdentifier, AccountIdentifier $accountIdentifier): string
+    {
+        return self::MONETIZATION_KEY_PREFIX . $identityIdentifier . ':' . $accountIdentifier;
     }
 
     private function wikiKey(IdentityIdentifier $identityIdentifier, AccountIdentifier $accountIdentifier): string
@@ -350,6 +392,16 @@ class AuthContextCache
                 : null,
             originalAccountStatus: $originalAccountStatus,
         );
+    }
+
+    /** @param array<string, mixed> $payload */
+    private function monetizationFromPayload(array $payload): ?MonetizationContext
+    {
+        if (! is_string($payload['principalIdentifier'] ?? null)) {
+            return null;
+        }
+
+        return new MonetizationContext(new MonetizationPrincipalIdentifier($payload['principalIdentifier']));
     }
 
     /** @param array<string, mixed> $payload */
