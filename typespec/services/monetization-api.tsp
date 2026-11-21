@@ -65,6 +65,48 @@ interface PrincipalOperations {
   getCurrentPrincipal(): GetCurrentPrincipalResponse | UnauthorizedProblemResponse | ForbiddenProblemResponse | NotFoundProblemResponse | TooManyRequestsProblemResponse | InternalServerErrorProblemResponse | ServiceUnavailableProblemResponse;
 }
 
+model PrincipalGroupMember {
+  principalIdentifier: Uuid;
+  identityIdentifier: Uuid;
+  identityName: string;
+  email: string;
+  status: "active" | "suspended" | "forced_stop";
+}
+
+model PrincipalGroup {
+  principalGroupIdentifier: Uuid;
+  accountIdentifier: Uuid;
+  name: string;
+  description: string | null;
+  roleIdentifiers: Uuid[];
+  isDefault: boolean;
+  members: PrincipalGroupMember[];
+}
+
+model ListPrincipalGroupsResponse {
+  @statusCode statusCode: 200;
+  @body body: { principalGroups: PrincipalGroup[]; };
+}
+
+model ListMembersResponse {
+  @statusCode statusCode: 200;
+  @body body: { members: PrincipalGroupMember[]; };
+}
+
+interface PrincipalManagementOperations {
+  @route("/principal-groups")
+  @useAuth(SessionCookieAuth)
+  @get
+  @doc("List the current effective Account's groups in created-at/identifier order, including Owners and Default groups. Members and roles are ordered by identifier and scoped to the Account (system roles are included). Requires active Account/Account Principal/Monetization Principal and principal_group_manage permission. No arbitrary Account or Principal selection is accepted. Does not create authorization data. Empty collections are arrays.")
+  listPrincipalGroups(): ListPrincipalGroupsResponse | UnauthorizedProblemResponse | ForbiddenProblemResponse | NotFoundProblemResponse | TooManyRequestsProblemResponse | InternalServerErrorProblemResponse | ServiceUnavailableProblemResponse;
+
+  @route("/members")
+  @useAuth(SessionCookieAuth)
+  @get
+  @doc("List enrolled Monetization Principals in the current effective Account ordered by identifier, including suspended and forced-stop candidates. Unenrolled identities are excluded. Requires principal_group_manage permission and an active executing Principal and Account. Selection follows effective Account switching and cannot reuse the original Account's permissions. No data is created by this read.")
+  listMembers(): ListMembersResponse | UnauthorizedProblemResponse | ForbiddenProblemResponse | NotFoundProblemResponse | TooManyRequestsProblemResponse | InternalServerErrorProblemResponse | ServiceUnavailableProblemResponse;
+}
+
 @doc("Supported currency codes used by monetization value objects.")
 enum CurrencyCode {
   JPY,

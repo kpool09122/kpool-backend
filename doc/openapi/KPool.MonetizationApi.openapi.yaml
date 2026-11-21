@@ -416,6 +416,69 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/RecordPaymentRequestBody'
+  /members:
+    get:
+      operationId: PrincipalManagementOperations_listMembers
+      description: List enrolled Monetization Principals in the current effective Account ordered by identifier, including suspended and forced-stop candidates. Unenrolled identities are excluded. Requires principal_group_manage permission and an active executing Principal and Account. Selection follows effective Account switching and cannot reuse the original Account's permissions. No data is created by this read.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  members:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PrincipalGroupMember'
+                required:
+                  - members
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      security:
+        - SessionCookieAuth: []
   /payments/authorize:
     post:
       operationId: MonetizationPaymentOperations_authorizePayment
@@ -630,6 +693,69 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/RefundPaymentRequestBody'
+  /principal-groups:
+    get:
+      operationId: PrincipalManagementOperations_listPrincipalGroups
+      description: List the current effective Account's groups in created-at/identifier order, including Owners and Default groups. Members and roles are ordered by identifier and scoped to the Account (system roles are included). Requires active Account/Account Principal/Monetization Principal and principal_group_manage permission. No arbitrary Account or Principal selection is accepted. Does not create authorization data. Empty collections are arrays.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  principalGroups:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PrincipalGroup'
+                required:
+                  - principalGroups
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      security:
+        - SessionCookieAuth: []
   /principal/me:
     get:
       operationId: PrincipalOperations_getCurrentPrincipal
@@ -1384,6 +1510,59 @@ components:
             - type: array
               items:
                 type: string
+    PrincipalGroup:
+      type: object
+      required:
+        - principalGroupIdentifier
+        - accountIdentifier
+        - name
+        - description
+        - roleIdentifiers
+        - isDefault
+        - members
+      properties:
+        principalGroupIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        accountIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        roleIdentifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+        isDefault:
+          type: boolean
+        members:
+          type: array
+          items:
+            $ref: '#/components/schemas/PrincipalGroupMember'
+    PrincipalGroupMember:
+      type: object
+      required:
+        - principalIdentifier
+        - identityIdentifier
+        - identityName
+        - email
+        - status
+      properties:
+        principalIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        identityIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        identityName:
+          type: string
+        email:
+          type: string
+        status:
+          type: string
+          enum:
+            - active
+            - suspended
+            - forced_stop
     PrincipalPolicyStatement:
       type: object
       required:
