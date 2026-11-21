@@ -12,6 +12,32 @@ use Tests\TestCase;
 
 class WikiSectionReadModelBuilderTest extends TestCase
 {
+    public function testBuildNormalizesLegacyNestedContentWithoutChangingKeysOrText(): void
+    {
+        $sections = WikiSectionReadModelBuilder::build([[
+            'type' => 'section', 'section_key' => 'members', 'display_order' => 10,
+            'title' => 'Members',
+            'contents' => [[
+                'type' => 'section', 'section_key' => 'child', 'title' => 'Details', 'display_order' => 20,
+                'contents' => [[
+                    'block_type' => 'text', 'block_key' => 'body', 'display_order' => 30,
+                    'content' => 'Keep section_key and block_key inside text unchanged.',
+                ]],
+            ]],
+        ]]);
+
+        self::assertEquals([[
+            'type' => 'section', 'title' => 'Members', 'sectionKey' => 'members', 'displayOrder' => 10,
+            'contents' => [[
+                'type' => 'section', 'title' => 'Details', 'sectionKey' => 'child', 'displayOrder' => 20,
+                'contents' => [[
+                    'type' => 'text', 'blockKey' => 'body', 'displayOrder' => 30,
+                    'content' => 'Keep section_key and block_key inside text unchanged.',
+                ]],
+            ]],
+        ]], $sections);
+    }
+
     #[Group('useDb')]
     public function testBuildReturnsImageDetailsAndProfileCardProfiles(): void
     {

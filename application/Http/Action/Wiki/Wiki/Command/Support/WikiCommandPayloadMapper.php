@@ -187,9 +187,9 @@ final class WikiCommandPayloadMapper
         if ($type === 'section') {
             return [
                 'type' => 'section',
-                'section_key' => $content['sectionKey'] ?? null,
+                'sectionKey' => $content['sectionKey'] ?? null,
                 'title' => $content['title'] ?? '',
-                'display_order' => $content['displayOrder'] ?? 0,
+                'displayOrder' => $content['displayOrder'] ?? 0,
                 'contents' => self::sectionContents(RequestValue::values($content['contents'] ?? []), $path . '.contents'),
             ];
         }
@@ -207,26 +207,26 @@ final class WikiCommandPayloadMapper
         }
 
         return [
-            'block_type' => $type,
-            'block_key' => $content['blockKey'] ?? null,
-            'display_order' => $content['displayOrder'] ?? 0,
+            'type' => $type,
+            'blockKey' => $content['blockKey'] ?? null,
+            'displayOrder' => $content['displayOrder'] ?? 0,
             'content' => $content['content'] ?? '',
-            'image_identifier' => $content['imageIdentifier'] ?? null,
-            'image_identifiers' => $content['imageIdentifiers'] ?? [],
-            'image_width' => isset($content['imageWidth']) ? RequestValue::integer($content['imageWidth']) : null,
+            'imageIdentifier' => $content['imageIdentifier'] ?? null,
+            'imageIdentifiers' => $content['imageIdentifiers'] ?? [],
+            'imageWidth' => isset($content['imageWidth']) ? RequestValue::integer($content['imageWidth']) : null,
             'caption' => $content['caption'] ?? null,
             'alt' => $content['alt'] ?? null,
             'provider' => $content['provider'] ?? null,
-            'embed_id' => $content['embedId'] ?? '',
+            'embedId' => $content['embedId'] ?? '',
             'source' => $content['source'] ?? null,
-            'list_type' => $content['listType'] ?? 'bullet',
+            'listType' => $content['listType'] ?? 'bullet',
             'items' => $content['items'] ?? [],
             'entries' => $type === BlockType::HISTORY->value ? self::historyEntries($content['entries'] ?? []) : [],
-            'header_cells' => $content['headerCells'] ?? null,
-            'row_cells' => $content['rowCells'] ?? [],
-            'table_width' => isset($content['tableWidth']) ? RequestValue::string($content['tableWidth']) : null,
-            'wiki_identifiers' => $content['wikiIdentifiers'] ?? [],
-            'card_shape' => $content['cardShape'] ?? null,
+            'headerCells' => $content['headerCells'] ?? null,
+            'rowCells' => $content['rowCells'] ?? [],
+            'tableWidth' => isset($content['tableWidth']) ? RequestValue::string($content['tableWidth']) : null,
+            'wikiIdentifiers' => $content['wikiIdentifiers'] ?? [],
+            'cardShape' => $content['cardShape'] ?? null,
             'title' => $content['title'] ?? null,
         ];
     }

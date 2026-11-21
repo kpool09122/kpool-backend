@@ -42,9 +42,9 @@ final class SectionContentMapper
                 if ($content instanceof Section) {
                     return [
                         'type' => 'section',
-                        ...($content->key() === null ? [] : ['section_key' => $content->key()]),
+                        ...($content->key() === null ? [] : ['sectionKey' => $content->key()]),
                         'title' => $content->title(),
-                        'display_order' => $content->displayOrder(),
+                        'displayOrder' => $content->displayOrder(),
                         'contents' => self::collectionToArray($content->contents()),
                     ];
                 }
@@ -52,79 +52,79 @@ final class SectionContentMapper
                 if ($content instanceof BlockInterface) {
                     return match ($content::class) {
                         TextBlock::class => [
-                            'block_type' => $content->blockType()->value,
-                            ...($content->key() === null ? [] : ['block_key' => $content->key()]),
-                            'display_order' => $content->displayOrder(),
+                            'type' => $content->blockType()->value,
+                            ...($content->key() === null ? [] : ['blockKey' => $content->key()]),
+                            'displayOrder' => $content->displayOrder(),
                             'content' => $content->content(),
                         ],
                         ImageBlock::class => [
-                            'block_type' => $content->blockType()->value,
-                            ...($content->key() === null ? [] : ['block_key' => $content->key()]),
-                            'display_order' => $content->displayOrder(),
-                            'image_identifier' => (string) $content->imageIdentifier(),
-                            'image_width' => $content->imageWidth(),
+                            'type' => $content->blockType()->value,
+                            ...($content->key() === null ? [] : ['blockKey' => $content->key()]),
+                            'displayOrder' => $content->displayOrder(),
+                            'imageIdentifier' => (string) $content->imageIdentifier(),
+                            'imageWidth' => $content->imageWidth(),
                             'caption' => $content->caption(),
                             'alt' => $content->alt(),
                         ],
                         ImageGalleryBlock::class => [
-                            'image_width' => $content->imageWidth(),
-                            'block_type' => $content->blockType()->value,
-                            ...($content->key() === null ? [] : ['block_key' => $content->key()]),
-                            'display_order' => $content->displayOrder(),
-                            'image_identifiers' => array_map(
+                            'imageWidth' => $content->imageWidth(),
+                            'type' => $content->blockType()->value,
+                            ...($content->key() === null ? [] : ['blockKey' => $content->key()]),
+                            'displayOrder' => $content->displayOrder(),
+                            'imageIdentifiers' => array_map(
                                 static fn (ImageIdentifier $id): string => (string) $id,
                                 $content->imageIdentifiers(),
                             ),
                             'caption' => $content->caption(),
                         ],
                         EmbedBlock::class => [
-                            'block_type' => $content->blockType()->value,
-                            ...($content->key() === null ? [] : ['block_key' => $content->key()]),
-                            'display_order' => $content->displayOrder(),
+                            'type' => $content->blockType()->value,
+                            ...($content->key() === null ? [] : ['blockKey' => $content->key()]),
+                            'displayOrder' => $content->displayOrder(),
                             'provider' => $content->provider()->value,
-                            'embed_id' => $content->embedId(),
+                            'embedId' => $content->embedId(),
                             'caption' => $content->caption(),
                         ],
                         QuoteBlock::class => [
-                            'block_type' => $content->blockType()->value,
-                            ...($content->key() === null ? [] : ['block_key' => $content->key()]),
-                            'display_order' => $content->displayOrder(),
+                            'type' => $content->blockType()->value,
+                            ...($content->key() === null ? [] : ['blockKey' => $content->key()]),
+                            'displayOrder' => $content->displayOrder(),
                             'content' => $content->content(),
                             'source' => $content->source(),
                         ],
                         ListBlock::class => [
-                            'block_type' => $content->blockType()->value,
-                            ...($content->key() === null ? [] : ['block_key' => $content->key()]),
-                            'display_order' => $content->displayOrder(),
-                            'list_type' => $content->listType()->value,
+                            'type' => $content->blockType()->value,
+                            ...($content->key() === null ? [] : ['blockKey' => $content->key()]),
+                            'displayOrder' => $content->displayOrder(),
+                            'listType' => $content->listType()->value,
                             'items' => $content->items(),
                         ],
                         HistoryBlock::class => [
-                            'block_type' => $content->blockType()->value,
-                            ...($content->key() === null ? [] : ['block_key' => $content->key()]),
-                            'display_order' => $content->displayOrder(),
+                            'type' => $content->blockType()->value,
+                            ...($content->key() === null ? [] : ['blockKey' => $content->key()]),
+                            'displayOrder' => $content->displayOrder(),
                             'entries' => array_map(static fn (HistoryEntry $entry): array => $entry->toArray(), $content->entries()),
                         ],
                         TableBlock::class => [
-                            'block_type' => $content->blockType()->value,
-                            ...($content->key() === null ? [] : ['block_key' => $content->key()]),
-                            'display_order' => $content->displayOrder(),
-                            'header_cells' => self::tableCellsToArray($content->headerCells()),
-                            'row_cells' => array_map(
+                            'type' => $content->blockType()->value,
+                            ...($content->key() === null ? [] : ['blockKey' => $content->key()]),
+                            'displayOrder' => $content->displayOrder(),
+                            'headerCells' => self::tableCellsToArray($content->headerCells()),
+                            'rowCells' => array_map(
                                 static fn (array $rowCells): array => self::tableCellsToArray($rowCells) ?? [],
                                 $content->rowCells(),
                             ),
-                            'table_width' => $content->tableWidth(),
+                            'tableWidth' => $content->tableWidth(),
                         ],
                         ProfileCardListBlock::class => [
-                            'block_type' => $content->blockType()->value,
-                            ...($content->key() === null ? [] : ['block_key' => $content->key()]),
-                            'display_order' => $content->displayOrder(),
-                            'wiki_identifiers' => array_map(
+                            'type' => $content->blockType()->value,
+                            ...($content->key() === null ? [] : ['blockKey' => $content->key()]),
+                            'displayOrder' => $content->displayOrder(),
+                            'wikiIdentifiers' => array_map(
                                 static fn (WikiIdentifier $id) => (string) $id,
                                 $content->wikiIdentifiers(),
                             ),
-                            'card_shape' => $content->cardShape()->value,
+                            'cardShape' => $content->cardShape()->value,
                             'title' => $content->title(),
                         ],
                         default => throw new InvalidArgumentException('Unknown block type: ' . $content::class),
@@ -142,66 +142,74 @@ final class SectionContentMapper
      */
     public static function collectionFromArray(array $data, int $currentDepth = 1): SectionContentCollection
     {
+        return self::collectionFromCanonicalArray(SectionContentJsonNormalizer::normalize($data), $currentDepth);
+    }
+
+    /**
+     * @param array<array<array-key, mixed>> $data
+     */
+    private static function collectionFromCanonicalArray(array $data, int $currentDepth): SectionContentCollection
+    {
         $contents = array_map(
             static function (array $contentData) use ($currentDepth): SectionContentInterface {
                 if (($contentData['type'] ?? '') === 'section') {
                     return new Section(
                         title: TypedValue::string($contentData['title'] ?? ''),
-                        displayOrder: TypedValue::int($contentData['display_order'] ?? 0),
-                        contents: self::collectionFromArray(self::arrayRows($contentData['contents'] ?? []), $currentDepth + 1),
+                        displayOrder: TypedValue::int($contentData['displayOrder'] ?? 0),
+                        contents: self::collectionFromCanonicalArray(self::arrayRows($contentData['contents'] ?? []), $currentDepth + 1),
                         depth: $currentDepth,
-                        key: TypedValue::nullableString($contentData['section_key'] ?? null),
+                        key: TypedValue::nullableString($contentData['sectionKey'] ?? null),
                     );
                 }
 
-                $blockType = BlockType::from(TypedValue::string($contentData['block_type'] ?? ''));
+                $blockType = BlockType::from(TypedValue::string($contentData['type'] ?? ''));
 
                 return match ($blockType) {
                     BlockType::TEXT => new TextBlock(
-                        displayOrder: TypedValue::int($contentData['display_order'] ?? 0),
-                        key: TypedValue::nullableString($contentData['block_key'] ?? null),
+                        displayOrder: TypedValue::int($contentData['displayOrder'] ?? 0),
+                        key: TypedValue::nullableString($contentData['blockKey'] ?? null),
                         content: TypedValue::string($contentData['content'] ?? ''),
                     ),
                     BlockType::IMAGE => new ImageBlock(
-                        displayOrder: TypedValue::int($contentData['display_order'] ?? 0),
-                        key: TypedValue::nullableString($contentData['block_key'] ?? null),
-                        imageIdentifier: new ImageIdentifier(TypedValue::string($contentData['image_identifier'] ?? '')),
+                        displayOrder: TypedValue::int($contentData['displayOrder'] ?? 0),
+                        key: TypedValue::nullableString($contentData['blockKey'] ?? null),
+                        imageIdentifier: new ImageIdentifier(TypedValue::string($contentData['imageIdentifier'] ?? '')),
                         caption: TypedValue::nullableString($contentData['caption'] ?? null),
                         alt: TypedValue::nullableString($contentData['alt'] ?? null),
-                        imageWidth: TypedValue::nullableInt($contentData['image_width'] ?? null),
+                        imageWidth: TypedValue::nullableInt($contentData['imageWidth'] ?? null),
                     ),
                     BlockType::IMAGE_GALLERY => new ImageGalleryBlock(
-                        imageWidth: TypedValue::nullableInt($contentData['image_width'] ?? null),
-                        displayOrder: TypedValue::int($contentData['display_order'] ?? 0),
-                        key: TypedValue::nullableString($contentData['block_key'] ?? null),
+                        imageWidth: TypedValue::nullableInt($contentData['imageWidth'] ?? null),
+                        displayOrder: TypedValue::int($contentData['displayOrder'] ?? 0),
+                        key: TypedValue::nullableString($contentData['blockKey'] ?? null),
                         imageIdentifiers: array_map(
                             static fn (string $id): ImageIdentifier => new ImageIdentifier($id),
-                            TypedValue::stringArray($contentData['image_identifiers'] ?? []),
+                            TypedValue::stringArray($contentData['imageIdentifiers'] ?? []),
                         ),
                         caption: TypedValue::nullableString($contentData['caption'] ?? null),
                     ),
                     BlockType::EMBED => new EmbedBlock(
-                        displayOrder: TypedValue::int($contentData['display_order'] ?? 0),
-                        key: TypedValue::nullableString($contentData['block_key'] ?? null),
+                        displayOrder: TypedValue::int($contentData['displayOrder'] ?? 0),
+                        key: TypedValue::nullableString($contentData['blockKey'] ?? null),
                         provider: EmbedProvider::from(TypedValue::string($contentData['provider'] ?? '')),
-                        embedId: TypedValue::string($contentData['embed_id'] ?? ''),
+                        embedId: TypedValue::string($contentData['embedId'] ?? ''),
                         caption: TypedValue::nullableString($contentData['caption'] ?? null),
                     ),
                     BlockType::QUOTE => new QuoteBlock(
-                        displayOrder: TypedValue::int($contentData['display_order'] ?? 0),
-                        key: TypedValue::nullableString($contentData['block_key'] ?? null),
+                        displayOrder: TypedValue::int($contentData['displayOrder'] ?? 0),
+                        key: TypedValue::nullableString($contentData['blockKey'] ?? null),
                         content: TypedValue::string($contentData['content'] ?? ''),
                         source: TypedValue::nullableString($contentData['source'] ?? null),
                     ),
                     BlockType::LIST => new ListBlock(
-                        displayOrder: TypedValue::int($contentData['display_order'] ?? 0),
-                        key: TypedValue::nullableString($contentData['block_key'] ?? null),
-                        listType: ListType::from(TypedValue::string($contentData['list_type'] ?? 'bullet')),
+                        displayOrder: TypedValue::int($contentData['displayOrder'] ?? 0),
+                        key: TypedValue::nullableString($contentData['blockKey'] ?? null),
+                        listType: ListType::from(TypedValue::string($contentData['listType'] ?? 'bullet')),
                         items: TypedValue::stringArray($contentData['items'] ?? []),
                     ),
                     BlockType::HISTORY => new HistoryBlock(
-                        displayOrder: TypedValue::int($contentData['display_order'] ?? 0),
-                        key: TypedValue::nullableString($contentData['block_key'] ?? null),
+                        displayOrder: TypedValue::int($contentData['displayOrder'] ?? 0),
+                        key: TypedValue::nullableString($contentData['blockKey'] ?? null),
                         entries: array_values(array_map(
                             static fn (array $entry): HistoryEntry => new HistoryEntry(
                                 year: TypedValue::int($entry['year'] ?? null),
@@ -212,23 +220,23 @@ final class SectionContentMapper
                         )),
                     ),
                     BlockType::TABLE => new TableBlock(
-                        displayOrder: TypedValue::int($contentData['display_order'] ?? 0),
-                        key: TypedValue::nullableString($contentData['block_key'] ?? null),
+                        displayOrder: TypedValue::int($contentData['displayOrder'] ?? 0),
+                        key: TypedValue::nullableString($contentData['blockKey'] ?? null),
                         rowCells: array_map(
                             static fn (mixed $rowCells): array => self::tableCellsFromArray($rowCells) ?? [],
-                            TypedValue::array($contentData['row_cells'] ?? []),
+                            TypedValue::array($contentData['rowCells'] ?? []),
                         ),
-                        headerCells: self::tableCellsFromArray($contentData['header_cells'] ?? null),
-                        tableWidth: TypedValue::nullableString($contentData['table_width'] ?? null),
+                        headerCells: self::tableCellsFromArray($contentData['headerCells'] ?? null),
+                        tableWidth: TypedValue::nullableString($contentData['tableWidth'] ?? null),
                     ),
                     BlockType::PROFILE_CARD_LIST => new ProfileCardListBlock(
-                        displayOrder: TypedValue::int($contentData['display_order'] ?? 0),
-                        key: TypedValue::nullableString($contentData['block_key'] ?? null),
+                        displayOrder: TypedValue::int($contentData['displayOrder'] ?? 0),
+                        key: TypedValue::nullableString($contentData['blockKey'] ?? null),
                         wikiIdentifiers: array_map(
                             static fn (string $id) => new WikiIdentifier($id),
-                            TypedValue::stringArray($contentData['wiki_identifiers'] ?? []),
+                            TypedValue::stringArray($contentData['wikiIdentifiers'] ?? []),
                         ),
-                        cardShape: ProfileCardShape::fromValue($contentData['card_shape'] ?? null),
+                        cardShape: ProfileCardShape::fromValue($contentData['cardShape'] ?? null),
                         title: TypedValue::nullableString($contentData['title'] ?? null),
                     ),
                 };

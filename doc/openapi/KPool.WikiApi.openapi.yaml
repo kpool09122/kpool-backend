@@ -6746,7 +6746,7 @@ components:
         sections:
           type: array
           items: {}
-          description: Section content payloads.
+          description: Section content nodes use camelCase fields, matching WikiContentInput. The type field identifies sections and blocks. Preserve sectionKey and blockKey when editing.
       description: Detailed agency draft wiki payload used by the editor.
     AgencyWikiBasicInput:
       type: object
@@ -6880,7 +6880,7 @@ components:
         sections:
           type: array
           items: {}
-          description: Section content payloads.
+          description: Section content nodes use camelCase fields, matching WikiContentInput. The type field identifies sections and blocks. Preserve sectionKey and blockKey when editing.
       description: Detailed published agency wiki payload.
     AttachPolicyToRoleRequestBody:
       type: object
@@ -7431,7 +7431,7 @@ components:
         sections:
           type: array
           items: {}
-          description: Section content payloads.
+          description: Section content nodes use camelCase fields, matching WikiContentInput. The type field identifies sections and blocks. Preserve sectionKey and blockKey when editing.
       description: Detailed draft wiki payload used by the editor.
     DraftWikiHeroImage:
       type: object
@@ -9572,7 +9572,7 @@ components:
         sections:
           type: array
           items: {}
-          description: Section content payloads.
+          description: Section content nodes use camelCase fields, matching WikiContentInput. The type field identifies sections and blocks. Preserve sectionKey and blockKey when editing.
       description: Detailed song draft wiki payload used by the editor.
     SongDraftWikiGroupSummary:
       type: object
@@ -9904,7 +9904,7 @@ components:
         sections:
           type: array
           items: {}
-          description: Section content payloads.
+          description: Section content nodes use camelCase fields, matching WikiContentInput. The type field identifies sections and blocks. Preserve sectionKey and blockKey when editing.
       description: Detailed published song wiki payload.
     SubmitWikiTarget:
       type: object
@@ -10153,7 +10153,7 @@ components:
         sections:
           type: array
           items: {}
-          description: Section content payloads.
+          description: Section content nodes use camelCase fields, matching WikiContentInput. The type field identifies sections and blocks. Preserve sectionKey and blockKey when editing.
       description: Detailed talent draft wiki payload used by the editor.
     TalentDraftWikiGroupSummary:
       type: object
@@ -10433,7 +10433,7 @@ components:
         sections:
           type: array
           items: {}
-          description: Section content payloads.
+          description: Section content nodes use camelCase fields, matching WikiContentInput. The type field identifies sections and blocks. Preserve sectionKey and blockKey when editing.
       description: Detailed published talent wiki payload.
     TranslateWikiResponseBody:
       type: object
@@ -11202,7 +11202,7 @@ components:
         sections:
           type: array
           items: {}
-          description: Section content payloads.
+          description: Section content nodes use camelCase fields, matching WikiContentInput. The type field identifies sections and blocks. Preserve sectionKey and blockKey when editing.
       description: Detailed published group wiki payload.
     WikiFontStyle:
       type: string

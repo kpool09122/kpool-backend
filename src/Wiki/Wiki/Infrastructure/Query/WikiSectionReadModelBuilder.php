@@ -10,6 +10,7 @@ use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Infrastructure\Support\ImageUrl;
 use Source\Wiki\Wiki\Application\UseCase\Query\RelatedProfileReadModel;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ProfileCardShape;
+use Source\Wiki\Wiki\Infrastructure\Repository\SectionContentJsonNormalizer;
 
 final readonly class WikiSectionReadModelBuilder
 {
@@ -19,7 +20,7 @@ final readonly class WikiSectionReadModelBuilder
      */
     public static function build(array $sections): array
     {
-        return (new self())->sectionsWithDetails($sections);
+        return (new self())->sectionsWithDetails(SectionContentJsonNormalizer::normalize($sections));
     }
 
     /**
@@ -55,9 +56,9 @@ final readonly class WikiSectionReadModelBuilder
                 return $this->sectionWithDetails($content, $imageDetails, $profileDetails);
             }
 
-            $blockType = $content['block_type'] ?? $content['blockType'] ?? $content['type'] ?? null;
+            $blockType = $content['type'] ?? null;
             if ($blockType === 'image') {
-                $imageIdentifier = $content['image_identifier'] ?? $content['imageIdentifier'] ?? null;
+                $imageIdentifier = $content['imageIdentifier'] ?? null;
                 if (is_string($imageIdentifier) && isset($imageDetails[$imageIdentifier])) {
                     $content['src'] = $imageDetails[$imageIdentifier]['src'];
                     $content['alt'] = $content['alt'] ?? $imageDetails[$imageIdentifier]['alt'];
@@ -65,7 +66,7 @@ final readonly class WikiSectionReadModelBuilder
             }
 
             if ($blockType === 'image_gallery') {
-                $imageIdentifiers = $content['image_identifiers'] ?? $content['imageIdentifiers'] ?? [];
+                $imageIdentifiers = $content['imageIdentifiers'] ?? [];
                 if (is_array($imageIdentifiers)) {
                     $content['images'] = array_values(array_filter(array_map(
                         static fn (mixed $imageIdentifier): ?array => is_string($imageIdentifier) && isset($imageDetails[$imageIdentifier])
@@ -81,7 +82,7 @@ final readonly class WikiSectionReadModelBuilder
             }
 
             if ($blockType === 'profile_card_list') {
-                $wikiIdentifiers = $this->stringList($content['wiki_identifiers'] ?? $content['wikiIdentifiers'] ?? []);
+                $wikiIdentifiers = $this->stringList($content['wikiIdentifiers'] ?? []);
                 $profiles = array_values(array_filter(array_map(
                     static fn (string $wikiIdentifier): ?array => $profileDetails[$wikiIdentifier] ?? null,
                     $wikiIdentifiers,
@@ -89,8 +90,8 @@ final readonly class WikiSectionReadModelBuilder
 
                 $content['wikiIdentifiers'] = $content['wikiIdentifiers'] ?? $wikiIdentifiers;
                 $content['profiles'] = $profiles;
-                $content['cardShape'] = ProfileCardShape::fromValue($content['card_shape'] ?? $content['cardShape'] ?? null)->value;
-                $content['relatedResourceType'] = $content['relatedResourceType'] ?? $content['related_resource_type'] ?? $this->relatedResourceType($profiles);
+                $content['cardShape'] = ProfileCardShape::fromValue($content['cardShape'] ?? null)->value;
+                $content['relatedResourceType'] = $content['relatedResourceType'] ?? $this->relatedResourceType($profiles);
             }
 
             return $content;
@@ -118,13 +119,13 @@ final readonly class WikiSectionReadModelBuilder
                     continue;
                 }
 
-                $blockType = $content['block_type'] ?? $content['blockType'] ?? $content['type'] ?? null;
-                $imageIdentifier = $content['image_identifier'] ?? $content['imageIdentifier'] ?? null;
+                $blockType = $content['type'] ?? null;
+                $imageIdentifier = $content['imageIdentifier'] ?? null;
                 if ($blockType === 'image' && is_string($imageIdentifier)) {
                     $identifiers[] = $imageIdentifier;
                 }
 
-                $imageIdentifiers = $content['image_identifiers'] ?? $content['imageIdentifiers'] ?? null;
+                $imageIdentifiers = $content['imageIdentifiers'] ?? null;
                 if ($blockType === 'image_gallery' && is_array($imageIdentifiers)) {
                     foreach ($imageIdentifiers as $imageIdentifier) {
                         if (is_string($imageIdentifier)) {
@@ -179,9 +180,9 @@ final readonly class WikiSectionReadModelBuilder
                     continue;
                 }
 
-                $blockType = $content['block_type'] ?? $content['blockType'] ?? $content['type'] ?? null;
+                $blockType = $content['type'] ?? null;
                 if ($blockType === 'profile_card_list') {
-                    $identifiers = [...$identifiers, ...$this->stringList($content['wiki_identifiers'] ?? $content['wikiIdentifiers'] ?? [])];
+                    $identifiers = [...$identifiers, ...$this->stringList($content['wikiIdentifiers'] ?? [])];
                 }
             }
         }
