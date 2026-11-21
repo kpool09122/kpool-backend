@@ -6,6 +6,7 @@ namespace Source\Monetization\Principal\Infrastructure\Repository;
 
 use Application\Models\Monetization\Role as RoleEloquent;
 use Application\Models\Monetization\RolePolicyAttachment as AttachmentEloquent;
+use Source\Monetization\Principal\Application\Service\MonetizationContextServiceInterface;
 use Source\Monetization\Principal\Domain\Entity\Role;
 use Source\Monetization\Principal\Domain\Repository\RoleRepositoryInterface;
 use Source\Monetization\Principal\Domain\ValueObject\PolicyIdentifier;
@@ -33,6 +34,7 @@ class RoleRepository implements RoleRepositoryInterface
         if ($records !== []) {
             AttachmentEloquent::query()->insert($records);
         }
+        app(MonetizationContextServiceInterface::class)->forgetForAccount($role->accountIdentifier());
     }
 
     public function findSystemByName(string $name): ?Role

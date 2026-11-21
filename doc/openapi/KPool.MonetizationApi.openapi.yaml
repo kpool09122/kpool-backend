@@ -630,6 +630,124 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/RefundPaymentRequestBody'
+  /principal/me:
+    get:
+      operationId: PrincipalOperations_getCurrentPrincipal
+      description: Return the original authenticated identity's Monetization principal for the current effective Account. No arbitrary account selection is accepted. Returns 404 when not enabled. Account, Account Principal and Monetization Principal suspension does not prevent reading this snapshot. Does not require group management permissions.
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrincipalSnapshot'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      security:
+        - SessionCookieAuth: []
+  /principals:
+    post:
+      operationId: PrincipalOperations_createPrincipal
+      description: Explicitly enable Monetization for the original authenticated identity and current effective Account. No identity or account input is accepted. Requires active direct membership. All members join Default with General; Account Owners also join Owners with Owner. Duplicate enrollment returns 409 without restoring status or permissions. Does not enable payment, billing or settlement APIs.
+      parameters: []
+      responses:
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrincipalSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '419':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      security:
+        - SessionCookieAuth: []
   /settlements/settle-revenue:
     post:
       operationId: MonetizationSettlementOperations_settleRevenue
@@ -1242,6 +1360,121 @@ components:
           nullable: true
           description: Reason for the latest refund.
       description: Payment snapshot returned by authorize/capture/refund commands.
+    PrincipalConditionClause:
+      type: object
+      required:
+        - field
+        - operator
+        - value
+      properties:
+        field:
+          type: string
+          enum:
+            - resource:accountId
+        operator:
+          type: string
+          enum:
+            - eq
+            - ne
+            - in
+            - not_in
+        value:
+          anyOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+    PrincipalPolicyStatement:
+      type: object
+      required:
+        - effect
+        - actions
+        - resourceTypes
+        - condition
+      properties:
+        effect:
+          type: string
+          enum:
+            - allow
+            - deny
+        actions:
+          type: array
+          items:
+            type: string
+            enum:
+              - principal_group_read
+              - principal_group_manage
+        resourceTypes:
+          type: array
+          items:
+            type: string
+            enum:
+              - principal_group
+        condition:
+          type: object
+          properties:
+            clauses:
+              type: array
+              items:
+                $ref: '#/components/schemas/PrincipalConditionClause'
+          required:
+            - clauses
+          nullable: true
+    PrincipalPolicySummary:
+      type: object
+      required:
+        - policyIdentifier
+        - name
+        - statements
+      properties:
+        policyIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        name:
+          type: string
+        statements:
+          type: array
+          items:
+            $ref: '#/components/schemas/PrincipalPolicyStatement'
+    PrincipalSnapshot:
+      type: object
+      required:
+        - principalIdentifier
+        - identityIdentifier
+        - status
+        - accountPrincipalCount
+        - policies
+      properties:
+        principalIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        identityIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        status:
+          type: string
+          enum:
+            - active
+            - suspended
+            - forced_stop
+        accountPrincipalCount:
+          type: integer
+          format: int32
+          minimum: 1
+          description: Number of Monetization principals belonging to the current account, including the current principal and suspended or forcibly stopped principals.
+        policies:
+          type: array
+          items:
+            $ref: '#/components/schemas/PrincipalPolicySummary'
+          description: Granted policies deduplicated and ordered by policy identifier. This snapshot does not grant data access or override Deny or suspension.
+    PrincipalSummary:
+      type: object
+      required:
+        - principalIdentifier
+        - identityIdentifier
+      properties:
+        principalIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        identityIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+      description: Authorization principal created for the original authenticated identity in the effective Account. This is not a billing account or a payment capability.
     ProvisionMonetizationAccountRequestBody:
       type: object
       required:
@@ -1517,6 +1750,12 @@ components:
         - sent
         - failed
       description: Transfer execution status.
+  securitySchemes:
+    SessionCookieAuth:
+      type: apiKey
+      in: cookie
+      name: k-pool_session
+      description: 'Authenticated Laravel session cookie. Obtain it through the login flow and retain it for authenticated requests. Session API mutations also require CSRF protection: initialize it with GET /api/v1/identity/auth/csrf-token and send the URL-decoded XSRF-TOKEN cookie value in X-XSRF-TOKEN.'
 servers:
   - url: /api/v1/monetization
     description: Laravel route prefix from bootstrap/app.php.

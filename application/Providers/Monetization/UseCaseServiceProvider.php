@@ -21,6 +21,10 @@ use Source\Monetization\Payment\Application\UseCase\Command\CapturePayment\Captu
 use Source\Monetization\Payment\Application\UseCase\Command\CapturePayment\CapturePaymentInterface;
 use Source\Monetization\Payment\Application\UseCase\Command\RefundPayment\RefundPayment;
 use Source\Monetization\Payment\Application\UseCase\Command\RefundPayment\RefundPaymentInterface;
+use Source\Monetization\Principal\Application\UseCase\Command\CreatePrincipal\CreatePrincipal;
+use Source\Monetization\Principal\Application\UseCase\Command\CreatePrincipal\CreatePrincipalInterface;
+use Source\Monetization\Principal\Application\UseCase\Query\GetCurrentPrincipal\GetCurrentPrincipalInterface;
+use Source\Monetization\Principal\Infrastructure\Query\GetCurrentPrincipal;
 use Source\Monetization\Settlement\Application\UseCase\Command\SettleRevenue\SettleRevenue;
 use Source\Monetization\Settlement\Application\UseCase\Command\SettleRevenue\SettleRevenueInterface;
 
@@ -28,6 +32,10 @@ class UseCaseServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        $this->app->singleton(CreatePrincipalInterface::class, CreatePrincipal::class);
+
+        $this->app->singleton(GetCurrentPrincipalInterface::class, GetCurrentPrincipal::class);
+
         // Account
         $this->app->singleton(ProvisionMonetizationAccountInterface::class, ProvisionMonetizationAccount::class);
         $this->app->singleton(RegisterPaymentMethodInterface::class, RegisterPaymentMethod::class);

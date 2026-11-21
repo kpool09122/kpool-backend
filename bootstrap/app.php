@@ -14,6 +14,7 @@ use Application\Http\Middleware\ResolveAccountContext;
 use Application\Http\Middleware\ResolveActorContext;
 use Application\Http\Middleware\ResolveAnalyzeContext;
 use Application\Http\Middleware\ResolveWikiContext;
+use Application\Http\Middleware\ResolveMonetizationContext;
 use Application\Http\Middleware\ResolveSiteManagementContext;
 use Application\Http\Middleware\StartApplicationSession;
 use Application\Providers\Account\DomainServiceProvider as AccountDomainServiceProvider;
@@ -51,7 +52,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
             Route::group([], base_path('routes/mcp.php'));
             Route::prefix('api/v1')->middleware(['api', 'session'])->group(function () {
                 Route::prefix('identity')->group(base_path('routes/v1/identity_api.php'));
-                Route::prefix('monetization')->middleware(['auth.api', 'account.active', 'principal.active', 'resolve.actor'])
+                Route::prefix('monetization')
                     ->group(base_path('routes/v1/monetization_api.php'));
                 Route::prefix('account')->group(base_path('routes/v1/account_api.php'));
                 Route::prefix('site-management')->group(base_path('routes/v1/site_management_api.php'));
@@ -127,6 +128,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
             'resolve.account' => ResolveAccountContext::class,
             'resolve.analyze' => ResolveAnalyzeContext::class,
             'resolve.wiki' => ResolveWikiContext::class,
+            'resolve.monetization' => ResolveMonetizationContext::class,
             'resolve.site-management' => ResolveSiteManagementContext::class,
             'rate-limit' => EnforceApiRateLimit::class,
         ]);

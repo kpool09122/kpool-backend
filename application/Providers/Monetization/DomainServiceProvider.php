@@ -35,6 +35,8 @@ use Source\Monetization\Payment\Domain\Service\PaymentGatewayInterface;
 use Source\Monetization\Payment\Infrastructure\Factory\PaymentFactory;
 use Source\Monetization\Payment\Infrastructure\Repository\PaymentRepository;
 use Source\Monetization\Payment\Infrastructure\Service\PaymentGateway;
+use Source\Monetization\Principal\Application\Service\AccountMembershipServiceInterface;
+use Source\Monetization\Principal\Application\Service\MonetizationContextServiceInterface;
 use Source\Monetization\Principal\Domain\Factory\PolicyFactoryInterface;
 use Source\Monetization\Principal\Domain\Factory\PrincipalFactoryInterface;
 use Source\Monetization\Principal\Domain\Factory\PrincipalGroupFactoryInterface;
@@ -52,6 +54,8 @@ use Source\Monetization\Principal\Infrastructure\Repository\PolicyRepository;
 use Source\Monetization\Principal\Infrastructure\Repository\PrincipalGroupRepository;
 use Source\Monetization\Principal\Infrastructure\Repository\PrincipalRepository;
 use Source\Monetization\Principal\Infrastructure\Repository\RoleRepository;
+use Source\Monetization\Principal\Infrastructure\Service\AccountMembershipService;
+use Source\Monetization\Principal\Infrastructure\Service\MonetizationContextService;
 use Source\Monetization\Principal\Infrastructure\Service\PolicyEvaluator;
 use Source\Monetization\Settlement\Application\UseCase\Command\ExecuteTransfer\ExecuteTransfer;
 use Source\Monetization\Settlement\Application\UseCase\Command\ExecuteTransfer\ExecuteTransferInterface;
@@ -78,6 +82,8 @@ class DomainServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        $this->app->singleton(MonetizationContextServiceInterface::class, MonetizationContextService::class);
+        $this->app->singleton(AccountMembershipServiceInterface::class, AccountMembershipService::class);
         $this->app->singleton(PrincipalFactoryInterface::class, PrincipalFactory::class);
         $this->app->singleton(PrincipalRepositoryInterface::class, PrincipalRepository::class);
         $this->app->singleton(PrincipalGroupFactoryInterface::class, PrincipalGroupFactory::class);

@@ -85,6 +85,7 @@ readonly class SwitchAccountAction
 
         $this->cache->forgetCurrentAccount($this->actorContext->identityIdentifier);
         $this->cache->forgetWiki($this->actorContext->identityIdentifier);
+        $this->cache->forgetMonetization($this->actorContext->identityIdentifier);
 
         return response()->json($output->toArray(), Response::HTTP_OK);
     }

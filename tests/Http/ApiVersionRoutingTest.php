@@ -85,8 +85,7 @@ class ApiVersionRoutingTest extends TestCase
         }
         $contexts = array_values(array_unique($contexts));
         sort($contexts);
-        // Monetization currently has no enabled endpoints; moving its file must not enable them.
-        $this->assertSame(['account', 'analyze', 'identity', 'site-management', 'wiki'], $contexts);
+        $this->assertSame(['account', 'analyze', 'identity', 'monetization', 'site-management', 'wiki'], $contexts);
         foreach (['identity', 'account', 'wiki', 'monetization', 'site_management', 'analyze'] as $context) {
             $this->assertFileExists(__DIR__ . '/../../routes/v1/' . $context . '_api.php');
             $this->assertFileDoesNotExist(__DIR__ . '/../../routes/' . $context . '_api.php');

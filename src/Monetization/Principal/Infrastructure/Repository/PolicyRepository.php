@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Monetization\Principal\Infrastructure\Repository;
 
 use Application\Models\Monetization\Policy as PolicyEloquent;
+use Source\Monetization\Principal\Application\Service\MonetizationContextServiceInterface;
 use Source\Monetization\Principal\Domain\Entity\Policy;
 use Source\Monetization\Principal\Domain\Repository\PolicyRepositoryInterface;
 use Source\Monetization\Principal\Domain\ValueObject\Action;
@@ -30,6 +31,7 @@ class PolicyRepository implements PolicyRepositoryInterface
                 'statements' => array_map($this->serializeStatement(...), $policy->statements()),
             ],
         );
+        app(MonetizationContextServiceInterface::class)->forgetForAccount($policy->accountIdentifier());
     }
 
     /** @param PolicyIdentifier[] $identifiers

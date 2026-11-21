@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Source\Monetization\Principal\Infrastructure\Repository;
 
 use Application\Models\Monetization\Principal as PrincipalEloquent;
+use Source\Monetization\Principal\Application\Service\MonetizationContextServiceInterface;
 use Source\Monetization\Principal\Domain\Entity\Principal;
 use Source\Monetization\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Monetization\Principal\Domain\ValueObject\PrincipalIdentifier;
@@ -17,6 +18,7 @@ class PrincipalRepository implements PrincipalRepositoryInterface
     public function save(Principal $principal): void
     {
         PrincipalEloquent::query()->updateOrCreate(['id' => (string) $principal->principalIdentifier()], ['identity_id' => (string) $principal->identityIdentifier(), 'account_id' => (string) $principal->accountIdentifier(), 'status' => $principal->status()->value]);
+        app(MonetizationContextServiceInterface::class)->forget($principal->identityIdentifier());
 
     }
 
@@ -61,6 +63,7 @@ class PrincipalRepository implements PrincipalRepositoryInterface
     public function delete(Principal $principal): void
     {
         PrincipalEloquent::query()->where('id', (string) $principal->principalIdentifier())->delete();
+        app(MonetizationContextServiceInterface::class)->forget($principal->identityIdentifier());
     }
 
     private function toDomainEntity(PrincipalEloquent $model): Principal
