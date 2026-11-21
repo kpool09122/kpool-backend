@@ -69,15 +69,21 @@ class AuthenticatedRouteProtectionTest extends TestCase
             ->group(__DIR__ . '/../../../routes/webhook.php');
     }
 
-    public function testMonetizationEnrollmentAndSnapshotAreTheOnlyEnabledRoutes(): void
+    public function testMonetizationAuthorizationRoutesAreProtectedAndBusinessRoutesRemainDisabled(): void
     {
         $routes = array_values(array_filter(RouteFacade::getRoutes()->getRoutes(), static fn (Route $route): bool => str_starts_with($route->uri(), 'api/v1/monetization/')));
-        self::assertCount(2, $routes);
+        self::assertCount(4, $routes);
         foreach ($routes as $route) {
             foreach (['auth.api', 'resolve.actor', 'resolve.account'] as $middleware) {
                 self::assertContains($middleware, $route->gatherMiddleware());
             }
-            self::assertNotContains('resolve.monetization', $route->gatherMiddleware());
+            if (in_array($route->uri(), ['api/v1/monetization/principal-groups', 'api/v1/monetization/members'], true)) {
+                foreach (['account.active', 'principal.active', 'resolve.monetization', 'rate-limit:screen,query'] as $middleware) {
+                    self::assertContains($middleware, $route->gatherMiddleware());
+                }
+            } else {
+                self::assertNotContains('resolve.monetization', $route->gatherMiddleware());
+            }
         }
         $snapshot = $this->routeFor('GET', '/api/v1/monetization/principal/me');
         self::assertSame(['api', 'session', 'auth.api', 'resolve.actor', 'resolve.account', 'rate-limit:screen,query'], $snapshot->gatherMiddleware());

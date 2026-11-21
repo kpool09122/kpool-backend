@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use Application\Http\Action\Monetization\Principal\Command\CreatePrincipal\CreatePrincipalAction;
 use Application\Http\Action\Monetization\Principal\Query\GetCurrentPrincipal\GetCurrentPrincipalAction;
+use Application\Http\Action\Monetization\Principal\Query\ListMembers\ListMembersAction;
+use Application\Http\Action\Monetization\Principal\Query\ListPrincipalGroups\ListPrincipalGroupsAction;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth.api', 'account.active', 'principal.active', 'resolve.actor', 'resolve.account', 'rate-limit:screen,command'])->group(function () {
@@ -11,6 +13,11 @@ Route::middleware(['auth.api', 'account.active', 'principal.active', 'resolve.ac
 });
 Route::middleware(['auth.api', 'resolve.actor', 'resolve.account', 'rate-limit:screen,query'])->group(function () {
     Route::get('/principal/me', GetCurrentPrincipalAction::class);
+});
+
+Route::middleware(['auth.api', 'account.active', 'principal.active', 'resolve.actor', 'resolve.account', 'resolve.monetization', 'rate-limit:screen,query'])->group(function () {
+    Route::get('/principal-groups', ListPrincipalGroupsAction::class);
+    Route::get('/members', ListMembersAction::class);
 });
 
 // Account
