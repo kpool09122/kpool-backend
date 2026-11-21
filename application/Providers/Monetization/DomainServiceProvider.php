@@ -35,6 +35,24 @@ use Source\Monetization\Payment\Domain\Service\PaymentGatewayInterface;
 use Source\Monetization\Payment\Infrastructure\Factory\PaymentFactory;
 use Source\Monetization\Payment\Infrastructure\Repository\PaymentRepository;
 use Source\Monetization\Payment\Infrastructure\Service\PaymentGateway;
+use Source\Monetization\Principal\Domain\Factory\PolicyFactoryInterface;
+use Source\Monetization\Principal\Domain\Factory\PrincipalFactoryInterface;
+use Source\Monetization\Principal\Domain\Factory\PrincipalGroupFactoryInterface;
+use Source\Monetization\Principal\Domain\Factory\RoleFactoryInterface;
+use Source\Monetization\Principal\Domain\Repository\PolicyRepositoryInterface;
+use Source\Monetization\Principal\Domain\Repository\PrincipalGroupRepositoryInterface;
+use Source\Monetization\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Monetization\Principal\Domain\Repository\RoleRepositoryInterface;
+use Source\Monetization\Principal\Domain\Service\PolicyEvaluatorInterface;
+use Source\Monetization\Principal\Infrastructure\Factory\PolicyFactory;
+use Source\Monetization\Principal\Infrastructure\Factory\PrincipalFactory;
+use Source\Monetization\Principal\Infrastructure\Factory\PrincipalGroupFactory;
+use Source\Monetization\Principal\Infrastructure\Factory\RoleFactory;
+use Source\Monetization\Principal\Infrastructure\Repository\PolicyRepository;
+use Source\Monetization\Principal\Infrastructure\Repository\PrincipalGroupRepository;
+use Source\Monetization\Principal\Infrastructure\Repository\PrincipalRepository;
+use Source\Monetization\Principal\Infrastructure\Repository\RoleRepository;
+use Source\Monetization\Principal\Infrastructure\Service\PolicyEvaluator;
 use Source\Monetization\Settlement\Application\UseCase\Command\ExecuteTransfer\ExecuteTransfer;
 use Source\Monetization\Settlement\Application\UseCase\Command\ExecuteTransfer\ExecuteTransferInterface;
 use Source\Monetization\Settlement\Domain\Factory\SettlementBatchFactoryInterface;
@@ -60,6 +78,16 @@ class DomainServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        $this->app->singleton(PrincipalFactoryInterface::class, PrincipalFactory::class);
+        $this->app->singleton(PrincipalRepositoryInterface::class, PrincipalRepository::class);
+        $this->app->singleton(PrincipalGroupFactoryInterface::class, PrincipalGroupFactory::class);
+        $this->app->singleton(PrincipalGroupRepositoryInterface::class, PrincipalGroupRepository::class);
+        $this->app->singleton(RoleFactoryInterface::class, RoleFactory::class);
+        $this->app->singleton(RoleRepositoryInterface::class, RoleRepository::class);
+        $this->app->singleton(PolicyFactoryInterface::class, PolicyFactory::class);
+        $this->app->singleton(PolicyRepositoryInterface::class, PolicyRepository::class);
+        $this->app->singleton(PolicyEvaluatorInterface::class, PolicyEvaluator::class);
+
         // Account
         $this->app->singleton(MonetizationAccountFactoryInterface::class, MonetizationAccountFactory::class);
         $this->app->singleton(MonetizationAccountRepositoryInterface::class, MonetizationAccountRepository::class);
