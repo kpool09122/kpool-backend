@@ -554,14 +554,17 @@ interface WikiListOperations {
   @get
   @route("/statistics")
   @useAuth(NoAuth)
-  @doc("Public wiki page counts across all languages. Each translation counts separately; group types count group wiki pages. Drafts are excluded.")
+  @doc("Public wiki page counts across all languages, with resource and group type breakdowns per language in byLanguage. Each translation counts separately; group types count group wiki pages. Drafts are excluded.")
   getWikiStatistics(): {
     @statusCode statusCode: 200;
     @body body: {
       total: int32;
       languages: { ja: int32; en: int32; ko: int32; };
-      resourceTypes: { agency: int32; group: int32; talent: int32; song: int32; };
-      groupTypes: { boy_group: int32; girl_group: int32; co_ed: int32; `unknown`: int32; };
+      byLanguage: {
+        ja: WikiStatisticsBreakdown;
+        en: WikiStatisticsBreakdown;
+        ko: WikiStatisticsBreakdown;
+      };
     };
   } | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
 
@@ -885,4 +888,9 @@ interface MyWikiOperations {
     @path language: string,
     @path slug: string,
   ): GetAgencyDraftWikiResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse;
+}
+
+model WikiStatisticsBreakdown {
+  resourceTypes: { agency: int32; group: int32; talent: int32; song: int32; };
+  groupTypes: { boy_group: int32; girl_group: int32; co_ed: int32; `unknown`: int32; };
 }

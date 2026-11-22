@@ -6207,7 +6207,7 @@ paths:
   /wikis/statistics:
     get:
       operationId: WikiListOperations_getWikiStatistics
-      description: Public wiki page counts across all languages. Each translation counts separately; group types count group wiki pages. Drafts are excluded.
+      description: Public wiki page counts across all languages, with resource and group type breakdowns per language in byLanguage. Each translation counts separately; group types count group wiki pages. Drafts are excluded.
       parameters: []
       responses:
         '200':
@@ -6236,51 +6236,23 @@ paths:
                       - ja
                       - en
                       - ko
-                  resourceTypes:
+                  byLanguage:
                     type: object
                     properties:
-                      agency:
-                        type: integer
-                        format: int32
-                      group:
-                        type: integer
-                        format: int32
-                      talent:
-                        type: integer
-                        format: int32
-                      song:
-                        type: integer
-                        format: int32
+                      ja:
+                        $ref: '#/components/schemas/WikiStatisticsBreakdown'
+                      en:
+                        $ref: '#/components/schemas/WikiStatisticsBreakdown'
+                      ko:
+                        $ref: '#/components/schemas/WikiStatisticsBreakdown'
                     required:
-                      - agency
-                      - group
-                      - talent
-                      - song
-                  groupTypes:
-                    type: object
-                    properties:
-                      boy_group:
-                        type: integer
-                        format: int32
-                      girl_group:
-                        type: integer
-                        format: int32
-                      co_ed:
-                        type: integer
-                        format: int32
-                      unknown:
-                        type: integer
-                        format: int32
-                    required:
-                      - boy_group
-                      - girl_group
-                      - co_ed
-                      - unknown
+                      - ja
+                      - en
+                      - ko
                 required:
                   - total
                   - languages
-                  - resourceTypes
-                  - groupTypes
+                  - byLanguage
         '429':
           description: Client error
           headers:
@@ -11450,6 +11422,52 @@ components:
           type: string
           description: Resource type that the wiki belongs to.
       description: Wiki master search candidate returned by the master search endpoint.
+    WikiStatisticsBreakdown:
+      type: object
+      required:
+        - resourceTypes
+        - groupTypes
+      properties:
+        resourceTypes:
+          type: object
+          properties:
+            agency:
+              type: integer
+              format: int32
+            group:
+              type: integer
+              format: int32
+            talent:
+              type: integer
+              format: int32
+            song:
+              type: integer
+              format: int32
+          required:
+            - agency
+            - group
+            - talent
+            - song
+        groupTypes:
+          type: object
+          properties:
+            boy_group:
+              type: integer
+              format: int32
+            girl_group:
+              type: integer
+              format: int32
+            co_ed:
+              type: integer
+              format: int32
+            unknown:
+              type: integer
+              format: int32
+          required:
+            - boy_group
+            - girl_group
+            - co_ed
+            - unknown
     WikiWorkflowRequestBody:
       type: object
       required:
