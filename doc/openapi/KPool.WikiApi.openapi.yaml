@@ -6236,46 +6236,6 @@ paths:
                       - ja
                       - en
                       - ko
-                  resourceTypes:
-                    type: object
-                    properties:
-                      agency:
-                        type: integer
-                        format: int32
-                      group:
-                        type: integer
-                        format: int32
-                      talent:
-                        type: integer
-                        format: int32
-                      song:
-                        type: integer
-                        format: int32
-                    required:
-                      - agency
-                      - group
-                      - talent
-                      - song
-                  groupTypes:
-                    type: object
-                    properties:
-                      boy_group:
-                        type: integer
-                        format: int32
-                      girl_group:
-                        type: integer
-                        format: int32
-                      co_ed:
-                        type: integer
-                        format: int32
-                      unknown:
-                        type: integer
-                        format: int32
-                    required:
-                      - boy_group
-                      - girl_group
-                      - co_ed
-                      - unknown
                   byLanguage:
                     type: object
                     properties:
@@ -6292,8 +6252,6 @@ paths:
                 required:
                   - total
                   - languages
-                  - resourceTypes
-                  - groupTypes
                   - byLanguage
         '429':
           description: Client error

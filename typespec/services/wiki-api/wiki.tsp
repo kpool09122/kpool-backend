@@ -560,8 +560,6 @@ interface WikiListOperations {
     @body body: {
       total: int32;
       languages: { ja: int32; en: int32; ko: int32; };
-      resourceTypes: { agency: int32; group: int32; talent: int32; song: int32; };
-      groupTypes: { boy_group: int32; girl_group: int32; co_ed: int32; `unknown`: int32; };
       byLanguage: {
         ja: WikiStatisticsBreakdown;
         en: WikiStatisticsBreakdown;

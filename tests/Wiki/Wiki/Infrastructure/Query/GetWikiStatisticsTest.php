@@ -17,11 +17,9 @@ class GetWikiStatisticsTest extends TestCase
         $statistics = app(GetWikiStatisticsInterface::class)->process()->toArray();
         $this->assertSame(0, $statistics['total']);
         $this->assertSame(['ja' => 0, 'ko' => 0, 'en' => 0], $statistics['languages']);
-        $this->assertSame(['agency' => 0, 'group' => 0, 'talent' => 0, 'song' => 0], $statistics['resourceTypes']);
-        $this->assertSame(['boy_group' => 0, 'girl_group' => 0, 'co_ed' => 0, 'unknown' => 0], $statistics['groupTypes']);
         foreach (['ja', 'ko', 'en'] as $language) {
-            $this->assertSame($statistics['resourceTypes'], $statistics['byLanguage'][$language]['resourceTypes']);
-            $this->assertSame($statistics['groupTypes'], $statistics['byLanguage'][$language]['groupTypes']);
+            $this->assertSame(['agency' => 0, 'group' => 0, 'talent' => 0, 'song' => 0], $statistics['byLanguage'][$language]['resourceTypes']);
+            $this->assertSame(['boy_group' => 0, 'girl_group' => 0, 'co_ed' => 0, 'unknown' => 0], $statistics['byLanguage'][$language]['groupTypes']);
         }
     }
 
@@ -43,8 +41,6 @@ class GetWikiStatisticsTest extends TestCase
         $statistics = app(GetWikiStatisticsInterface::class)->process()->toArray();
         $this->assertSame(8, $statistics['total']);
         $this->assertSame(['ja' => 2, 'ko' => 5, 'en' => 1], $statistics['languages']);
-        $this->assertSame(['agency' => 1, 'group' => 4, 'talent' => 2, 'song' => 1], $statistics['resourceTypes']);
-        $this->assertSame(['boy_group' => 1, 'girl_group' => 1, 'co_ed' => 1, 'unknown' => 1], $statistics['groupTypes']);
         $this->assertSame(['agency' => 0, 'group' => 1, 'talent' => 1, 'song' => 0], $statistics['byLanguage']['ja']['resourceTypes']);
         $this->assertSame(['boy_group' => 1, 'girl_group' => 0, 'co_ed' => 0, 'unknown' => 0], $statistics['byLanguage']['ja']['groupTypes']);
         $this->assertSame(['agency' => 1, 'group' => 3, 'talent' => 0, 'song' => 1], $statistics['byLanguage']['ko']['resourceTypes']);
