@@ -21,6 +21,11 @@ readonly class GetWikiStatistics implements GetWikiStatisticsInterface
         $resourceTypes = array_fill_keys([ResourceType::AGENCY->value, ResourceType::GROUP->value, ResourceType::TALENT->value, ResourceType::SONG->value], 0);
         $groupTypes = array_fill_keys([...array_column(GroupType::cases(), 'value'), 'unknown'], 0);
         $total = 0;
+        /** @var array<string, array{resourceTypes: array<string, int>, groupTypes: array<string, int>}> $byLanguage */
+        $byLanguage = array_fill_keys(array_keys($languages), [
+            'resourceTypes' => $resourceTypes,
+            'groupTypes' => $groupTypes,
+        ]);
 
         // One aggregate query keeps all breakdowns on the same database snapshot.
         // Public pages live in wikis; drafts and pending reviews use other tables.
@@ -42,12 +47,21 @@ readonly class GetWikiStatistics implements GetWikiStatisticsInterface
             $total += $count;
             $languages[$language] += $count;
             $resourceTypes[$resourceType] += $count;
+            $languageResourceTypes = $byLanguage[$language]['resourceTypes'];
+            $languageGroupTypes = $byLanguage[$language]['groupTypes'];
+            $languageResourceTypes[$resourceType] += $count;
             if ($resourceType === ResourceType::GROUP->value) {
                 $groupType = TypedValue::nullableString($row->getAttribute('group_type')) ?? 'unknown';
-                $groupTypes[array_key_exists($groupType, $groupTypes) ? $groupType : 'unknown'] += $count;
+                $groupType = array_key_exists($groupType, $groupTypes) ? $groupType : 'unknown';
+                $groupTypes[$groupType] += $count;
+                $languageGroupTypes[$groupType] += $count;
             }
+            $byLanguage[$language] = [
+                'resourceTypes' => $languageResourceTypes,
+                'groupTypes' => $languageGroupTypes,
+            ];
         }
 
-        return new WikiStatisticsReadModel($total, $languages, $resourceTypes, $groupTypes);
+        return new WikiStatisticsReadModel($total, $languages, $resourceTypes, $groupTypes, $byLanguage);
     }
 }
