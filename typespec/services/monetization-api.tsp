@@ -93,7 +93,38 @@ model ListMembersResponse {
   @body body: { members: PrincipalGroupMember[]; };
 }
 
+model PrincipalGroupMembersUpdate {
+  principalGroupIdentifier: Uuid;
+  principalIdentifiers: Uuid[];
+}
+model PrincipalStatusUpdate {
+  principalIdentifier: Uuid;
+  status: "active" | "suspended" | "forced_stop";
+}
+model UpdatePrincipalGroupMembersRequest {
+  principalGroups?: PrincipalGroupMembersUpdate[];
+  principalStatuses?: PrincipalStatusUpdate[];
+}
+model UpdatedPrincipalGroup {
+  principalGroupIdentifier: Uuid;
+  accountIdentifier: Uuid;
+  name: string;
+  description: string | null;
+  isDefault: boolean;
+  memberCount: int32;
+}
+model UpdatePrincipalGroupMembersResponse {
+  @statusCode statusCode: 200;
+  @body body: { principalGroups: UpdatedPrincipalGroup[]; principalStatuses: PrincipalStatusUpdate[]; };
+}
+
 interface PrincipalManagementOperations {
+  @route("/principal-groups/members")
+  @useAuth(SessionCookieAuth)
+  @patch
+  @doc("Atomically replace only specified groups' memberships and specified Principals' statuses in the effective Account. Omitted groups and statuses are preserved. Requires fresh principal_group_manage permission and active reachable operator. Rejects foreign/missing targets with 404 and duplicate identifiers with 422. forced_stop transitions are forbidden (409), but resending the current status is allowed. Validates the complete proposed state before saving: at least one reachable active Owner-role Principal with effective management permission and no overriding Deny must remain. A successor may be granted management while the previous manager is removed/suspended in the same update. Last-manager loss returns 409 with code last_active_manager; forbidden status changes return 409 with code principal_status_change_forbidden. Changes invalidate Identity/Account authorization context after commit. Does not enable business payment APIs.")
+  updatePrincipalGroupMembers(@body body: UpdatePrincipalGroupMembersRequest): UpdatePrincipalGroupMembersResponse | UnauthorizedProblemResponse | ForbiddenProblemResponse | NotFoundProblemResponse | ConflictProblemResponse | UnprocessableEntityProblemResponse | CsrfTokenMismatchProblemResponse | TooManyRequestsProblemResponse | InternalServerErrorProblemResponse | ServiceUnavailableProblemResponse;
+
   @route("/principal-groups")
   @useAuth(SessionCookieAuth)
   @get

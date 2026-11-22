@@ -21,7 +21,7 @@ use Tests\Helper\StrTestHelper;
 
 class PrincipalGroupManagerContinuityTest extends TestCase
 {
-    public function testEffectiveAdministratorMustBeActiveReachableAndNotOperator(): void
+    public function testEffectiveAdministratorMustBeActiveReachableRegardlessOfOperatorRole(): void
     {
         $account = new AccountIdentifier(StrTestHelper::generateUuid());
         $id = new PrincipalIdentifier(StrTestHelper::generateUuid());
@@ -39,7 +39,7 @@ class PrincipalGroupManagerContinuityTest extends TestCase
                         $evaluator = $this->createStub(PolicyEvaluatorInterface::class);
                         $evaluator->method('evaluate')->willReturn(! $denied);
                         self::assertSame(
-                            $status === PrincipalStatus::ACTIVE && $reachable && ! $denied && ! $mixed,
+                            $status === PrincipalStatus::ACTIVE && $reachable && ! $denied,
                             (new PrincipalGroupManagerContinuity($roles, $evaluator))->hasManager([$group], [(string) $id => $principal], static fn (): bool => $reachable)
                         );
                     }

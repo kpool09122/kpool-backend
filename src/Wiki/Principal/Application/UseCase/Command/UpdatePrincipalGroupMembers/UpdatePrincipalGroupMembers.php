@@ -80,7 +80,12 @@ readonly class UpdatePrincipalGroupMembers implements UpdatePrincipalGroupMember
             }
 
             $requestedGroupIds[$principalGroupId] = true;
+            $memberIds = [];
             foreach ($principalGroupInput->principalIdentifiers() as $principalIdentifier) {
+                if (isset($memberIds[(string) $principalIdentifier])) {
+                    throw new InvalidArgumentException('Duplicate group member identifier.');
+                }
+                $memberIds[(string) $principalIdentifier] = true;
                 $requestedPrincipalIdentifiers[(string) $principalIdentifier] = $principalIdentifier;
             }
         }

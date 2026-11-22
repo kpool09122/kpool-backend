@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Wiki\Principal\Application\UseCase\Command\UpdatePrincipalGroupMembers;
 
 use DateTimeImmutable;
+use InvalidArgumentException;
 use Mockery;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Source\Account\Account\Application\Exception\AccountUpdateForbiddenException;
@@ -117,6 +118,48 @@ class UpdatePrincipalGroupMembersTest extends TestCase
         );
 
         $this->assertSame((string) $targetGroup->principalGroupIdentifier(), $output->toArray()['principalGroups'][0]['principalGroupIdentifier']);
+    }
+
+    public function testDuplicateMembersAreRejectedBeforeChangingOrSavingGroups(): void
+    {
+        $accountIdentifier = new AccountIdentifier(StrTestHelper::generateUuid());
+        $operator = $this->principal($accountIdentifier);
+        $group = $this->principalGroup($accountIdentifier, 'Target');
+        $group->addMember($operator->principalIdentifier());
+        $member = $this->principal($accountIdentifier);
+
+        /** @var PrincipalGroupRepositoryInterface&Mockery\MockInterface $principalGroupRepository */
+        $principalGroupRepository = Mockery::mock(PrincipalGroupRepositoryInterface::class);
+        $principalGroupRepository->shouldReceive('findByAccountId')->once()->andReturn([$group]);
+        $principalGroupRepository->shouldNotReceive('save');
+        /** @var PrincipalRepositoryInterface&Mockery\MockInterface $principalRepository */
+        $principalRepository = Mockery::mock(PrincipalRepositoryInterface::class);
+        $principalRepository->shouldReceive('findById')->once()->andReturn($operator);
+        $principalRepository->shouldNotReceive('findByIds');
+        $principalRepository->shouldNotReceive('save');
+        /** @var RoleRepositoryInterface&Mockery\MockInterface $roleRepository */
+        $roleRepository = Mockery::mock(RoleRepositoryInterface::class);
+        $roleRepository->shouldReceive('findSystemByNames')->once()->andReturn([]);
+        /** @var PolicyEvaluatorInterface&Mockery\MockInterface $policyEvaluator */
+        $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
+        $policyEvaluator->shouldReceive('evaluate')->once()->andReturnTrue();
+
+        try {
+            (new UpdatePrincipalGroupMembers($principalGroupRepository, $principalRepository, $roleRepository, $policyEvaluator, $this->accountPrincipalRepositoryMock($accountIdentifier, $operator), $this->reachable()))->process(
+                new UpdatePrincipalGroupMembersInput(
+                    $accountIdentifier,
+                    $operator->principalIdentifier(),
+                    [new PrincipalGroupMembers($group->principalGroupIdentifier(), [$member->principalIdentifier(), $member->principalIdentifier()])],
+                    AccountType::CORPORATION,
+                ),
+                new UpdatePrincipalGroupMembersOutput(),
+            );
+            self::fail('Expected duplicate member rejection.');
+        } catch (InvalidArgumentException $e) {
+            self::assertSame('Duplicate group member identifier.', $e->getMessage());
+            self::assertTrue($group->hasMember($operator->principalIdentifier()));
+            self::assertFalse($group->hasMember($member->principalIdentifier()));
+        }
     }
 
     public function testProcessRejectsUnknownOperatorForIndividualAccount(): void

@@ -756,6 +756,98 @@ paths:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
       security:
         - SessionCookieAuth: []
+  /principal-groups/members:
+    patch:
+      operationId: PrincipalManagementOperations_updatePrincipalGroupMembers
+      description: "Atomically replace only specified groups' memberships and specified Principals' statuses in the effective Account. Omitted groups and statuses are preserved. Requires fresh principal_group_manage permission and active reachable operator. Rejects foreign/missing targets with 404 and duplicate identifiers with 422. forced_stop transitions are forbidden (409), but resending the current status is allowed. Validates the complete proposed state before saving: at least one reachable active Owner-role Principal with effective management permission and no overriding Deny must remain. A successor may be granted management while the previous manager is removed/suspended in the same update. Last-manager loss returns 409 with code last_active_manager; forbidden status changes return 409 with code principal_status_change_forbidden. Changes invalidate Identity/Account authorization context after commit. Does not enable business payment APIs."
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  principalGroups:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/UpdatedPrincipalGroup'
+                  principalStatuses:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PrincipalStatusUpdate'
+                required:
+                  - principalGroups
+                  - principalStatuses
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '419':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePrincipalGroupMembersRequest'
+      security:
+        - SessionCookieAuth: []
   /principal/me:
     get:
       operationId: PrincipalOperations_getCurrentPrincipal
@@ -1563,6 +1655,18 @@ components:
             - active
             - suspended
             - forced_stop
+    PrincipalGroupMembersUpdate:
+      type: object
+      required:
+        - principalGroupIdentifier
+        - principalIdentifiers
+      properties:
+        principalGroupIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        principalIdentifiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
     PrincipalPolicyStatement:
       type: object
       required:
@@ -1643,6 +1747,20 @@ components:
           items:
             $ref: '#/components/schemas/PrincipalPolicySummary'
           description: Granted policies deduplicated and ordered by policy identifier. This snapshot does not grant data access or override Deny or suspension.
+    PrincipalStatusUpdate:
+      type: object
+      required:
+        - principalIdentifier
+        - status
+      properties:
+        principalIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        status:
+          type: string
+          enum:
+            - active
+            - suspended
+            - forced_stop
     PrincipalSummary:
       type: object
       required:
@@ -1929,6 +2047,41 @@ components:
         - sent
         - failed
       description: Transfer execution status.
+    UpdatePrincipalGroupMembersRequest:
+      type: object
+      properties:
+        principalGroups:
+          type: array
+          items:
+            $ref: '#/components/schemas/PrincipalGroupMembersUpdate'
+        principalStatuses:
+          type: array
+          items:
+            $ref: '#/components/schemas/PrincipalStatusUpdate'
+    UpdatedPrincipalGroup:
+      type: object
+      required:
+        - principalGroupIdentifier
+        - accountIdentifier
+        - name
+        - description
+        - isDefault
+        - memberCount
+      properties:
+        principalGroupIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        accountIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        isDefault:
+          type: boolean
+        memberCount:
+          type: integer
+          format: int32
   securitySchemes:
     SessionCookieAuth:
       type: apiKey

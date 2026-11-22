@@ -24,12 +24,11 @@ readonly class PrincipalGroupManagerContinuity
     public function hasManager(array $principalGroups, array $principalsById, callable $isReachable): bool
     {
         $administrator = $this->roleRepository->findSystemByName('Administrator');
-        $operator = $this->roleRepository->findSystemByName('Operator');
         if ($administrator === null) {
             return false;
         }
         foreach ($principalGroups as $group) {
-            if (! $group->hasRole($administrator->roleIdentifier()) || ($operator !== null && $group->hasRole($operator->roleIdentifier()))) {
+            if (! $group->hasRole($administrator->roleIdentifier())) {
                 continue;
             }
             foreach ($group->members() as $identifier) {
