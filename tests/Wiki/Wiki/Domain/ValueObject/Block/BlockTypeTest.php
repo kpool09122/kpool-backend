@@ -19,6 +19,7 @@ class BlockTypeTest extends TestCase
             'QUOTE' => 'quote',
             'LIST' => 'list',
             'HISTORY' => 'history',
+            'GOOGLE_TRENDS' => 'google_trends',
             'TABLE' => 'table',
             'PROFILE_CARD_LIST' => 'profile_card_list',
         ], array_column(BlockType::cases(), 'value', 'name'));

@@ -11,6 +11,7 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\BasicInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\SongBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\TalentBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\EmbedBlock;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\GoogleTrendsBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\HistoryBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\HistoryEntry;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ImageBlock;
@@ -92,6 +93,7 @@ final readonly class WikiNgWordValidationService implements WikiNgWordValidation
             $this->validateTexts(match (true) {
                 $content instanceof Section, $content instanceof ProfileCardListBlock => [$content->title()],
                 $content instanceof TextBlock => [$content->content()],
+                $content instanceof GoogleTrendsBlock => [$content->searchTerm()],
                 $content instanceof QuoteBlock => [$content->content(), $content->source()],
                 $content instanceof ImageBlock => [$content->caption(), $content->alt()],
                 $content instanceof ImageGalleryBlock, $content instanceof EmbedBlock => [$content->caption()],

@@ -12,6 +12,7 @@ use Source\Wiki\Wiki\Domain\ValueObject\Block\BlockInterface;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\BlockType;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\EmbedBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\EmbedProvider;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\GoogleTrendsBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\HistoryBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\HistoryEntry;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ImageBlock;
@@ -99,6 +100,14 @@ final class SectionContentMapper
                             'listType' => $content->listType()->value,
                             'items' => $content->items(),
                         ],
+                        GoogleTrendsBlock::class => [
+                            'type' => $content->blockType()->value,
+                            ...($content->key() === null ? [] : ['blockKey' => $content->key()]),
+                            'displayOrder' => $content->displayOrder(),
+                            'searchTerm' => $content->searchTerm(),
+                            'region' => $content->region(),
+                            'timeRange' => $content->timeRange(),
+                        ],
                         HistoryBlock::class => [
                             'type' => $content->blockType()->value,
                             ...($content->key() === null ? [] : ['blockKey' => $content->key()]),
@@ -163,6 +172,13 @@ final class SectionContentMapper
                 }
 
                 $blockType = BlockType::from(TypedValue::string($contentData['type'] ?? ''));
+                if ($blockType === BlockType::GOOGLE_TRENDS) {
+                    foreach (['searchTerm', 'region', 'timeRange'] as $field) {
+                        if (! is_string($contentData[$field] ?? null)) {
+                            throw new InvalidArgumentException('Google Trends settings must be strings.');
+                        }
+                    }
+                }
 
                 return match ($blockType) {
                     BlockType::TEXT => new TextBlock(
@@ -206,6 +222,13 @@ final class SectionContentMapper
                         key: TypedValue::nullableString($contentData['blockKey'] ?? null),
                         listType: ListType::from(TypedValue::string($contentData['listType'] ?? 'bullet')),
                         items: TypedValue::stringArray($contentData['items'] ?? []),
+                    ),
+                    BlockType::GOOGLE_TRENDS => new GoogleTrendsBlock(
+                        displayOrder: TypedValue::int($contentData['displayOrder'] ?? 0),
+                        searchTerm: TypedValue::string($contentData['searchTerm'] ?? null),
+                        region: TypedValue::string($contentData['region'] ?? null),
+                        timeRange: TypedValue::string($contentData['timeRange'] ?? null),
+                        key: TypedValue::nullableString($contentData['blockKey'] ?? null),
                     ),
                     BlockType::HISTORY => new HistoryBlock(
                         displayOrder: TypedValue::int($contentData['displayOrder'] ?? 0),

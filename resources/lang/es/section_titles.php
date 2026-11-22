@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'google_trends' => 'Interés de búsqueda en Google a lo largo del tiempo',
     'overview' => 'Descripción general',
     'history' => 'Trayectoria',
     'representative_songs' => 'Canciones representativas',

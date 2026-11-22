@@ -135,7 +135,7 @@ union WikiBasicInput {
 
 @doc("Content node. Use type=section with title/contents for a section, or a block type with its corresponding fields. contents contains nodes of this same shape; nested nodes remain arbitrary JSON to avoid a depth limit. Preserve existing nodes and displayOrder when editing. The existing API validates block-specific rules.")
 model WikiContentInput {
-  type: "section" | "text" | "image" | "image_gallery" | "embed" | "quote" | "list" | "history" | "table" | "profile_card_list";
+  type: "section" | "text" | "image" | "image_gallery" | "embed" | "quote" | "list" | "history" | "google_trends" | "table" | "profile_card_list";
   @doc("Stable section key, preserved through editing and translation. Optional for legacy content.")
   sectionKey?: string | null;
   @doc("Stable block key, preserved through editing and translation. Optional for legacy content.")
@@ -155,6 +155,14 @@ model WikiContentInput {
   listType?: "bullet" | "numbered";
   items?: string[];
   entries?: WikiHistoryEntryInput[];
+  @doc("Required for google_trends. A non-blank search term (maximum 100 characters). Defaults on generation/translation to the displayed Wiki basic name, without related names.")
+  @minLength(1)
+  @maxLength(100)
+  searchTerm?: string;
+  @doc("Required for google_trends. Searcher location, not search language: JP=Japan, KR=Korea, empty string=worldwide. Generation/translation defaults: ja=JP, ko=KR, en=worldwide.")
+  region?: "JP" | "KR" | "";
+  @doc("Required for google_trends. today 12-m=past 12 months (generation default); today 5-y=past 5 years (maximum). Preserved on translation. Only structured configuration is accepted, not HTML or JavaScript.")
+  timeRange?: "today 12-m" | "today 5-y";
   headerCells?: string[] | null;
   rowCells?: string[][];
   tableWidth?: string | null;

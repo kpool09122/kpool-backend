@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'google_trends' => 'Google 검색 추이',
     'overview' => '개요',
     'history' => '경력',
     'representative_songs' => '대표곡',

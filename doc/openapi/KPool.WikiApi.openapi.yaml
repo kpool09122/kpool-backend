@@ -10999,6 +10999,7 @@ components:
             - quote
             - list
             - history
+            - google_trends
             - table
             - profile_card_list
         sectionKey:
@@ -11060,6 +11061,24 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/WikiHistoryEntryInput'
+        searchTerm:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Required for google_trends. A non-blank search term (maximum 100 characters). Defaults on generation/translation to the displayed Wiki basic name, without related names.
+        region:
+          type: string
+          enum:
+            - JP
+            - KR
+            - ''
+          description: 'Required for google_trends. Searcher location, not search language: JP=Japan, KR=Korea, empty string=worldwide. Generation/translation defaults: ja=JP, ko=KR, en=worldwide.'
+        timeRange:
+          type: string
+          enum:
+            - today 12-m
+            - today 5-y
+          description: Required for google_trends. today 12-m=past 12 months (generation default); today 5-y=past 5 years (maximum). Preserved on translation. Only structured configuration is accepted, not HTML or JavaScript.
         headerCells:
           type: array
           items:

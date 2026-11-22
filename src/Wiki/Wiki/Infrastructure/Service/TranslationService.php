@@ -30,6 +30,7 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\Position;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\RealName;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\TalentBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\EmbedBlock;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\GoogleTrendsBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\HistoryBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\HistoryEntry;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ImageBlock;
@@ -258,6 +259,32 @@ readonly class TranslationService implements TranslationServiceInterface
         return new SectionContentCollection($mapped);
     }
 
+    private function mapGoogleTrendsSettings(SectionContentCollection $sections, string $name, Language $language): SectionContentCollection
+    {
+        return new SectionContentCollection(array_map(function (SectionContentInterface $content) use ($name, $language): SectionContentInterface {
+            if ($content instanceof Section) {
+                return new Section(
+                    $content->title(),
+                    $content->displayOrder(),
+                    $this->mapGoogleTrendsSettings($content->contents(), $name, $language),
+                    $content->depth(),
+                    key: $content->key(),
+                );
+            }
+            if ($content instanceof GoogleTrendsBlock) {
+                return new GoogleTrendsBlock(
+                    $content->displayOrder(),
+                    $name,
+                    GoogleTrendsBlock::defaultRegion($language),
+                    $content->timeRange(),
+                    $content->key(),
+                );
+            }
+
+            return $content;
+        }, $sections->all()));
+    }
+
     private function reusableText(?string $current, ?string $previous, ?string $translated): ?string
     {
         return $current !== null && $current === $previous && $translated !== null && trim($translated) !== '' ? $translated : null;
@@ -296,7 +323,11 @@ readonly class TranslationService implements TranslationServiceInterface
         }
         $counts = [];
         $this->countSectionScopes($wiki->sections(), $counts);
-        $sections = $this->mapDifferentialSections($wiki->sections(), $targetLanguage, $translate, $reuse, $counts);
+        $sections = $this->mapGoogleTrendsSettings(
+            $this->mapDifferentialSections($wiki->sections(), $targetLanguage, $translate, $reuse, $counts),
+            (string) $basic->name(),
+            $targetLanguage,
+        );
         $title = $wiki->title();
         $description = $wiki->metaDescription();
         $keywords = $wiki->keywords();

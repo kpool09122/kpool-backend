@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'google_trends' => 'Google Search Trends',
     'overview' => 'Overview',
     'history' => 'History',
     'representative_songs' => 'Representative Songs',
