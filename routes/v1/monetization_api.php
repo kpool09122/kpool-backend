@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Application\Http\Action\Monetization\Principal\Command\CreatePrincipal\CreatePrincipalAction;
+use Application\Http\Action\Monetization\Principal\Command\UpdatePrincipalGroupMembers\UpdatePrincipalGroupMembersAction;
 use Application\Http\Action\Monetization\Principal\Query\GetCurrentPrincipal\GetCurrentPrincipalAction;
 use Application\Http\Action\Monetization\Principal\Query\ListMembers\ListMembersAction;
 use Application\Http\Action\Monetization\Principal\Query\ListPrincipalGroups\ListPrincipalGroupsAction;
@@ -18,6 +19,10 @@ Route::middleware(['auth.api', 'resolve.actor', 'resolve.account', 'rate-limit:s
 Route::middleware(['auth.api', 'account.active', 'principal.active', 'resolve.actor', 'resolve.account', 'resolve.monetization', 'rate-limit:screen,query'])->group(function () {
     Route::get('/principal-groups', ListPrincipalGroupsAction::class);
     Route::get('/members', ListMembersAction::class);
+});
+
+Route::middleware(['auth.api', 'account.active', 'principal.active', 'resolve.actor', 'resolve.account', 'resolve.monetization', 'rate-limit:screen,command'])->group(function () {
+    Route::patch('/principal-groups/members', UpdatePrincipalGroupMembersAction::class);
 });
 
 // Account

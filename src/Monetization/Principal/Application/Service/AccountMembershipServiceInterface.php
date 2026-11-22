@@ -9,6 +9,8 @@ use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 
 interface AccountMembershipServiceInterface
 {
+    public function belongsToAccount(IdentityIdentifier $identityIdentifier, AccountIdentifier $accountIdentifier): bool;
+
     public function isAccountOwner(IdentityIdentifier $identityIdentifier, AccountIdentifier $accountIdentifier): bool;
 
     public function belongsToActiveAccount(IdentityIdentifier $identityIdentifier, AccountIdentifier $accountIdentifier): bool;

@@ -99,6 +99,7 @@ return [
     'identity_already_member' => '該身分已是此群組的成員。',
     'identity_not_member' => '該身分不是此群組的成員。',
     'cannot_remove_last_owner' => '無法移除帳戶的最後一個擁有者。',
+    'cannot_remove_last_monetization_administrator' => '至少需要一位可存取的 Monetization 管理員。',
     'cannot_remove_last_wiki_administrator' => '至少需要一個 Wiki Administrator。',
     'invalid_principal_group_members' => 'PrincipalGroup 成員輸入無效。',
     'cannot_remove_last_site_management_administrator' => '至少需要一個 SiteManagement Administrator。',

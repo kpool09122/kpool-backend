@@ -99,6 +99,18 @@ class UpdatePrincipalGroupMembersTest extends TestCase
         $this->assertDatabaseMissing('site_management_principal_group_memberships', ['principal_group_id' => (string)$f->administrators->principalGroupIdentifier()]);
     }
 
+    public function testOmittedOperatorGroupWithAdministratorRolePreservesManager(): void
+    {
+        $f = new SiteManagementPrincipalGroupsFixture();
+        $output = $this->update($f, [new PrincipalGroupMembers($f->administrators->principalGroupIdentifier(), [])]);
+
+        self::assertSame(0, $output->toArray()['principalGroups'][0]['memberCount']);
+        $this->assertDatabaseHas('site_management_principal_group_memberships', [
+            'principal_group_id' => (string) $f->protected->principalGroupIdentifier(),
+            'principal_id' => (string) $f->administrator->principalIdentifier(),
+        ]);
+    }
+
     public function testEmptyGroupUpdatesReturnNoGroupsWithoutChangingMemberships(): void
     {
         $f = new SiteManagementPrincipalGroupsFixture();
@@ -139,6 +151,9 @@ class UpdatePrincipalGroupMembersTest extends TestCase
     {
         $f = new SiteManagementPrincipalGroupsFixture();
         $groups = [new PrincipalGroupMembers($f->general->principalGroupIdentifier(), [$f->unassigned->principalIdentifier()])];
+        if (in_array($case, ['last', 'foreign-admin', 'missing-admin'], true)) {
+            DB::table('site_management_principal_group_role_attachments')->where('principal_group_id', (string) $f->protected->principalGroupIdentifier())->where('role_id', SiteManagementAuthorizationSeeder::ADMINISTRATOR_ROLE)->delete();
+        }
         if ($case === 'last') {
             $groups[] = new PrincipalGroupMembers($f->administrators->principalGroupIdentifier(), []);
         }

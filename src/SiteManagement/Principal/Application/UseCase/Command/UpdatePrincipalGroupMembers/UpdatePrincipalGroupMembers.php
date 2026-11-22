@@ -84,7 +84,7 @@ readonly class UpdatePrincipalGroupMembers implements UpdatePrincipalGroupMember
         }
         // Include omitted groups when validating the surviving administrator.
         foreach ($groupsById as $id => $group) {
-            if ($administratorRole !== null && $group->hasRole($administratorRole->roleIdentifier()) && ($operatorRole === null || ! $group->hasRole($operatorRole->roleIdentifier()))) {
+            if ($administratorRole !== null && $group->hasRole($administratorRole->roleIdentifier())) {
                 foreach ($requested[$id] ?? $group->members() as $member) {
                     $principalIdentifiers[(string) $member] = $member;
                 }

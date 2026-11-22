@@ -99,6 +99,7 @@ return [
     'identity_already_member' => 'La identidad ya es miembro de este grupo.',
     'identity_not_member' => 'La identidad no es miembro de este grupo.',
     'cannot_remove_last_owner' => 'No se puede eliminar al último propietario de la cuenta.',
+    'cannot_remove_last_monetization_administrator' => 'Se requiere al menos un administrador de Monetization accesible.',
     'cannot_remove_last_wiki_administrator' => 'Se requiere al menos un Wiki Administrator.',
     'invalid_principal_group_members' => 'La entrada de miembros del grupo de principales no es válida.',
     'cannot_remove_last_site_management_administrator' => 'Se requiere al menos un SiteManagement Administrator.',

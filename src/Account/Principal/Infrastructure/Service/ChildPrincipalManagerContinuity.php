@@ -10,6 +10,7 @@ use Source\Account\Principal\Application\Service\PrincipalReachabilityInterface;
 use Source\Account\Principal\Domain\Entity\Principal;
 use Source\Account\Principal\Domain\Entity\PrincipalGroup;
 use Source\Account\Principal\Domain\Repository\PrincipalRepositoryInterface;
+use Source\Monetization\Principal\Application\Service\ReachablePrincipalGroupManagerInterface as MonetizationReachablePrincipalGroupManagerInterface;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\SiteManagement\Principal\Application\Service\ReachablePrincipalGroupManagerInterface as SiteManagementReachablePrincipalGroupManagerInterface;
 use Source\Wiki\Principal\Application\Service\ReachablePrincipalGroupManagerInterface as WikiReachablePrincipalGroupManagerInterface;
@@ -21,6 +22,7 @@ readonly class ChildPrincipalManagerContinuity implements ChildPrincipalManagerC
         private PrincipalReachabilityInterface $principalReachability,
         private WikiReachablePrincipalGroupManagerInterface $wikiReachablePrincipalGroupManager,
         private SiteManagementReachablePrincipalGroupManagerInterface $siteManagementReachablePrincipalGroupManager,
+        private MonetizationReachablePrincipalGroupManagerInterface $monetizationReachablePrincipalGroupManager,
     ) {
     }
 
@@ -43,6 +45,9 @@ readonly class ChildPrincipalManagerContinuity implements ChildPrincipalManagerC
         }
         foreach ($affectedAccounts as $affectedAccount) {
             $reachableIdentityIds = array_values($reachableIdentitiesByAccount[(string) $affectedAccount] ?? []);
+            if (! $this->monetizationReachablePrincipalGroupManager->isPreserved($affectedAccount, $reachableIdentityIds)) {
+                throw new CannotRemoveLastPrincipalGroupManagerException('The last reachable Monetization manager cannot be removed.');
+            }
             if (! $this->wikiReachablePrincipalGroupManager->isPreserved($affectedAccount, $reachableIdentityIds)) {
                 throw new CannotRemoveLastPrincipalGroupManagerException('The last reachable Wiki manager cannot be removed.');
             }

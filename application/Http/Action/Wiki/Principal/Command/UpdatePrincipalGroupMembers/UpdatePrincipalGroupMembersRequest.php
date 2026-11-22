@@ -15,7 +15,7 @@ class UpdatePrincipalGroupMembersRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'principalGroups' => ['present', 'array'],
+            'principalGroups' => ['sometimes', 'array'],
             'principalStatuses' => ['sometimes', 'array'],
             'principalStatuses.*.principalIdentifier' => ['required', 'uuid', 'distinct'],
             'principalStatuses.*.status' => ['required', 'in:active,suspended,forced_stop'],

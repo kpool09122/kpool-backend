@@ -23,6 +23,8 @@ use Source\Monetization\Payment\Application\UseCase\Command\RefundPayment\Refund
 use Source\Monetization\Payment\Application\UseCase\Command\RefundPayment\RefundPaymentInterface;
 use Source\Monetization\Principal\Application\UseCase\Command\CreatePrincipal\CreatePrincipal;
 use Source\Monetization\Principal\Application\UseCase\Command\CreatePrincipal\CreatePrincipalInterface;
+use Source\Monetization\Principal\Application\UseCase\Command\UpdatePrincipalGroupMembers\UpdatePrincipalGroupMembers;
+use Source\Monetization\Principal\Application\UseCase\Command\UpdatePrincipalGroupMembers\UpdatePrincipalGroupMembersInterface;
 use Source\Monetization\Principal\Application\UseCase\Query\GetCurrentPrincipal\GetCurrentPrincipalInterface;
 use Source\Monetization\Principal\Application\UseCase\Query\ListMembers\ListMembersInterface;
 use Source\Monetization\Principal\Application\UseCase\Query\ListPrincipalGroups\ListPrincipalGroupsInterface;
@@ -41,6 +43,8 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(GetCurrentPrincipalInterface::class, GetCurrentPrincipal::class);
         $this->app->singleton(ListPrincipalGroupsInterface::class, ListPrincipalGroups::class);
         $this->app->singleton(ListMembersInterface::class, ListMembers::class);
+
+        $this->app->singleton(UpdatePrincipalGroupMembersInterface::class, UpdatePrincipalGroupMembers::class);
 
         // Account
         $this->app->singleton(ProvisionMonetizationAccountInterface::class, ProvisionMonetizationAccount::class);

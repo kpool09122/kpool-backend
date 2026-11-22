@@ -25,6 +25,7 @@ class AccountMembershipServiceTest extends TestCase
         CreateAccount::create((string) $account);
         $service = new AccountMembershipService();
         self::assertFalse($service->belongsToActiveAccount($identity, $account));
+        self::assertFalse($service->belongsToAccount($identity, $account));
         $id = StrTestHelper::generateUuid();
         $groupId = StrTestHelper::generateUuid();
         DB::table('account_principals')->insert(['id' => $id, 'identity_id' => (string) $identity, 'account_id' => (string) $account, 'status' => 'active']);
@@ -32,9 +33,11 @@ class AccountMembershipServiceTest extends TestCase
         DB::table('account_principal_groups')->insert(['id' => $groupId, 'account_id' => (string) $account, 'name' => 'General']);
         DB::table('account_principal_group_memberships')->insert(['id' => StrTestHelper::generateUuid(), 'principal_group_id' => $groupId, 'principal_id' => $id]);
         self::assertTrue($service->belongsToActiveAccount($identity, $account));
+        self::assertTrue($service->belongsToAccount($identity, $account));
         foreach (['suspended', 'forced_stop'] as $status) {
             DB::table('account_principals')->where('id', $id)->update(['status' => $status]);
             self::assertFalse($service->belongsToActiveAccount($identity, $account));
+            self::assertTrue($service->belongsToAccount($identity, $account));
         }
     }
 }

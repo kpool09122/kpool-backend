@@ -11,6 +11,11 @@ use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 
 readonly class AccountMembershipService implements AccountMembershipServiceInterface
 {
+    public function belongsToAccount(IdentityIdentifier $identityIdentifier, AccountIdentifier $accountIdentifier): bool
+    {
+        return PrincipalModel::query()->where('identity_id', (string) $identityIdentifier)->where('account_id', (string) $accountIdentifier)->exists();
+    }
+
     public function isAccountOwner(IdentityIdentifier $identityIdentifier, AccountIdentifier $accountIdentifier): bool
     {
         return PrincipalModel::query()

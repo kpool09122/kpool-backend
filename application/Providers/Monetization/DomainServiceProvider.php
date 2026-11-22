@@ -37,6 +37,7 @@ use Source\Monetization\Payment\Infrastructure\Repository\PaymentRepository;
 use Source\Monetization\Payment\Infrastructure\Service\PaymentGateway;
 use Source\Monetization\Principal\Application\Service\AccountMembershipServiceInterface;
 use Source\Monetization\Principal\Application\Service\MonetizationContextServiceInterface;
+use Source\Monetization\Principal\Application\Service\ReachablePrincipalGroupManagerInterface;
 use Source\Monetization\Principal\Domain\Factory\PolicyFactoryInterface;
 use Source\Monetization\Principal\Domain\Factory\PrincipalFactoryInterface;
 use Source\Monetization\Principal\Domain\Factory\PrincipalGroupFactoryInterface;
@@ -57,6 +58,7 @@ use Source\Monetization\Principal\Infrastructure\Repository\RoleRepository;
 use Source\Monetization\Principal\Infrastructure\Service\AccountMembershipService;
 use Source\Monetization\Principal\Infrastructure\Service\MonetizationContextService;
 use Source\Monetization\Principal\Infrastructure\Service\PolicyEvaluator;
+use Source\Monetization\Principal\Infrastructure\Service\ReachablePrincipalGroupManager;
 use Source\Monetization\Settlement\Application\UseCase\Command\ExecuteTransfer\ExecuteTransfer;
 use Source\Monetization\Settlement\Application\UseCase\Command\ExecuteTransfer\ExecuteTransferInterface;
 use Source\Monetization\Settlement\Domain\Factory\SettlementBatchFactoryInterface;
@@ -93,6 +95,8 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(PolicyFactoryInterface::class, PolicyFactory::class);
         $this->app->singleton(PolicyRepositoryInterface::class, PolicyRepository::class);
         $this->app->singleton(PolicyEvaluatorInterface::class, PolicyEvaluator::class);
+
+        $this->app->singleton(ReachablePrincipalGroupManagerInterface::class, ReachablePrincipalGroupManager::class);
 
         // Account
         $this->app->singleton(MonetizationAccountFactoryInterface::class, MonetizationAccountFactory::class);
