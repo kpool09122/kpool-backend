@@ -28,7 +28,7 @@ use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
-use Tests\Helper\CreateAccountCategoryChangeRequestAccount;
+use Tests\Helper\CreateAccountSnapshotProfile;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -137,7 +137,7 @@ class RejectAccountCategoryChangeRequestTest extends TestCase
 
     private function request(AccountCategoryChangeRequestIdentifier $requestId, AccountIdentifier $accountId, AccountCategoryChangeRequestStatus $status): AccountCategoryChangeRequest
     {
-        return new AccountCategoryChangeRequest($requestId, $accountId, AccountCategory::GENERAL, AccountCategory::AGENCY, $status, new DateTimeImmutable(), null, null, null, CreateAccountCategoryChangeRequestAccount::create());
+        return new AccountCategoryChangeRequest($requestId, $accountId, AccountCategory::GENERAL, AccountCategory::AGENCY, $status, new DateTimeImmutable(), null, null, null, CreateAccountSnapshotProfile::create());
     }
 
     private function principal(AccountIdentifier $accountId): Principal

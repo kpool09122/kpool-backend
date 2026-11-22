@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 return [
+    'account_snapshot_not_found' => '계정 스냅샷을 찾을 수 없습니다.',
+    'incomplete_account_snapshot' => '계정 유형과 연락처 및 주소가 필요합니다.',
     'authorization_connection_not_found' => '외부 연동을 찾을 수 없습니다.',
     'oauth_invalid_request' => '인증 요청이 유효하지 않습니다.',
     'oauth_request_expired' => '인증 요청이 만료되었습니다. 다시 시작해 주세요.',

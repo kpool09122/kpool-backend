@@ -1,5 +1,6 @@
 import "./account-api/common.tsp";
 import "./account-api/account.tsp";
+import "./account-api/account-snapshot.tsp";
 import "./account-api/delegation.tsp";
 import "./account-api/principal-group.tsp";
 import "./account-api/invitation.tsp";

@@ -15,8 +15,8 @@ use Source\Account\Account\Domain\Factory\AccountCategoryChangeRequestFactoryInt
 use Source\Account\Account\Domain\Repository\AccountCategoryChangeRequestRepositoryInterface;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Account\Domain\Service\AccountDocumentRequirementValidatorInterface;
-use Source\Account\Account\Domain\ValueObject\AccountCategoryChangeRequestAccount;
 use Source\Account\Account\Domain\ValueObject\AccountCategoryChangeRequestStatus;
+use Source\Account\Account\Domain\ValueObject\AccountSnapshotProfile;
 
 readonly class RequestAccountCategoryChange implements RequestAccountCategoryChangeInterface
 {
@@ -24,7 +24,7 @@ readonly class RequestAccountCategoryChange implements RequestAccountCategoryCha
         private AccountRepositoryInterface $accountRepository,
         private AccountCategoryChangeRequestRepositoryInterface $accountCategoryChangeRequestRepository,
         private AccountCategoryChangeRequestFactoryInterface $requestFactory,
-        private AccountDocumentRequirementValidatorInterface $documentRequirementValidator,
+        private AccountDocumentRequirementValidatorInterface $accountDocumentRequirementValidator,
         private AccountCategoryChangeRequestSnapshotServiceInterface $accountCategoryChangeRequestSnapshotService,
     ) {
     }
@@ -52,9 +52,8 @@ readonly class RequestAccountCategoryChange implements RequestAccountCategoryCha
             throw new IncompleteAccountContactForCategoryChangeException();
         }
         $accountType = $account->type() ?? throw new AccountSetupUnavailableException('Account type has not been selected.');
-
-        $this->documentRequirementValidator->validate($accountType, $account->documents()->documentTypes());
-        $request = $this->requestFactory->create($account->accountIdentifier(), $account->accountCategory(), $input->requestedAccountCategory(), AccountCategoryChangeRequestAccount::fromAccount($account));
+        $this->accountDocumentRequirementValidator->validate($accountType, $account->documents()->documentTypes());
+        $request = $this->requestFactory->create($account->accountIdentifier(), $account->accountCategory(), $input->requestedAccountCategory(), AccountSnapshotProfile::fromAccount($account));
         $this->accountCategoryChangeRequestRepository->save($request);
         $this->accountCategoryChangeRequestSnapshotService->capture($request, $account);
         $output->setRequest($request);

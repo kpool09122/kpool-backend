@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 return [
+    'account_snapshot_not_found' => '找不到帳戶快照。',
+    'incomplete_account_snapshot' => '需要帳戶類型以及完整的聯絡資訊和地址。',
     'authorization_connection_not_found' => '找不到外部授權連線。',
     'oauth_invalid_request' => '授權請求無效。',
     'oauth_request_expired' => '授權請求已過期，請重新開始授權。',

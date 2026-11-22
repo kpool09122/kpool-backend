@@ -6,6 +6,7 @@ use Application\Http\Action\Account\Account\Command\ApproveAccountCategoryChange
 use Application\Http\Action\Account\Account\Command\CompleteInitialSetup\CompleteInitialSetupAction;
 use Application\Http\Action\Account\Account\Command\RejectAccountCategoryChangeRequest\RejectAccountCategoryChangeRequestAction;
 use Application\Http\Action\Account\Account\Command\RequestAccountCategoryChange\RequestAccountCategoryChangeAction;
+use Application\Http\Action\Account\Account\Command\SaveAccountSnapshot\SaveAccountSnapshotAction;
 use Application\Http\Action\Account\Account\Command\SwitchAccount\SwitchAccountAction;
 use Application\Http\Action\Account\Account\Command\UpdateAccount\UpdateAccountAction;
 use Application\Http\Action\Account\Account\Command\UploadDocuments\UploadDocumentsAction;
@@ -13,6 +14,9 @@ use Application\Http\Action\Account\Account\Command\WithdrawAccountCategoryChang
 use Application\Http\Action\Account\Account\Query\GetAccount\GetAccountAction;
 use Application\Http\Action\Account\Account\Query\GetAccountCategoryChangeRequest\GetAccountCategoryChangeRequestAction;
 use Application\Http\Action\Account\Account\Query\GetAccountCategoryChangeRequestDocument\GetAccountCategoryChangeRequestDocumentAction;
+use Application\Http\Action\Account\Account\Query\GetAccountSnapshot\GetAccountSnapshotAction;
+use Application\Http\Action\Account\Account\Query\GetAccountSnapshotDocument\GetAccountSnapshotDocumentAction;
+use Application\Http\Action\Account\Account\Query\GetCurrentAccountSnapshot\GetCurrentAccountSnapshotAction;
 use Application\Http\Action\Account\Account\Query\GetLatestAccountCategoryChangeRequest\GetLatestAccountCategoryChangeRequestAction;
 use Application\Http\Action\Account\Account\Query\ListAccountCategoryChangeRequests\ListAccountCategoryChangeRequestsAction;
 use Application\Http\Action\Account\Account\Query\ListMyAccountDocuments\ListMyAccountDocumentsAction;
@@ -40,6 +44,9 @@ Route::middleware(['auth.api', 'principal.active', 'resolve.actor', 'rate-limit:
 
 Route::middleware(['auth.api', 'account.active', 'principal.active', 'resolve.actor', 'resolve.account'])->group(function () {
     Route::middleware('rate-limit:screen,query')->group(function () {
+        Route::get('/accounts/{accountIdentifier}/snapshot', GetCurrentAccountSnapshotAction::class);
+        Route::get('/accounts/{accountIdentifier}/snapshots/{snapshotIdentifier}', GetAccountSnapshotAction::class);
+        Route::get('/accounts/{accountIdentifier}/snapshots/{snapshotIdentifier}/documents/{documentType}', GetAccountSnapshotDocumentAction::class);
         // Account
         Route::get('/my/documents', ListMyAccountDocumentsAction::class);
         Route::get('/my/documents/{documentType}', ViewMyAccountDocumentAction::class);
@@ -66,6 +73,7 @@ Route::middleware(['auth.api', 'account.active', 'principal.active', 'resolve.ac
     });
 
     Route::middleware('rate-limit:screen,command')->group(function () {
+        Route::put('/accounts/{accountIdentifier}/snapshot', SaveAccountSnapshotAction::class);
         // Account
         Route::put('/accounts/{accountId}', UpdateAccountAction::class);
         Route::put('/accounts/{accountId}/notification-settings', UpdateNotificationSettingsAction::class);

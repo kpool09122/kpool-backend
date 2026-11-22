@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 return [
+    'account_snapshot_not_found' => 'アカウントスナップショットが見つかりません。',
+    'incomplete_account_snapshot' => 'アカウント種別と連絡先・住所の入力が必要です。',
     'authorization_connection_not_found' => '指定された外部連携が見つかりません。',
     'oauth_invalid_request' => '認可要求が無効です。',
     'oauth_request_expired' => '認可要求の有効期限が切れました。認可を開始し直してください。',

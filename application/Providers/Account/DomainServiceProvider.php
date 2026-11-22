@@ -9,27 +9,33 @@ use Source\Account\Account\Application\Service\AccountCategoryChangeNotification
 use Source\Account\Account\Application\Service\AccountCategoryChangeRequestSnapshotServiceInterface;
 use Source\Account\Account\Application\Service\AccountContextServiceInterface;
 use Source\Account\Account\Application\Service\AccountDocumentFileTypeDetectorInterface;
+use Source\Account\Account\Application\Service\AccountSnapshotDocumentServiceInterface;
 use Source\Account\Account\Application\Service\CurrentAccountServiceInterface;
 use Source\Account\Account\Application\Service\DocumentStorageServiceInterface;
 use Source\Account\Account\Application\Service\WithdrawalEligibilityServiceInterface;
 use Source\Account\Account\Domain\Factory\AccountCategoryChangeRequestFactoryInterface;
 use Source\Account\Account\Domain\Factory\AccountFactoryInterface;
+use Source\Account\Account\Domain\Factory\AccountSnapshotFactoryInterface;
 use Source\Account\Account\Domain\Factory\ArchivedAccountFactoryInterface;
 use Source\Account\Account\Domain\Repository\AccountCategoryChangeRequestRepositoryInterface;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
+use Source\Account\Account\Domain\Repository\AccountSnapshotRepositoryInterface;
 use Source\Account\Account\Domain\Repository\ArchivedAccountRepositoryInterface;
 use Source\Account\Account\Domain\Service\AccountDocumentRequirementValidator;
 use Source\Account\Account\Domain\Service\AccountDocumentRequirementValidatorInterface;
 use Source\Account\Account\Infrastructure\Factory\AccountCategoryChangeRequestFactory;
 use Source\Account\Account\Infrastructure\Factory\AccountFactory;
+use Source\Account\Account\Infrastructure\Factory\AccountSnapshotFactory;
 use Source\Account\Account\Infrastructure\Factory\ArchivedAccountFactory;
 use Source\Account\Account\Infrastructure\Repository\AccountCategoryChangeRequestRepository;
 use Source\Account\Account\Infrastructure\Repository\AccountRepository;
+use Source\Account\Account\Infrastructure\Repository\AccountSnapshotRepository;
 use Source\Account\Account\Infrastructure\Repository\ArchivedAccountRepository;
 use Source\Account\Account\Infrastructure\Service\AccountCategoryChangeNotificationService;
 use Source\Account\Account\Infrastructure\Service\AccountCategoryChangeRequestSnapshotService;
 use Source\Account\Account\Infrastructure\Service\AccountContextService;
 use Source\Account\Account\Infrastructure\Service\AccountDocumentFileTypeDetector;
+use Source\Account\Account\Infrastructure\Service\AccountSnapshotDocumentService;
 use Source\Account\Account\Infrastructure\Service\CurrentAccountService;
 use Source\Account\Account\Infrastructure\Service\DocumentStorageService;
 use Source\Account\Account\Infrastructure\Service\WithdrawalEligibilityService;
@@ -82,6 +88,9 @@ class DomainServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        $this->app->singleton(AccountSnapshotRepositoryInterface::class, AccountSnapshotRepository::class);
+        $this->app->singleton(AccountSnapshotFactoryInterface::class, AccountSnapshotFactory::class);
+        $this->app->singleton(AccountSnapshotDocumentServiceInterface::class, AccountSnapshotDocumentService::class);
 
         $this->app->singleton(AccountCategoryChangeRequestSnapshotServiceInterface::class, AccountCategoryChangeRequestSnapshotService::class);
         $this->app->bind(ChildPrincipalManagerContinuityInterface::class, ChildPrincipalManagerContinuity::class);
