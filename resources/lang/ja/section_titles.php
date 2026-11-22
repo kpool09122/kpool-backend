@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'google_trends' => 'Google検索推移',
     'overview' => '概要',
     'history' => '経歴',
     'representative_songs' => '代表曲',

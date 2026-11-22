@@ -33,6 +33,7 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\SongBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\TalentBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\EmbedBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\EmbedProvider;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\GoogleTrendsBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\HistoryBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\HistoryEntry;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ImageBlock;
@@ -68,6 +69,41 @@ class TranslationServiceTest extends TestCase
         $this->app()->instance(WikiSnapshotRepositoryInterface::class, $wikiSnapshotRepository);
         $wikiRepository->shouldReceive('findByTranslationSetIdentifierAndLanguages')->andReturn([])->byDefault();
         $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
+    }
+
+    #[TestWith([Language::JAPANESE, 'JP'])]
+    #[TestWith([Language::KOREAN, 'KR'])]
+    #[TestWith([Language::ENGLISH, ''])]
+    public function testGoogleTrendsUsesTranslatedWikiNameAndPreservesKeysAndRange(Language $language, string $region): void
+    {
+        $wiki = $this->createTalentWiki(new SectionContentCollection([
+            new Section('관심도', 8, new SectionContentCollection([
+                new Section('Nested', 4, new SectionContentCollection([
+                    new GoogleTrendsBlock(3, 'Custom search', '', 'today 5-y', 'trends-block'),
+                ]), 2, key: 'nested-section'),
+            ]), key: 'trends-section'),
+        ]));
+        $client = Mockery::mock(GoogleTranslateClient::class);
+        $client->shouldReceive('translateTexts')->once()->andReturnUsing(static function (TranslateTextsRequest $request): TranslateTextsResponse {
+            self::assertNotContains('Custom search', $request->texts());
+
+            return new TranslateTextsResponse(array_map(static fn (string $text): string => 'Translated ' . $text, $request->texts()));
+        });
+        $this->app()->instance(GoogleTranslateClient::class, $client);
+        $result = $this->app()->make(TranslationServiceInterface::class)->translateWiki($wiki, $language);
+        $section = $result->translatedSections()->sections()[0];
+        self::assertSame('trends-section', $section->key());
+        self::assertSame(8, $section->displayOrder());
+        $nested = $section->contents()->sections()[0];
+        self::assertSame('nested-section', $nested->key());
+        self::assertSame(4, $nested->displayOrder());
+        $block = $nested->contents()->blocks()[0];
+        self::assertInstanceOf(GoogleTrendsBlock::class, $block);
+        self::assertSame('trends-block', $block->key());
+        self::assertSame(3, $block->displayOrder());
+        self::assertSame((string) $result->translatedBasic()->name(), $block->searchTerm());
+        self::assertSame($region, $block->region());
+        self::assertSame('today 5-y', $block->timeRange());
     }
 
     public function testKeysDistinguishSameShapedSectionsWhenOnlySourcesChange(): void

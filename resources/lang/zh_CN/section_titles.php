@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'google_trends' => 'Google 搜索热度趋势',
     'overview' => '概述',
     'history' => '经历',
     'representative_songs' => '代表曲',

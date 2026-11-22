@@ -13,6 +13,7 @@ enum BlockType: string
     case QUOTE = 'quote';
     case LIST = 'list';
     case HISTORY = 'history';
+    case GOOGLE_TRENDS = 'google_trends';
     case TABLE = 'table';
     case PROFILE_CARD_LIST = 'profile_card_list';
 }

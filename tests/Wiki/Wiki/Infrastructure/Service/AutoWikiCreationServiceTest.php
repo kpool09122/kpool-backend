@@ -37,6 +37,7 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\SongBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\TalentBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\EmbedBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\EmbedProvider;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\GoogleTrendsBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\HistoryBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\HistoryEntry;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ListBlock;
@@ -47,11 +48,69 @@ use Tests\TestCase;
 
 class AutoWikiCreationServiceTest extends TestCase
 {
-    /**
-     * 正しくDIが動作していること.
-     *
-     * @throws BindingResolutionException
-     */
+    /** @return iterable<string, array{ResourceType, Language, bool}> */
+    public static function trendsCases(): iterable
+    {
+        foreach ([ResourceType::GROUP, ResourceType::TALENT, ResourceType::SONG, ResourceType::AGENCY] as $type) {
+            foreach (Language::cases() as $language) {
+                foreach ([true, false] as $withSources) {
+                    yield $type->value . '-' . $language->value . '-' . (int) $withSources => [$type, $language, $withSources];
+                }
+            }
+        }
+    }
+
+    #[DataProvider('trendsCases')]
+    public function testGoogleTrendsPlacementAndDefaults(ResourceType $type, Language $language, bool $withSources): void
+    {
+        $json = json_encode(['candidates' => [['content' => ['parts' => [['text' => json_encode([
+            'overview' => 'Overview',
+            'sources' => $withSources ? [['page_title' => 'Official', 'site_name' => 'Site', 'url' => 'https://example.com/source', 'description' => 'Source']] : [],
+        ], JSON_THROW_ON_ERROR)]]]]]], JSON_THROW_ON_ERROR);
+        $response = match ($type) {
+            ResourceType::GROUP => new GenerateGroupResponse($this->createPsrResponse($json)),
+            ResourceType::TALENT => new GenerateTalentResponse($this->createPsrResponse($json)),
+            ResourceType::SONG => new GenerateSongResponse($this->createPsrResponse($json)),
+            default => new GenerateAgencyResponse($this->createPsrResponse($json)),
+        };
+        $client = Mockery::mock(GeminiClient::class);
+        $client->shouldReceive('generate' . ucfirst($type->value))->once()->andReturn($response);
+        $this->app()->instance(GeminiClient::class, $client);
+        $result = $this->app()->make(AutoWikiCreationServiceInterface::class)->generate(new AutoWikiCreationPayload(
+            language: $language,
+            resourceType: $type,
+            name: new Name('Displayed Wiki Title'),
+            slug: new Slug('gr-trends-test'),
+            agencyIdentifier: null,
+            groupIdentifiers: [],
+            talentIdentifiers: [],
+            notes: null,
+        ));
+        $sections = $result->sections()->sections();
+        $trends = array_values(array_filter($sections, static fn ($section): bool => $section->contents()->blocks()[0] instanceof GoogleTrendsBlock));
+        self::assertCount($type === ResourceType::AGENCY ? 0 : 1, $trends);
+        if ($type === ResourceType::AGENCY) {
+            return;
+        }
+        $position = count($sections) - ($withSources ? 2 : 1);
+        self::assertSame($trends[0], $sections[$position]);
+        self::assertSame(section_title('google_trends', $language->value), $trends[0]->title());
+        self::assertSame($position, $trends[0]->displayOrder());
+        $block = $trends[0]->contents()->blocks()[0];
+        self::assertInstanceOf(GoogleTrendsBlock::class, $block);
+        self::assertSame('Displayed Wiki Title', $block->searchTerm());
+        self::assertSame(match ($language) {
+            Language::JAPANESE => 'JP', Language::KOREAN => 'KR', Language::ENGLISH => ''
+        }, $block->region());
+        self::assertSame('today 12-m', $block->timeRange());
+        self::assertSame(0, $block->displayOrder());
+        if ($withSources) {
+            self::assertSame(section_title('sources', $language->value), $sections[$position + 1]->title());
+            self::assertSame($position + 1, $sections[$position + 1]->displayOrder());
+        }
+    }
+
+    /** @throws BindingResolutionException */
     public function test__construct(): void
     {
         $service = $this->app()->make(AutoWikiCreationServiceInterface::class);
@@ -288,7 +347,7 @@ class AutoWikiCreationServiceTest extends TestCase
         ));
 
         $sections = $result->sections()->sections();
-        $this->assertCount(1, $sections);
+        $this->assertCount(2, $sections);
         $this->assertSame('代表曲', $sections[0]->title());
         $blocks = $sections[0]->contents()->blocks();
         $expectedVideos = [
@@ -407,7 +466,7 @@ class AutoWikiCreationServiceTest extends TestCase
 
         $this->assertFalse($result->sections()->isEmpty());
         $sections = $result->sections()->sections();
-        $this->assertCount(5, $sections);
+        $this->assertCount(6, $sections);
 
         $this->assertSame('개요', $sections[0]->title());
         $this->assertInstanceOf(TextBlock::class, $sections[0]->contents()->blocks()[0]);
@@ -423,11 +482,11 @@ class AutoWikiCreationServiceTest extends TestCase
         $this->assertEquals([new HistoryEntry(2016, 'Mnet Asian Music Awards', 'Song of the Year')], $awardBlocks[0]->entries());
         $this->assertSame('멤버', $sections[3]->title());
 
-        $this->assertSame('출처', $sections[4]->title());
-        $this->assertInstanceOf(ListBlock::class, $sections[4]->contents()->blocks()[0]);
+        $this->assertSame('출처', $sections[5]->title());
+        $this->assertInstanceOf(ListBlock::class, $sections[5]->contents()->blocks()[0]);
         $this->assertSame(
             ['[트와이스 - 위키백과](https://ko.wikipedia.org/wiki/트와이스)'],
-            $sections[4]->contents()->blocks()[0]->items(),
+            $sections[5]->contents()->blocks()[0]->items(),
         );
 
         $this->assertCount(1, $result->sources());
@@ -463,7 +522,8 @@ class AutoWikiCreationServiceTest extends TestCase
 
         $this->assertNull($result->alphabetName());
         $this->assertInstanceOf(GroupBasic::class, $result->basic());
-        $this->assertTrue($result->sections()->isEmpty());
+        $this->assertCount(1, $result->sections()->sections());
+        $this->assertInstanceOf(GoogleTrendsBlock::class, $result->sections()->sections()[0]->contents()->blocks()[0]);
         $this->assertEmpty($result->sources());
     }
 
@@ -509,7 +569,7 @@ class AutoWikiCreationServiceTest extends TestCase
         $result = $service->generate($payload);
 
         $this->assertSame('BTS', $result->alphabetName());
-        $this->assertCount(1, $result->sections()->sections());
+        $this->assertCount(2, $result->sections()->sections());
         $this->assertSame('概要', $result->sections()->sections()[0]->title());
     }
 
@@ -665,7 +725,7 @@ class AutoWikiCreationServiceTest extends TestCase
 
         $this->assertFalse($result->sections()->isEmpty());
         $sections = $result->sections()->sections();
-        $this->assertCount(5, $sections);
+        $this->assertCount(6, $sections);
 
         $this->assertSame('概要', $sections[0]->title());
         $this->assertInstanceOf(TextBlock::class, $sections[0]->contents()->blocks()[0]);
@@ -685,11 +745,11 @@ class AutoWikiCreationServiceTest extends TestCase
         $this->assertInstanceOf(HistoryBlock::class, $awardsBlock);
         $this->assertEquals([new HistoryEntry(2017, 'Billboard Music Awards', 'Top Social Artist')], $awardsBlock->entries());
 
-        $this->assertSame('出典', $sections[4]->title());
-        $this->assertInstanceOf(ListBlock::class, $sections[4]->contents()->blocks()[0]);
+        $this->assertSame('出典', $sections[5]->title());
+        $this->assertInstanceOf(ListBlock::class, $sections[5]->contents()->blocks()[0]);
         $this->assertSame(
             ['[Example](https://example.com/)'],
-            $sections[4]->contents()->blocks()[0]->items(),
+            $sections[5]->contents()->blocks()[0]->items(),
         );
 
         $this->assertCount(1, $result->sources());
@@ -725,7 +785,8 @@ class AutoWikiCreationServiceTest extends TestCase
 
         $this->assertNull($result->alphabetName());
         $this->assertInstanceOf(TalentBasic::class, $result->basic());
-        $this->assertTrue($result->sections()->isEmpty());
+        $this->assertCount(1, $result->sections()->sections());
+        $this->assertInstanceOf(GoogleTrendsBlock::class, $result->sections()->sections()[0]->contents()->blocks()[0]);
         $this->assertEmpty($result->sources());
     }
 
@@ -904,7 +965,7 @@ class AutoWikiCreationServiceTest extends TestCase
         ));
 
         $sections = $result->sections()->sections();
-        $this->assertCount(1, $sections);
+        $this->assertCount(2, $sections);
         $this->assertSame('概要', $sections[0]->title());
         $block = $sections[0]->contents()->blocks()[0];
         $this->assertInstanceOf(TextBlock::class, $block);
@@ -1016,7 +1077,7 @@ class AutoWikiCreationServiceTest extends TestCase
 
         $this->assertFalse($result->sections()->isEmpty());
         $sections = $result->sections()->sections();
-        $this->assertCount(3, $sections);
+        $this->assertCount(4, $sections);
 
         $this->assertSame('概要', $sections[0]->title());
         $this->assertSame(0, $sections[0]->displayOrder());
@@ -1036,12 +1097,12 @@ class AutoWikiCreationServiceTest extends TestCase
         $this->assertInstanceOf(ListBlock::class, $sections[1]->contents()->blocks()[0]);
         $this->assertSame($chartPerformance, $sections[1]->contents()->blocks()[0]->items());
 
-        $this->assertSame(2, $sections[2]->displayOrder());
-        $this->assertSame('出典', $sections[2]->title());
-        $this->assertInstanceOf(ListBlock::class, $sections[2]->contents()->blocks()[0]);
+        $this->assertSame(3, $sections[3]->displayOrder());
+        $this->assertSame('出典', $sections[3]->title());
+        $this->assertInstanceOf(ListBlock::class, $sections[3]->contents()->blocks()[0]);
         $this->assertSame(
             ['[Dynamite - Wikipedia](https://example.com/dynamite)'],
-            $sections[2]->contents()->blocks()[0]->items(),
+            $sections[3]->contents()->blocks()[0]->items(),
         );
 
         $this->assertCount(1, $result->sources());
@@ -1077,7 +1138,8 @@ class AutoWikiCreationServiceTest extends TestCase
 
         $this->assertNull($result->alphabetName());
         $this->assertInstanceOf(SongBasic::class, $result->basic());
-        $this->assertTrue($result->sections()->isEmpty());
+        $this->assertCount(1, $result->sections()->sections());
+        $this->assertInstanceOf(GoogleTrendsBlock::class, $result->sections()->sections()[0]->contents()->blocks()[0]);
         $this->assertEmpty($result->sources());
     }
 
