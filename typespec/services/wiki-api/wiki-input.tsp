@@ -161,8 +161,8 @@ model WikiContentInput {
   searchTerm?: string;
   @doc("Required for google_trends. Searcher location, not search language: JP=Japan, KR=Korea, empty string=worldwide. Generation/translation defaults: ja=JP, ko=KR, en=worldwide.")
   region?: "JP" | "KR" | "";
-  @doc("Required for google_trends. today 12-m=past 12 months (generation default); today 5-y=past 5 years (maximum). Preserved on translation. Only structured configuration is accepted, not HTML or JavaScript.")
-  timeRange?: "today 12-m" | "today 5-y";
+  @doc("Required for google_trends. Supported periods: past 3 months, 6 months, 1 year (generation default), 2 years, 5 years, and 10 years. Preserved on translation. Only structured configuration is accepted, not HTML or JavaScript.")
+  timeRange?: "today 3-m" | "today 6-m" | "today 12-m" | "today 2-y" | "today 5-y" | "today 10-y";
   headerCells?: string[] | null;
   rowCells?: string[][];
   tableWidth?: string | null;

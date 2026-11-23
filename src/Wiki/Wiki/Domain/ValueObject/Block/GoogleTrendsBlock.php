@@ -24,7 +24,7 @@ final readonly class GoogleTrendsBlock implements BlockInterface
         if (! in_array($region, ['', 'JP', 'KR'], true)) {
             throw new InvalidArgumentException('Invalid Google Trends region.');
         }
-        if (! in_array($timeRange, ['today 12-m', 'today 5-y'], true)) {
+        if (! in_array($timeRange, ['today 3-m', 'today 6-m', 'today 12-m', 'today 2-y', 'today 5-y', 'today 10-y'], true)) {
             throw new InvalidArgumentException('Invalid Google Trends time range.');
         }
     }

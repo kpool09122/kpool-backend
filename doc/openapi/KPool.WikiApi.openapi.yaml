@@ -11076,9 +11076,13 @@ components:
         timeRange:
           type: string
           enum:
+            - today 3-m
+            - today 6-m
             - today 12-m
+            - today 2-y
             - today 5-y
-          description: Required for google_trends. today 12-m=past 12 months (generation default); today 5-y=past 5 years (maximum). Preserved on translation. Only structured configuration is accepted, not HTML or JavaScript.
+            - today 10-y
+          description: 'Required for google_trends. Supported periods: past 3 months, 6 months, 1 year (generation default), 2 years, 5 years, and 10 years. Preserved on translation. Only structured configuration is accepted, not HTML or JavaScript.'
         headerCells:
           type: array
           items:
