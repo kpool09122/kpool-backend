@@ -745,6 +745,9 @@ class AutoWikiCreationServiceTest extends TestCase
         $this->assertInstanceOf(HistoryBlock::class, $awardsBlock);
         $this->assertEquals([new HistoryEntry(2017, 'Billboard Music Awards', 'Top Social Artist')], $awardsBlock->entries());
 
+        $trendsBlock = $sections[4]->contents()->blocks()[0];
+        self::assertInstanceOf(GoogleTrendsBlock::class, $trendsBlock);
+        self::assertSame('지민 BTS', $trendsBlock->searchTerm());
         $this->assertSame('出典', $sections[5]->title());
         $this->assertInstanceOf(ListBlock::class, $sections[5]->contents()->blocks()[0]);
         $this->assertSame(
@@ -883,6 +886,9 @@ class AutoWikiCreationServiceTest extends TestCase
         $result = $service->generate($payload);
 
         $this->assertSame('Test', $result->alphabetName());
+        $blocks = array_merge(...array_map(static fn ($section) => $section->contents()->blocks(), $result->sections()->sections()));
+        $trends = array_values(array_filter($blocks, static fn ($block) => $block instanceof GoogleTrendsBlock));
+        self::assertSame('テスト BTS', $trends[0]->searchTerm());
     }
 
     /**
@@ -935,6 +941,9 @@ class AutoWikiCreationServiceTest extends TestCase
         $result = $service->generate($payload);
 
         $this->assertSame('Test', $result->alphabetName());
+        $blocks = array_merge(...array_map(static fn ($section) => $section->contents()->blocks(), $result->sections()->sections()));
+        $trends = array_values(array_filter($blocks, static fn ($block) => $block instanceof GoogleTrendsBlock));
+        self::assertSame('テスト BTS', $trends[0]->searchTerm());
     }
 
     // ========================================================================

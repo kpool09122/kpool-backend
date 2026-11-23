@@ -64,6 +64,7 @@ readonly class TranslationService implements TranslationServiceInterface
     {
         $existing = $this->wikiRepository->findByTranslationSetIdentifierAndLanguages($wiki->translationSetIdentifier(), [$targetLanguage])[0] ?? null;
         $baseline = $this->comparisonSource($wiki, $existing);
+        $googleTrendsGroupName = $this->googleTrendsGroupName($wiki->basic(), $targetLanguage);
         $texts = [];
         $this->mapWikiTexts($wiki, $targetLanguage, static function (string $text, ?int $maxLength, ?string $reused = null) use (&$texts): string {
             if ($reused !== null) {
@@ -74,10 +75,10 @@ readonly class TranslationService implements TranslationServiceInterface
             }
 
             return $text;
-        }, $baseline, $existing);
+        }, $baseline, $existing, $googleTrendsGroupName);
 
         if ($texts === []) {
-            return $this->mapWikiTexts($wiki, $targetLanguage, static fn (string $text, ?int $maxLength, ?string $reused = null): string => $reused ?? $text, $baseline, $existing);
+            return $this->mapWikiTexts($wiki, $targetLanguage, static fn (string $text, ?int $maxLength, ?string $reused = null): string => $reused ?? $text, $baseline, $existing, $googleTrendsGroupName);
         }
 
         $translations = $this->googleTranslateClient->translateTexts(new TranslateTextsRequest(
@@ -100,7 +101,7 @@ readonly class TranslationService implements TranslationServiceInterface
             }
 
             return $maxLength === null ? $translated : mb_substr(trim($translated), 0, $maxLength);
-        }, $baseline, $existing);
+        }, $baseline, $existing, $googleTrendsGroupName);
     }
 
     /**
@@ -259,6 +260,25 @@ readonly class TranslationService implements TranslationServiceInterface
         return new SectionContentCollection($mapped);
     }
 
+    private function googleTrendsGroupName(BasicInterface $basic, Language $language): ?string
+    {
+        if (! $basic instanceof TalentBasic) {
+            return null;
+        }
+
+        foreach ($basic->groupIdentifiers() as $groupIdentifier) {
+            $group = $this->wikiRepository->findById($groupIdentifier);
+            if ($group === null || ! $group->basic() instanceof GroupBasic) {
+                continue;
+            }
+            $translated = $this->wikiRepository->findByTranslationSetIdentifierAndLanguages($group->translationSetIdentifier(), [$language])[0] ?? null;
+
+            return (string) ($translated ?? $group)->basic()->name();
+        }
+
+        return null;
+    }
+
     private function mapGoogleTrendsSettings(SectionContentCollection $sections, string $name, Language $language): SectionContentCollection
     {
         return new SectionContentCollection(array_map(function (SectionContentInterface $content) use ($name, $language): SectionContentInterface {
@@ -307,7 +327,7 @@ readonly class TranslationService implements TranslationServiceInterface
     /**
      * @param callable(string, ?int, ?string=): string $translate
      */
-    private function mapWikiTexts(Wiki $wiki, Language $targetLanguage, callable $translate, Wiki|WikiSnapshot|null $baseline = null, ?Wiki $existing = null): TranslatedWikiData
+    private function mapWikiTexts(Wiki $wiki, Language $targetLanguage, callable $translate, Wiki|WikiSnapshot|null $baseline = null, ?Wiki $existing = null, ?string $googleTrendsGroupName = null): TranslatedWikiData
     {
         $basic = $this->mapBasic($wiki->basic(), $translate, $baseline?->basic(), $existing?->basic());
         $reuse = [];
@@ -325,7 +345,7 @@ readonly class TranslationService implements TranslationServiceInterface
         $this->countSectionScopes($wiki->sections(), $counts);
         $sections = $this->mapGoogleTrendsSettings(
             $this->mapDifferentialSections($wiki->sections(), $targetLanguage, $translate, $reuse, $counts),
-            (string) $basic->name(),
+            GoogleTrendsBlock::defaultSearchTerm((string) $basic->name(), $googleTrendsGroupName),
             $targetLanguage,
         );
         $title = $wiki->title();

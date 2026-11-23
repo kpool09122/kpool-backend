@@ -29,6 +29,11 @@ final readonly class GoogleTrendsBlock implements BlockInterface
         }
     }
 
+    public static function defaultSearchTerm(string $name, ?string $groupName = null): string
+    {
+        return mb_substr(trim($name . ' ' . ($groupName ?? '')), 0, self::MAX_SEARCH_TERM_LENGTH);
+    }
+
     public static function defaultRegion(Language $language): string
     {
         return match ($language) {

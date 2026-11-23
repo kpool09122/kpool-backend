@@ -25,6 +25,20 @@ class GoogleTrendsBlockTest extends TestCase
         self::assertSame($timeRange, $block->timeRange());
     }
 
+    #[TestWith(['Karina', 'aespa', 'Karina aespa'])]
+    #[TestWith(['Nayeon', null, 'Nayeon'])]
+    public function testDefaultSearchTerm(string $name, ?string $groupName, string $expected): void
+    {
+        self::assertSame($expected, GoogleTrendsBlock::defaultSearchTerm($name, $groupName));
+    }
+
+    public function testDefaultSearchTermFitsBlockLimit(): void
+    {
+        $searchTerm = GoogleTrendsBlock::defaultSearchTerm(str_repeat('あ', 64), str_repeat('い', 64));
+        self::assertSame(100, mb_strlen($searchTerm));
+        self::assertSame($searchTerm, (new GoogleTrendsBlock(0, $searchTerm))->searchTerm());
+    }
+
     public function testPreservesConfigurationAndOnlyReplacesKey(): void
     {
         $block = new GoogleTrendsBlock(7, '少女時代', 'KR', 'today 5-y', 'original');

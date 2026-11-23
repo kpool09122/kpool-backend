@@ -155,7 +155,7 @@ model WikiContentInput {
   listType?: "bullet" | "numbered";
   items?: string[];
   entries?: WikiHistoryEntryInput[];
-  @doc("Required for google_trends. A non-blank search term (maximum 100 characters). Defaults on generation/translation to the displayed Wiki basic name, without related names.")
+  @doc("Required for google_trends. A non-blank search term (maximum 100 characters). Defaults on generation/translation to the displayed Wiki name. For talents with a group, appends the first available group name separated by a space; otherwise uses the name alone. Defaults are limited to 100 characters.")
   @minLength(1)
   @maxLength(100)
   searchTerm?: string;
