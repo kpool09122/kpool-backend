@@ -11082,7 +11082,7 @@ components:
             - today 2-y
             - today 5-y
             - today 10-y
-          description: 'Required for google_trends. Supported periods: past 3 months, 6 months, 1 year (generation default), 2 years, 5 years, and 10 years. Preserved on translation. Only structured configuration is accepted, not HTML or JavaScript.'
+          description: 'Required for google_trends. Supported periods: past 3 months, 6 months, 1 year, 2 years, 5 years, and 10 years (generation default). Preserved on translation. Only structured configuration is accepted, not HTML or JavaScript.'
         headerCells:
           type: array
           items:

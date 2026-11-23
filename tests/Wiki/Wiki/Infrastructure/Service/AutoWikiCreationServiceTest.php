@@ -102,7 +102,7 @@ class AutoWikiCreationServiceTest extends TestCase
         self::assertSame(match ($language) {
             Language::JAPANESE => 'JP', Language::KOREAN => 'KR', Language::ENGLISH => 'all'
         }, $block->region());
-        self::assertSame('today 12-m', $block->timeRange());
+        self::assertSame('today 10-y', $block->timeRange());
         self::assertSame(0, $block->displayOrder());
         if ($withSources) {
             self::assertSame(section_title('sources', $language->value), $sections[$position + 1]->title());

@@ -78,7 +78,7 @@ class GoogleTrendsBlockTest extends TestCase
     {
         $block = new GoogleTrendsBlock(0, 'Title', GoogleTrendsBlock::defaultRegion($language));
         self::assertSame($region, $block->region());
-        self::assertSame('today 12-m', $block->timeRange());
+        self::assertSame('today 10-y', $block->timeRange());
         self::assertNull($block->key());
     }
 }

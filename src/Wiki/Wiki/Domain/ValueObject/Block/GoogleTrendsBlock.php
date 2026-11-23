@@ -15,7 +15,7 @@ final readonly class GoogleTrendsBlock implements BlockInterface
         private int $displayOrder,
         private string $searchTerm,
         private string $region = 'all',
-        private string $timeRange = 'today 12-m',
+        private string $timeRange = 'today 10-y',
         private ?string $key = null,
     ) {
         if (trim($searchTerm) === '' || mb_strlen($searchTerm) > self::MAX_SEARCH_TERM_LENGTH) {
