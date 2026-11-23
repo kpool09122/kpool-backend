@@ -36,6 +36,7 @@ readonly class GetLatestAccountCategoryChangeRequest implements GetLatestAccount
 
         $output->output(new AccountCategoryChangeRequestReadModel(
             requestIdentifier: $request->id,
+            snapshotIdentifier: $request->snapshot_id,
             accountIdentifier: $request->account_id,
             currentAccountCategory: $request->current_account_category,
             requestedAccountCategory: $request->requested_account_category,

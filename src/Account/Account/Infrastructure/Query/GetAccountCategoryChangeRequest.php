@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace Source\Account\Account\Infrastructure\Query;
 
 use Application\Models\Account\AccountCategoryChangeRequest as AccountCategoryChangeRequestModel;
-use Application\Models\Account\AccountCategoryChangeRequestDocument;
+use Application\Models\Account\AccountSnapshotDocument;
 use DateTimeInterface;
 use Source\Account\Account\Application\Exception\AccountCategoryChangeRequestForbiddenException;
 use Source\Account\Account\Application\Exception\AccountCategoryChangeRequestNotFoundException;
+use Source\Account\Account\Application\Exception\AccountSnapshotNotFoundException;
 use Source\Account\Account\Application\UseCase\Query\AccountCategoryChangeRequestDetailReadModel;
 use Source\Account\Account\Application\UseCase\Query\AccountCategoryChangeRequestReadModel;
 use Source\Account\Account\Application\UseCase\Query\AccountDocumentReadModel;
@@ -36,11 +37,12 @@ readonly class GetAccountCategoryChangeRequest implements GetAccountCategoryChan
         )) {
             throw new AccountCategoryChangeRequestForbiddenException();
         }
-        $request = AccountCategoryChangeRequestModel::query()->with('documents')
+        $request = AccountCategoryChangeRequestModel::query()->with('snapshot.documents')
             ->where('id', (string) $input->requestIdentifier())->first();
         if ($request === null) {
             throw new AccountCategoryChangeRequestNotFoundException();
         }
+        $snapshot = $request->snapshot ?? throw new AccountSnapshotNotFoundException('Missing pinned snapshot.');
         $output->output(new AccountCategoryChangeRequestDetailReadModel(
             request: new AccountCategoryChangeRequestReadModel(
                 requestIdentifier: $request->id,
@@ -52,26 +54,27 @@ readonly class GetAccountCategoryChangeRequest implements GetAccountCategoryChan
                 reviewedBy: $request->reviewed_by,
                 reviewedAt: $request->reviewed_at?->format(DateTimeInterface::ATOM),
                 rejectionReason: $request->rejection_reason,
+                snapshotIdentifier: $request->snapshot_id,
             ),
             account: new AccountReadModel(
                 accountIdentifier: $request->account_id,
-                email: $request->account_email,
-                type: $request->account_type,
-                name: $request->account_name,
-                status: $request->account_status,
+                email: $snapshot->account_email,
+                type: $snapshot->account_type,
+                name: $snapshot->account_name,
+                status: $snapshot->account_status,
                 accountCategory: $request->current_account_category,
-                phone: $request->account_phone,
+                phone: $snapshot->account_phone,
                 address: [
-                    'countryCode' => $request->account_address_country_code,
-                    'administrativeAreaCode' => $request->account_address_administrative_area_code,
-                    'postalCode' => $request->account_address_postal_code,
-                    'locality' => $request->account_address_locality,
-                    'addressLine1' => $request->account_address_line1,
-                    'addressLine2' => $request->account_address_line2,
+                    'countryCode' => $snapshot->account_address_country_code,
+                    'administrativeAreaCode' => $snapshot->account_address_administrative_area_code,
+                    'postalCode' => $snapshot->account_address_postal_code,
+                    'locality' => $snapshot->account_address_locality,
+                    'addressLine1' => $snapshot->account_address_line1,
+                    'addressLine2' => $snapshot->account_address_line2,
                 ],
             ),
-            documents: $request->documents->map(
-                static fn (AccountCategoryChangeRequestDocument $document): AccountDocumentReadModel => new AccountDocumentReadModel(
+            documents: $snapshot->documents->map(
+                static fn (AccountSnapshotDocument $document): AccountDocumentReadModel => new AccountDocumentReadModel(
                     $document->document_type,
                     $document->document_path,
                     $document->uploaded_at->format(DateTimeInterface::ATOM),

@@ -77,7 +77,6 @@ Route::middleware(['auth.api', 'account.active', 'principal.active', 'resolve.ac
         // Account
         Route::put('/accounts/{accountId}', UpdateAccountAction::class);
         Route::put('/accounts/{accountId}/notification-settings', UpdateNotificationSettingsAction::class);
-        // Disabled by #605: Route::delete('/accounts/{accountId}', DeleteAccountAction::class);
         Route::post('/accounts/switch', SwitchAccountAction::class);
         Route::post('/accounts/{accountId}/documents', UploadDocumentsAction::class);
 

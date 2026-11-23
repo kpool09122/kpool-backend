@@ -12,11 +12,11 @@ use Source\Account\Account\Domain\Exception\InvalidAccountCategoryChangeRequestR
 use Source\Account\Account\Domain\Exception\InvalidAccountCategoryChangeRequestWithdrawalException;
 use Source\Account\Account\Domain\ValueObject\AccountCategoryChangeRequestIdentifier;
 use Source\Account\Account\Domain\ValueObject\AccountCategoryChangeRequestStatus;
+use Source\Account\Account\Domain\ValueObject\AccountSnapshotIdentifier;
 use Source\Account\Account\Domain\ValueObject\RejectionReason;
 use Source\Account\Account\Domain\ValueObject\RejectionReasonCode;
 use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
-use Tests\Helper\CreateAccountSnapshotProfile;
 use Tests\Helper\StrTestHelper;
 
 class AccountCategoryChangeRequestTest extends TestCase
@@ -34,7 +34,7 @@ class AccountCategoryChangeRequestTest extends TestCase
             null,
             null,
             null,
-            CreateAccountSnapshotProfile::create(),
+            new AccountSnapshotIdentifier(StrTestHelper::generateUuid()),
         );
 
         $this->assertSame(AccountCategory::GENERAL, $request->currentAccountCategory());
@@ -118,7 +118,7 @@ class AccountCategoryChangeRequestTest extends TestCase
                 $reviewer = new AccountIdentifier(StrTestHelper::generateUuid());
                 $reason = new RejectionReason(RejectionReasonCode::OTHER, 'original reason');
                 $reviewedAt = new DateTimeImmutable('2026-08-12');
-                $request = new AccountCategoryChangeRequest(new AccountCategoryChangeRequestIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()), AccountCategory::GENERAL, AccountCategory::AGENCY, $status, new DateTimeImmutable('2026-08-11'), $reviewer, $reviewedAt, $reason, CreateAccountSnapshotProfile::create());
+                $request = new AccountCategoryChangeRequest(new AccountCategoryChangeRequestIdentifier(StrTestHelper::generateUuid()), new AccountIdentifier(StrTestHelper::generateUuid()), AccountCategory::GENERAL, AccountCategory::AGENCY, $status, new DateTimeImmutable('2026-08-11'), $reviewer, $reviewedAt, $reason, new AccountSnapshotIdentifier(StrTestHelper::generateUuid()));
 
                 try {
                     match ($operation) {
@@ -149,7 +149,7 @@ class AccountCategoryChangeRequestTest extends TestCase
             null,
             null,
             null,
-            CreateAccountSnapshotProfile::create(),
+            new AccountSnapshotIdentifier(StrTestHelper::generateUuid()),
         );
     }
 }

@@ -19,7 +19,7 @@ class GetLatestAccountCategoryChangeRequestOutputTest extends TestCase
 
     public function testRequestIsSerializedAsSummary(): void
     {
-        $request = new AccountCategoryChangeRequestReadModel('request-id', 'account-id', 'general', 'agency', 'pending', '2026-08-11T10:00:00+00:00', null, null, null);
+        $request = new AccountCategoryChangeRequestReadModel('request-id', 'account-id', 'general', 'agency', 'pending', '2026-08-11T10:00:00+00:00', null, null, null, snapshotIdentifier: 'snapshot-id');
         $output = new GetLatestAccountCategoryChangeRequestOutput();
         $output->output($request);
         $this->assertSame(['request' => $request->toArray()], $output->toArray());

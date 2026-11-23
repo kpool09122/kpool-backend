@@ -43,8 +43,8 @@ model OkAccountSnapshotDetail {
 }
 interface AccountSnapshotOperations {
   @put @route("/accounts/{accountIdentifier}/snapshot")
-  @doc("Save the current authenticated account profile and uploaded documents without review. Requires the same account and account:update. Complete contact/type and required documents are validated. Changed content creates a new immutable version; previous versions and document files are retained. Identical-content saves succeed without writes. Does not change category-change requests.")
-  saveAccountSnapshot(@path accountIdentifier: Uuid): OkAccountSnapshotSummary | UnauthorizedProblemResponse | ForbiddenProblemResponse | NotFoundProblemResponse | UnprocessableEntityProblemResponse | InternalServerErrorProblemResponse | CsrfTokenMismatchProblemResponse | TooManyRequestsProblemResponse | ServiceUnavailableProblemResponse;
+  @doc("Save the current authenticated account profile and uploaded documents without review. Requires the same account and account:update. Complete contact/type and required documents are validated. Changed content creates a new immutable version; previous versions and document files are retained. Identical-content saves succeed without writes even after approval. Changed contents are rejected with 409 (account_snapshot_change_requires_approval) if any category-change approval references a saved version for the account. Does not change category-change requests.")
+  saveAccountSnapshot(@path accountIdentifier: Uuid): OkAccountSnapshotSummary | ConflictProblemResponse | UnauthorizedProblemResponse | ForbiddenProblemResponse | NotFoundProblemResponse | UnprocessableEntityProblemResponse | InternalServerErrorProblemResponse | CsrfTokenMismatchProblemResponse | TooManyRequestsProblemResponse | ServiceUnavailableProblemResponse;
 
   @get @route("/accounts/{accountIdentifier}/snapshot")
   @doc("Read the current version, defined as the highest saved version number for the account. Same-account readers require account:read; cross-account operations readers require account:category-change-request:manage on their own account. No current version returns 404.")

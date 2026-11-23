@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Source\Account\Account\Infrastructure\Service;
 
+use Application\Models\Account\AccountSnapshotDocument as AccountSnapshotDocumentModel;
 use Illuminate\Support\Str;
 use Source\Account\Account\Application\Exception\DocumentStorageFailedException;
 use Source\Account\Account\Application\Service\AccountSnapshotDocumentServiceInterface;
@@ -18,6 +19,15 @@ readonly class AccountSnapshotDocumentService implements AccountSnapshotDocument
 {
     public function __construct(private DocumentStorageServiceInterface $documentStorageService)
     {
+    }
+
+    public function deleteForAccount(AccountIdentifier $accountIdentifier): void
+    {
+        $query = AccountSnapshotDocumentModel::query()->whereRelation('snapshot', 'account_id', (string) $accountIdentifier);
+        foreach ($query->get() as $document) {
+            $this->documentStorageService->delete(new DocumentPath($document->document_path));
+        }
+        $query->delete();
     }
 
     public function hashes(array $documents): array

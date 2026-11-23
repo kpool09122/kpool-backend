@@ -10,7 +10,6 @@ use Mockery;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Account\Account\Application\Exception\AccountCategoryChangeRequestForbiddenException;
 use Source\Account\Account\Application\Exception\AccountCategoryChangeRequestNotFoundException;
-use Source\Account\Account\Application\Service\AccountCategoryChangeRequestSnapshotServiceInterface;
 use Source\Account\Account\Application\UseCase\Query\GetAccountCategoryChangeRequest\GetAccountCategoryChangeRequestInput;
 use Source\Account\Account\Application\UseCase\Query\GetAccountCategoryChangeRequest\GetAccountCategoryChangeRequestInterface;
 use Source\Account\Account\Application\UseCase\Query\GetAccountCategoryChangeRequest\GetAccountCategoryChangeRequestOutput;
@@ -26,7 +25,7 @@ use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Tests\Helper\CreateAccount;
-use Tests\Helper\CreateAccountSnapshotProfile;
+use Tests\Helper\CreateCategoryChangeSnapshot;
 use Tests\Helper\CreateIdentity;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -77,7 +76,7 @@ class GetAccountCategoryChangeRequestTest extends TestCase
         $request = $this->app()->make(AccountCategoryChangeRequestRepositoryInterface::class)->findById(new AccountCategoryChangeRequestIdentifier($requestId));
         self::assertNotNull($account);
         self::assertNotNull($request);
-        $this->app()->make(AccountCategoryChangeRequestSnapshotServiceInterface::class)->capture($request, $account);
+        CreateCategoryChangeSnapshot::capture($request->snapshotIdentifier(), $account);
         DB::table('accounts')->where('id', (string) $accountIdentifier)->update(['name' => 'Changed', 'email' => 'new@example.com', 'phone' => null, 'address_line1' => 'Changed', 'category' => 'agency']);
         DB::table('account_documents')->where('account_id', (string) $accountIdentifier)->delete();
         $disk->delete(['documents/business-license.png', 'documents/identity.png']);
@@ -153,19 +152,7 @@ class GetAccountCategoryChangeRequestTest extends TestCase
         $account = DB::table('accounts')->where('id', (string) $accountIdentifier)->first();
         self::assertNotNull($account);
         DB::table('account_category_change_requests')->insert([
-            ...CreateAccountSnapshotProfile::columns(),
-            'account_email' => $account->email,
-            'account_name' => $account->name,
-            'account_type' => $account->type,
-            'account_status' => $account->status,
-            'account_phone' => $account->phone ?? '+819012345678',
-            'account_address_country_code' => $account->address_country_code ?? 'JP',
-            'account_address_administrative_area_code' => $account->address_administrative_area_code,
-            'account_address_postal_code' => $account->address_postal_code ?? '100-0001',
-            'account_address_locality' => $account->address_locality ?? '千代田区',
-            'account_address_line1' => $account->address_line1 ?? 'Address',
-            'account_address_line2' => $account->address_line2,
-
+            'snapshot_id' => (string) CreateCategoryChangeSnapshot::create($accountIdentifier),
             'id' => $id,
             'account_id' => (string) $accountIdentifier,
             'current_account_category' => 'general',

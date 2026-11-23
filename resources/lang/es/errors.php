@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'account_snapshot_change_requires_approval' => 'Cambiar la información guardada tras iniciar el servicio requiere aprobación.',
     'account_snapshot_not_found' => 'No se encontró la instantánea de la cuenta.',
     'incomplete_account_snapshot' => 'Se requieren el tipo de cuenta y los datos de contacto completos.',
     'authorization_connection_not_found' => 'No se encontró la conexión de autorización.',

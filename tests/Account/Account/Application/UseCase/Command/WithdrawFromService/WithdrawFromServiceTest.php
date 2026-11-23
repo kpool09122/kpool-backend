@@ -11,7 +11,7 @@ use Mockery;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use Psr\Log\NullLogger;
-use Source\Account\Account\Application\Service\AccountCategoryChangeRequestSnapshotServiceInterface;
+use Source\Account\Account\Application\Service\AccountSnapshotDocumentServiceInterface;
 use Source\Account\Account\Application\Service\WithdrawalEligibilityServiceInterface;
 use Source\Account\Account\Application\UseCase\Command\WithdrawFromService\WithdrawFromServiceInput;
 use Source\Account\Account\Application\UseCase\Command\WithdrawFromService\WithdrawFromServiceInterface;
@@ -34,9 +34,9 @@ class WithdrawFromServiceTest extends TestCase
         [$individual, $individualPrincipal] = $this->createMembership($identityIdentifier, 'individual');
         [$corporation, $corporatePrincipal] = $this->createMembership($identityIdentifier, 'corporation');
         $this->assertReadEligibility($identityIdentifier, true);
-        $snapshotService = Mockery::mock(AccountCategoryChangeRequestSnapshotServiceInterface::class);
+        $snapshotService = Mockery::mock(AccountSnapshotDocumentServiceInterface::class);
         $snapshotService->shouldReceive('deleteForAccount')->once()->with(Mockery::on(static fn (AccountIdentifier $id): bool => (string) $id === $individual));
-        $this->app()->instance(AccountCategoryChangeRequestSnapshotServiceInterface::class, $snapshotService);
+        $this->app()->instance(AccountSnapshotDocumentServiceInterface::class, $snapshotService);
 
         $this->app()->make(WithdrawFromServiceInterface::class)->process(new WithdrawFromServiceInput($identityIdentifier), new WithdrawFromServiceOutput());
 

@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Tests\Account\Account\Infrastructure\Service;
 
 use DateTimeImmutable;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use PHPUnit\Framework\Attributes\Group;
 use Psr\Log\NullLogger;
 use Source\Account\Account\Application\Exception\DocumentStorageFailedException;
 use Source\Account\Account\Application\Service\DocumentStorageServiceInterface;
@@ -15,12 +17,45 @@ use Source\Account\Account\Domain\ValueObject\DocumentPath;
 use Source\Account\Account\Domain\ValueObject\DocumentType;
 use Source\Account\Account\Infrastructure\Service\AccountSnapshotDocumentService;
 use Source\Account\Account\Infrastructure\Service\DocumentStorageService;
+use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
+use Tests\Helper\CreateAccountSnapshot;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
 class AccountSnapshotDocumentServiceTest extends TestCase
 {
+    #[Group('useDb')]
+    public function testAccountCleanupRequestsDeletionForEverySavedVersionAndLeavesForeignAndLiveDocuments(): void
+    {
+        $disk = Storage::fake('verification-documents');
+        $allow = $this->createStub(PolicyEvaluatorInterface::class);
+        $allow->method('evaluate')->willReturn(true);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $allow);
+        $id = CreateAccountSnapshot::account();
+        $first = CreateAccountSnapshot::save($id);
+        DB::table('accounts')->where('id', (string) $id)->update(['name' => 'Version two']);
+        $second = CreateAccountSnapshot::save($id);
+        $foreignId = CreateAccountSnapshot::account();
+        $foreign = CreateAccountSnapshot::save($foreignId);
+        $storage = $this->createMock(DocumentStorageServiceInterface::class);
+        $storage->expects(self::exactly(4))->method('delete')->willReturnCallback(static function (DocumentPath $path) use ($disk): void {
+            $disk->delete((string) $path);
+        });
+        (new AccountSnapshotDocumentService($storage))->deleteForAccount($id);
+        foreach ([$first, $second] as $snapshot) {
+            foreach ($snapshot->documents() as $document) {
+                $disk->assertMissing((string) $document->documentPath());
+            }
+            self::assertDatabaseMissing('account_snapshot_documents', ['snapshot_id' => (string) $snapshot->snapshotIdentifier()]);
+        }
+        foreach ($foreign->documents() as $document) {
+            $disk->assertExists((string) $document->documentPath());
+        }
+        $disk->assertExists($id.'/passport.pdf');
+        self::assertDatabaseCount('account_snapshot_documents', 2);
+    }
+
     public function testReadFailureAfterCopyCleansDestinationEvenWithoutTransaction(): void
     {
         $storage = $this->createMock(DocumentStorageServiceInterface::class);

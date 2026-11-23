@@ -11,8 +11,6 @@ use Source\Account\Account\Application\UseCase\Command\CompleteInitialSetup\Comp
 use Source\Account\Account\Application\UseCase\Command\CompleteInitialSetup\CompleteInitialSetupInterface;
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccount;
 use Source\Account\Account\Application\UseCase\Command\CreateAccount\CreateAccountInterface;
-use Source\Account\Account\Application\UseCase\Command\DeleteAccount\DeleteAccount;
-use Source\Account\Account\Application\UseCase\Command\DeleteAccount\DeleteAccountInterface;
 use Source\Account\Account\Application\UseCase\Command\GrantOperations\GrantOperations;
 use Source\Account\Account\Application\UseCase\Command\GrantOperations\GrantOperationsInterface;
 use Source\Account\Account\Application\UseCase\Command\RejectAccountCategoryChangeRequest\RejectAccountCategoryChangeRequest;
@@ -105,7 +103,6 @@ class UseCaseServiceProvider extends ServiceProvider
         $this->app->singleton(UpdatePrincipalGroupMembersInterface::class, UpdatePrincipalGroupMembers::class);
         $this->app->singleton(ListMembersInterface::class, ListMembers::class);
         $this->app->singleton(ListPrincipalGroupsInterface::class, ListPrincipalGroups::class);
-        $this->app->singleton(DeleteAccountInterface::class, DeleteAccount::class);
         $this->app->singleton(UpdateAccountInterface::class, UpdateAccount::class);
         $this->app->singleton(GetAccountInterface::class, GetAccount::class);
         $this->app->singleton(GetAccountCategoryChangeRequestInterface::class, GetAccountCategoryChangeRequest::class);

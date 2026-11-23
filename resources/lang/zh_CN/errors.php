@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'account_snapshot_change_requires_approval' => '开始使用服务后，更改已保存的信息需要变更审批。',
     'account_snapshot_not_found' => '未找到帐户快照。',
     'incomplete_account_snapshot' => '需要帐户类型以及完整的联系信息和地址。',
     'authorization_connection_not_found' => '未找到外部授权连接。',

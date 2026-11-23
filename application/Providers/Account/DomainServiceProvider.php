@@ -6,7 +6,6 @@ namespace Application\Providers\Account;
 
 use Illuminate\Support\ServiceProvider;
 use Source\Account\Account\Application\Service\AccountCategoryChangeNotificationServiceInterface;
-use Source\Account\Account\Application\Service\AccountCategoryChangeRequestSnapshotServiceInterface;
 use Source\Account\Account\Application\Service\AccountContextServiceInterface;
 use Source\Account\Account\Application\Service\AccountDocumentFileTypeDetectorInterface;
 use Source\Account\Account\Application\Service\AccountSnapshotDocumentServiceInterface;
@@ -32,7 +31,6 @@ use Source\Account\Account\Infrastructure\Repository\AccountRepository;
 use Source\Account\Account\Infrastructure\Repository\AccountSnapshotRepository;
 use Source\Account\Account\Infrastructure\Repository\ArchivedAccountRepository;
 use Source\Account\Account\Infrastructure\Service\AccountCategoryChangeNotificationService;
-use Source\Account\Account\Infrastructure\Service\AccountCategoryChangeRequestSnapshotService;
 use Source\Account\Account\Infrastructure\Service\AccountContextService;
 use Source\Account\Account\Infrastructure\Service\AccountDocumentFileTypeDetector;
 use Source\Account\Account\Infrastructure\Service\AccountSnapshotDocumentService;
@@ -92,9 +90,8 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(AccountSnapshotFactoryInterface::class, AccountSnapshotFactory::class);
         $this->app->singleton(AccountSnapshotDocumentServiceInterface::class, AccountSnapshotDocumentService::class);
 
-        $this->app->singleton(AccountCategoryChangeRequestSnapshotServiceInterface::class, AccountCategoryChangeRequestSnapshotService::class);
-        $this->app->bind(ChildPrincipalManagerContinuityInterface::class, ChildPrincipalManagerContinuity::class);
-        $this->app->bind(PrincipalReachabilityInterface::class, PrincipalReachability::class);
+        $this->app->singleton(ChildPrincipalManagerContinuityInterface::class, ChildPrincipalManagerContinuity::class);
+        $this->app->singleton(PrincipalReachabilityInterface::class, PrincipalReachability::class);
         $this->app->singleton(PrincipalGroupChangeGuardInterface::class, PrincipalGroupChangeGuard::class);
         $this->app->singleton(WithdrawalEligibilityServiceInterface::class, WithdrawalEligibilityService::class);
         $this->app->singleton(ArchivedAccountFactoryInterface::class, ArchivedAccountFactory::class);

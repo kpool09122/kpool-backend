@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'account_snapshot_change_requires_approval' => 'Changing saved information after service use requires approval.',
     'account_snapshot_not_found' => 'Account snapshot not found.',
     'incomplete_account_snapshot' => 'Account type and complete contact information are required.',
     'authorization_connection_not_found' => 'Authorization connection not found.',

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application\Http\Action\Account\Account\Command\SaveAccountSnapshot;
 
 use Application\Http\Context\AccountContext;
+use Application\Http\Exceptions\ConflictHttpException;
 use Application\Http\Exceptions\ForbiddenHttpException;
 use Application\Http\Exceptions\InternalServerErrorHttpException;
 use Application\Http\Exceptions\NotFoundHttpException;
@@ -14,6 +15,7 @@ use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Source\Account\Account\Application\Exception\AccountNotFoundException;
+use Source\Account\Account\Application\Exception\AccountSnapshotChangeRequiresApprovalException;
 use Source\Account\Account\Application\Exception\AccountSnapshotForbiddenException;
 use Source\Account\Account\Application\Exception\AccountSnapshotNotFoundException;
 use Source\Account\Account\Application\Exception\DocumentStorageFailedException;
@@ -52,6 +54,8 @@ readonly class SaveAccountSnapshotAction
 
             } catch (DocumentStorageFailedException $e) {
                 throw new InternalServerErrorHttpException(previous: $e);
+            } catch (AccountSnapshotChangeRequiresApprovalException $e) {
+                throw new ConflictHttpException(detail: error_message('account_snapshot_change_requires_approval', $language), previous: $e);
             } catch (AccountSnapshotForbiddenException $e) {
                 throw new ForbiddenHttpException(detail:error_message('disallowed', $language), previous:$e);
             } catch (AccountSnapshotNotFoundException $e) {
@@ -63,7 +67,7 @@ readonly class SaveAccountSnapshotAction
             } catch (InvalidDocumentsForVerificationException $e) {
                 throw new UnprocessableEntityHttpException(detail:error_message('invalid_documents_for_category_change', $language), previous:$e);
             }
-        } catch (ForbiddenHttpException|NotFoundHttpException|UnprocessableEntityHttpException $e) {
+        } catch (ConflictHttpException|ForbiddenHttpException|NotFoundHttpException|UnprocessableEntityHttpException $e) {
             $this->logger->error((string)$e);
 
             return response()->json($e->toProblemDetails(), $e->getHttpStatus());

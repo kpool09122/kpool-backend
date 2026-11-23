@@ -6,17 +6,14 @@ namespace Source\Account\Account\Application\UseCase\Command\RequestAccountCateg
 
 use Source\Account\Account\Application\Exception\AccountCategoryChangeRequestForbiddenException;
 use Source\Account\Account\Application\Exception\AccountNotFoundException;
-use Source\Account\Account\Application\Exception\IncompleteAccountContactForCategoryChangeException;
+use Source\Account\Account\Application\Exception\AccountSnapshotNotFoundException;
 use Source\Account\Account\Application\Exception\InvalidAccountCategoryChangeRequestException;
 use Source\Account\Account\Application\Exception\SameAccountCategoryChangeRequestException;
-use Source\Account\Account\Application\Service\AccountCategoryChangeRequestSnapshotServiceInterface;
-use Source\Account\Account\Domain\Exception\AccountSetupUnavailableException;
 use Source\Account\Account\Domain\Factory\AccountCategoryChangeRequestFactoryInterface;
 use Source\Account\Account\Domain\Repository\AccountCategoryChangeRequestRepositoryInterface;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
-use Source\Account\Account\Domain\Service\AccountDocumentRequirementValidatorInterface;
+use Source\Account\Account\Domain\Repository\AccountSnapshotRepositoryInterface;
 use Source\Account\Account\Domain\ValueObject\AccountCategoryChangeRequestStatus;
-use Source\Account\Account\Domain\ValueObject\AccountSnapshotProfile;
 
 readonly class RequestAccountCategoryChange implements RequestAccountCategoryChangeInterface
 {
@@ -24,8 +21,7 @@ readonly class RequestAccountCategoryChange implements RequestAccountCategoryCha
         private AccountRepositoryInterface $accountRepository,
         private AccountCategoryChangeRequestRepositoryInterface $accountCategoryChangeRequestRepository,
         private AccountCategoryChangeRequestFactoryInterface $requestFactory,
-        private AccountDocumentRequirementValidatorInterface $accountDocumentRequirementValidator,
-        private AccountCategoryChangeRequestSnapshotServiceInterface $accountCategoryChangeRequestSnapshotService,
+        private AccountSnapshotRepositoryInterface $accountSnapshotRepository,
     ) {
     }
 
@@ -48,14 +44,9 @@ readonly class RequestAccountCategoryChange implements RequestAccountCategoryCha
         if ($account->accountCategory() === $input->requestedAccountCategory()) {
             throw new SameAccountCategoryChangeRequestException();
         }
-        if (! $account->hasRequiredContactForCategoryChange()) {
-            throw new IncompleteAccountContactForCategoryChangeException();
-        }
-        $accountType = $account->type() ?? throw new AccountSetupUnavailableException('Account type has not been selected.');
-        $this->accountDocumentRequirementValidator->validate($accountType, $account->documents()->documentTypes());
-        $request = $this->requestFactory->create($account->accountIdentifier(), $account->accountCategory(), $input->requestedAccountCategory(), AccountSnapshotProfile::fromAccount($account));
+        $snapshot = $this->accountSnapshotRepository->findCurrent($account->accountIdentifier()) ?? throw new AccountSnapshotNotFoundException();
+        $request = $this->requestFactory->create($account->accountIdentifier(), $account->accountCategory(), $input->requestedAccountCategory(), $snapshot->snapshotIdentifier());
         $this->accountCategoryChangeRequestRepository->save($request);
-        $this->accountCategoryChangeRequestSnapshotService->capture($request, $account);
         $output->setRequest($request);
     }
 }

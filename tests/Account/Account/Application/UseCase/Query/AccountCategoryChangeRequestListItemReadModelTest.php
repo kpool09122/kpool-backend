@@ -24,6 +24,7 @@ class AccountCategoryChangeRequestListItemReadModelTest extends TestCase
                 reviewedBy: null,
                 reviewedAt: null,
                 rejectionReason: null,
+                snapshotIdentifier: 'snapshot-id'
             ),
             account: new AccountReadModel(
                 accountIdentifier: 'account-id',
@@ -35,8 +36,9 @@ class AccountCategoryChangeRequestListItemReadModelTest extends TestCase
             ),
         );
 
-        $this->assertSame([
-            'requestIdentifier' => 'request-id',
+        $this->assertSame([                'requestIdentifier' => 'request-id',
+
+            'snapshotIdentifier' => 'snapshot-id',
             'accountIdentifier' => 'account-id',
             'currentAccountCategory' => 'general',
             'requestedAccountCategory' => 'agency',
