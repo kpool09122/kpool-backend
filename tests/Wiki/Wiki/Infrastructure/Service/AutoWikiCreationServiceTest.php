@@ -100,7 +100,7 @@ class AutoWikiCreationServiceTest extends TestCase
         self::assertInstanceOf(GoogleTrendsBlock::class, $block);
         self::assertSame('Displayed Wiki Title', $block->searchTerm());
         self::assertSame(match ($language) {
-            Language::JAPANESE => 'JP', Language::KOREAN => 'KR', Language::ENGLISH => ''
+            Language::JAPANESE => 'JP', Language::KOREAN => 'KR', Language::ENGLISH => 'all'
         }, $block->region());
         self::assertSame('today 12-m', $block->timeRange());
         self::assertSame(0, $block->displayOrder());

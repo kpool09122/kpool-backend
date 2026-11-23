@@ -40,6 +40,7 @@ class GoogleTrendsBlockTest extends TestCase
 
     #[TestWith(['', 'JP', 'today 12-m'])]
     #[TestWith(['   ', 'JP', 'today 12-m'])]
+    #[TestWith(['test', '', 'today 12-m'])]
     #[TestWith(['test', 'US', 'today 12-m'])]
     #[TestWith(['test', 'jp', 'today 12-m'])]
     #[TestWith(['test', 'JP', 'today 20-y'])]
@@ -58,7 +59,7 @@ class GoogleTrendsBlockTest extends TestCase
 
     #[TestWith([Language::JAPANESE, 'JP'])]
     #[TestWith([Language::KOREAN, 'KR'])]
-    #[TestWith([Language::ENGLISH, ''])]
+    #[TestWith([Language::ENGLISH, 'all'])]
     public function testDefaultsForWikiLanguage(Language $language, string $region): void
     {
         $block = new GoogleTrendsBlock(0, 'Title', GoogleTrendsBlock::defaultRegion($language));

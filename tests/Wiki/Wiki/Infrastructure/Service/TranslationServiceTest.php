@@ -73,13 +73,13 @@ class TranslationServiceTest extends TestCase
 
     #[TestWith([Language::JAPANESE, 'JP'])]
     #[TestWith([Language::KOREAN, 'KR'])]
-    #[TestWith([Language::ENGLISH, ''])]
+    #[TestWith([Language::ENGLISH, 'all'])]
     public function testGoogleTrendsUsesTranslatedWikiNameAndPreservesKeysAndRange(Language $language, string $region): void
     {
         $wiki = $this->createTalentWiki(new SectionContentCollection([
             new Section('관심도', 8, new SectionContentCollection([
                 new Section('Nested', 4, new SectionContentCollection([
-                    new GoogleTrendsBlock(3, 'Custom search', '', 'today 5-y', 'trends-block'),
+                    new GoogleTrendsBlock(3, 'Custom search', 'all', 'today 5-y', 'trends-block'),
                 ]), 2, key: 'nested-section'),
             ]), key: 'trends-section'),
         ]));

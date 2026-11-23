@@ -11072,7 +11072,7 @@ components:
             - JP
             - KR
             - all
-          description: 'Required for google_trends. Searcher location, not search language: JP=Japan, KR=Korea, all=worldwide. Send all for worldwide because HTTP middleware converts empty strings to null. Stored and returned worldwide regions remain empty strings. Generation/translation defaults: ja=JP, ko=KR, en=worldwide.'
+          description: 'Required for google_trends. Searcher location, not search language: JP=Japan, KR=Korea, all=worldwide. Use all for worldwide in requests and responses. Generation/translation defaults: ja=JP, ko=KR, en=worldwide.'
         timeRange:
           type: string
           enum:

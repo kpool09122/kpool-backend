@@ -25,7 +25,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 class WikiCommandPayloadMapperTest extends TestCase
 {
-    #[TestWith(['all', ''])]
+    #[TestWith(['all', 'all'])]
     #[TestWith(['JP', 'JP'])]
     #[TestWith(['KR', 'KR'])]
     public function testGoogleTrendsRegionSurvivesHttpNormalization(string $region, string $expectedRegion): void
@@ -51,6 +51,7 @@ class WikiCommandPayloadMapperTest extends TestCase
         self::assertSame('trends', $block->key());
     }
 
+    #[TestWith([''])]
     #[TestWith([null])]
     #[TestWith([false])]
     #[TestWith([123])]

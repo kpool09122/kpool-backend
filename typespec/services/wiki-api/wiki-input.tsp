@@ -159,7 +159,7 @@ model WikiContentInput {
   @minLength(1)
   @maxLength(100)
   searchTerm?: string;
-  @doc("Required for google_trends. Searcher location, not search language: JP=Japan, KR=Korea, all=worldwide. Send all for worldwide because HTTP middleware converts empty strings to null. Stored and returned worldwide regions remain empty strings. Generation/translation defaults: ja=JP, ko=KR, en=worldwide.")
+  @doc("Required for google_trends. Searcher location, not search language: JP=Japan, KR=Korea, all=worldwide. Use all for worldwide in requests and responses. Generation/translation defaults: ja=JP, ko=KR, en=worldwide.")
   region?: "JP" | "KR" | "all";
   @doc("Required for google_trends. Supported periods: past 3 months, 6 months, 1 year (generation default), 2 years, 5 years, and 10 years. Preserved on translation. Only structured configuration is accepted, not HTML or JavaScript.")
   timeRange?: "today 3-m" | "today 6-m" | "today 12-m" | "today 2-y" | "today 5-y" | "today 10-y";

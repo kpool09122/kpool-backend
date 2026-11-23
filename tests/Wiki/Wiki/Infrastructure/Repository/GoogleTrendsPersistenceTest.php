@@ -28,7 +28,7 @@ class GoogleTrendsPersistenceTest extends TestCase
     #[Group('useDb')]
     #[TestWith(['JP', 'today 12-m'])]
     #[TestWith(['KR', 'today 5-y'])]
-    #[TestWith(['', 'today 12-m'])]
+    #[TestWith(['all', 'today 12-m'])]
     public function testDraftAndPublishedPersistenceAndQueriesPreserveSettings(string $region, string $timeRange): void
     {
         $data = [['type' => 'section', 'sectionKey' => 'trends-section', 'title' => 'Trends', 'displayOrder' => 4, 'contents' => [[
