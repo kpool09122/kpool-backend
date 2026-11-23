@@ -11065,14 +11065,14 @@ components:
           type: string
           minLength: 1
           maxLength: 100
-          description: Required for google_trends. A non-blank search term (maximum 100 characters). Defaults on generation/translation to the displayed Wiki basic name, without related names.
+          description: Required for google_trends. A non-blank search term (maximum 100 characters). Defaults on generation/translation to the displayed Wiki name. For talents with a group, appends the first available group name separated by a space; otherwise uses the name alone. Defaults are limited to 100 characters.
         region:
           type: string
           enum:
             - JP
             - KR
-            - ''
-          description: 'Required for google_trends. Searcher location, not search language: JP=Japan, KR=Korea, empty string=worldwide. Generation/translation defaults: ja=JP, ko=KR, en=worldwide.'
+            - all
+          description: 'Required for google_trends. Searcher location, not search language: JP=Japan, KR=Korea, all=worldwide. Use all for worldwide in requests and responses. Generation/translation defaults: ja=JP, ko=KR, en=worldwide.'
         timeRange:
           type: string
           enum:
@@ -11082,7 +11082,7 @@ components:
             - today 2-y
             - today 5-y
             - today 10-y
-          description: 'Required for google_trends. Supported periods: past 3 months, 6 months, 1 year (generation default), 2 years, 5 years, and 10 years. Preserved on translation. Only structured configuration is accepted, not HTML or JavaScript.'
+          description: 'Required for google_trends. Supported periods: past 3 months, 6 months, 1 year, 2 years, 5 years, and 10 years (generation default). Preserved on translation. Only structured configuration is accepted, not HTML or JavaScript.'
         headerCells:
           type: array
           items:

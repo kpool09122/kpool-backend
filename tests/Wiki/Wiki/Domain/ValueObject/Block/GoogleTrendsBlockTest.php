@@ -25,6 +25,20 @@ class GoogleTrendsBlockTest extends TestCase
         self::assertSame($timeRange, $block->timeRange());
     }
 
+    #[TestWith(['Karina', 'aespa', 'Karina aespa'])]
+    #[TestWith(['Nayeon', null, 'Nayeon'])]
+    public function testDefaultSearchTerm(string $name, ?string $groupName, string $expected): void
+    {
+        self::assertSame($expected, GoogleTrendsBlock::defaultSearchTerm($name, $groupName));
+    }
+
+    public function testDefaultSearchTermFitsBlockLimit(): void
+    {
+        $searchTerm = GoogleTrendsBlock::defaultSearchTerm(str_repeat('あ', 64), str_repeat('い', 64));
+        self::assertSame(100, mb_strlen($searchTerm));
+        self::assertSame($searchTerm, (new GoogleTrendsBlock(0, $searchTerm))->searchTerm());
+    }
+
     public function testPreservesConfigurationAndOnlyReplacesKey(): void
     {
         $block = new GoogleTrendsBlock(7, '少女時代', 'KR', 'today 5-y', 'original');
@@ -40,6 +54,7 @@ class GoogleTrendsBlockTest extends TestCase
 
     #[TestWith(['', 'JP', 'today 12-m'])]
     #[TestWith(['   ', 'JP', 'today 12-m'])]
+    #[TestWith(['test', '', 'today 12-m'])]
     #[TestWith(['test', 'US', 'today 12-m'])]
     #[TestWith(['test', 'jp', 'today 12-m'])]
     #[TestWith(['test', 'JP', 'today 20-y'])]
@@ -58,12 +73,12 @@ class GoogleTrendsBlockTest extends TestCase
 
     #[TestWith([Language::JAPANESE, 'JP'])]
     #[TestWith([Language::KOREAN, 'KR'])]
-    #[TestWith([Language::ENGLISH, ''])]
+    #[TestWith([Language::ENGLISH, 'all'])]
     public function testDefaultsForWikiLanguage(Language $language, string $region): void
     {
         $block = new GoogleTrendsBlock(0, 'Title', GoogleTrendsBlock::defaultRegion($language));
         self::assertSame($region, $block->region());
-        self::assertSame('today 12-m', $block->timeRange());
+        self::assertSame('today 10-y', $block->timeRange());
         self::assertNull($block->key());
     }
 }

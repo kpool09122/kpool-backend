@@ -4,21 +4,76 @@ declare(strict_types=1);
 
 namespace Tests\Application\Http\Action\Wiki\Wiki\Command\Support;
 
+use Application\Http\Action\Support\RequestValue;
 use Application\Http\Action\Wiki\Wiki\Command\Support\WikiCommandPayloadMapper;
+use Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull;
+use Illuminate\Http\Request;
 use InvalidArgumentException;
+use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\TestCase;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Group\GroupBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Song\SongBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\TalentBasic;
+use Source\Wiki\Wiki\Domain\ValueObject\Block\GoogleTrendsBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ImageBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ImageGalleryBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\TableBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\TextBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\Section;
+use Symfony\Component\HttpFoundation\Response;
 
 class WikiCommandPayloadMapperTest extends TestCase
 {
+    #[TestWith(['all', 'all'])]
+    #[TestWith(['JP', 'JP'])]
+    #[TestWith(['KR', 'KR'])]
+    public function testGoogleTrendsRegionSurvivesHttpNormalization(string $region, string $expectedRegion): void
+    {
+        $request = Request::create('/', 'POST', [], [], [], ['CONTENT_TYPE' => 'application/json'], json_encode([
+            'sections' => [[
+                'type' => 'section', 'title' => 'Trends', 'contents' => [[
+                    'type' => 'google_trends', 'blockKey' => 'trends',
+                    'searchTerm' => 'TWICE', 'region' => $region, 'timeRange' => 'today 12-m',
+                ]],
+            ]],
+        ], JSON_THROW_ON_ERROR));
+
+        (new ConvertEmptyStringsToNull())->handle($request, static fn (): Response => new Response());
+        $sections = WikiCommandPayloadMapper::sections(RequestValue::values($request->input('sections')));
+        $section = $sections->sorted()[0];
+        self::assertInstanceOf(Section::class, $section);
+        $block = $section->contents()->sorted()[0];
+        self::assertInstanceOf(GoogleTrendsBlock::class, $block);
+        self::assertSame($expectedRegion, $block->region());
+        self::assertSame('TWICE', $block->searchTerm());
+        self::assertSame('today 12-m', $block->timeRange());
+        self::assertSame('trends', $block->key());
+    }
+
+    #[TestWith([''])]
+    #[TestWith([null])]
+    #[TestWith([false])]
+    #[TestWith([123])]
+    #[TestWith([[]])]
+    #[TestWith(['US'])]
+    public function testGoogleTrendsRejectsInvalidRegion(mixed $region): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        WikiCommandPayloadMapper::sections([[
+            'type' => 'google_trends', 'searchTerm' => 'TWICE',
+            'region' => $region, 'timeRange' => 'today 12-m',
+        ]]);
+    }
+
+    public function testGoogleTrendsRejectsMissingRegion(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        WikiCommandPayloadMapper::sections([[
+            'type' => 'google_trends', 'searchTerm' => 'TWICE', 'timeRange' => 'today 12-m',
+        ]]);
+    }
+
     public function testSectionsMapsCamelCaseApiPayloadToInternalSectionContents(): void
     {
         $imageId = '01965bb2-bcc9-7c6f-8b90-89f7f217f001';

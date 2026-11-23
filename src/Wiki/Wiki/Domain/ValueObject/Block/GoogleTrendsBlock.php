@@ -14,14 +14,14 @@ final readonly class GoogleTrendsBlock implements BlockInterface
     public function __construct(
         private int $displayOrder,
         private string $searchTerm,
-        private string $region = '',
-        private string $timeRange = 'today 12-m',
+        private string $region = 'all',
+        private string $timeRange = 'today 10-y',
         private ?string $key = null,
     ) {
         if (trim($searchTerm) === '' || mb_strlen($searchTerm) > self::MAX_SEARCH_TERM_LENGTH) {
             throw new InvalidArgumentException('Invalid Google Trends search term.');
         }
-        if (! in_array($region, ['', 'JP', 'KR'], true)) {
+        if (! in_array($region, ['all', 'JP', 'KR'], true)) {
             throw new InvalidArgumentException('Invalid Google Trends region.');
         }
         if (! in_array($timeRange, ['today 3-m', 'today 6-m', 'today 12-m', 'today 2-y', 'today 5-y', 'today 10-y'], true)) {
@@ -29,12 +29,17 @@ final readonly class GoogleTrendsBlock implements BlockInterface
         }
     }
 
+    public static function defaultSearchTerm(string $name, ?string $groupName = null): string
+    {
+        return mb_substr(trim($name . ' ' . ($groupName ?? '')), 0, self::MAX_SEARCH_TERM_LENGTH);
+    }
+
     public static function defaultRegion(Language $language): string
     {
         return match ($language) {
             Language::JAPANESE => 'JP',
             Language::KOREAN => 'KR',
-            Language::ENGLISH => '',
+            Language::ENGLISH => 'all',
         };
     }
 

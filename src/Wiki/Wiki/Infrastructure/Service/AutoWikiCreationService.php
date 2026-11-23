@@ -236,7 +236,7 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
         return new GeneratedWikiData(
             alphabetName: $params->alphabetName(),
             basic: $basic,
-            sections: $this->buildTalentSections($params, $payload->language()->value, $sources, (string) $basic->name()),
+            sections: $this->buildTalentSections($params, $payload->language()->value, $sources, GoogleTrendsBlock::defaultSearchTerm((string) $basic->name(), $groupNames[0] ?? null)),
             sources: $sources,
             title: $this->seoTitle($params->metadata()->title()),
             metaDescription: $this->metaDescription($params->metadata()->metaDescription()),
