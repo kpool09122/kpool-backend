@@ -71,47 +71,21 @@ class TranslationServiceTest extends TestCase
         $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
     }
 
-    #[TestWith([Language::JAPANESE, 'JP'])]
-    #[TestWith([Language::KOREAN, 'KR'])]
-    #[TestWith([Language::ENGLISH, 'all'])]
-    #[TestWith([Language::ENGLISH, 'all', 'translated'])]
-    #[TestWith([Language::ENGLISH, 'all', 'source'])]
-    #[TestWith([Language::ENGLISH, 'all', 'missing'])]
-    public function testGoogleTrendsUsesTranslatedWikiNameAndPreservesKeysAndRange(Language $language, string $region, string $groupState = 'none'): void
+    public function testGoogleTrendsPreservesKeysAndOrder(): void
     {
         $wiki = $this->createTalentWiki(new SectionContentCollection([
             new Section('관심도', 8, new SectionContentCollection([
                 new Section('Nested', 4, new SectionContentCollection([
-                    new GoogleTrendsBlock(3, 'Custom search', 'all', 'today 5-y', 'trends-block'),
+                    new GoogleTrendsBlock(3, 'trends-block'),
                 ]), 2, key: 'nested-section'),
             ]), key: 'trends-section'),
         ]));
-        $expectedGroupName = null;
-        if ($groupState !== 'none') {
-            $group = $this->createGroupWiki();
-            $groupIdentifier = new WikiIdentifier(StrTestHelper::generateUuid());
-            $wiki->setBasic(TalentBasic::fromArray(array_replace($wiki->basic()->toArray(), [
-                'group_identifiers' => [(string) $groupIdentifier],
-            ])));
-            $wikiRepository = $this->app()->make(WikiRepositoryInterface::class);
-            self::assertInstanceOf(MockInterface::class, $wikiRepository);
-            $wikiRepository->shouldReceive('findById')->once()->with(Mockery::on(static fn (WikiIdentifier $id): bool => (string) $id === (string) $groupIdentifier))->andReturn($groupState === 'missing' ? null : $group);
-            if ($groupState !== 'missing') {
-                $translatedGroup = $this->createGroupWiki(['name' => 'TWICE']);
-                $wikiRepository->shouldReceive('findByTranslationSetIdentifierAndLanguages')
-                    ->with($group->translationSetIdentifier(), [$language])->once()
-                    ->andReturn($groupState === 'translated' ? [$translatedGroup] : []);
-                $expectedGroupName = $groupState === 'translated' ? 'TWICE' : '트와이스';
-            }
-        }
         $client = Mockery::mock(GoogleTranslateClient::class);
         $client->shouldReceive('translateTexts')->once()->andReturnUsing(static function (TranslateTextsRequest $request): TranslateTextsResponse {
-            self::assertNotContains('Custom search', $request->texts());
-
             return new TranslateTextsResponse(array_map(static fn (string $text): string => 'Translated ' . $text, $request->texts()));
         });
         $this->app()->instance(GoogleTranslateClient::class, $client);
-        $result = $this->app()->make(TranslationServiceInterface::class)->translateWiki($wiki, $language);
+        $result = $this->app()->make(TranslationServiceInterface::class)->translateWiki($wiki, Language::ENGLISH);
         $section = $result->translatedSections()->sections()[0];
         self::assertSame('trends-section', $section->key());
         self::assertSame(8, $section->displayOrder());
@@ -122,9 +96,6 @@ class TranslationServiceTest extends TestCase
         self::assertInstanceOf(GoogleTrendsBlock::class, $block);
         self::assertSame('trends-block', $block->key());
         self::assertSame(3, $block->displayOrder());
-        self::assertSame(trim((string) $result->translatedBasic()->name() . ' ' . ($expectedGroupName ?? '')), $block->searchTerm());
-        self::assertSame($region, $block->region());
-        self::assertSame('today 5-y', $block->timeRange());
     }
 
     public function testKeysDistinguishSameShapedSectionsWhenOnlySourcesChange(): void

@@ -20,7 +20,6 @@ use BackedEnum;
 use DateTimeImmutable;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
-use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Shared\Application\DTO\SourceReference;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
@@ -169,7 +168,7 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
         return new GeneratedWikiData(
             alphabetName: $params->alphabetName(),
             basic: $basic,
-            sections: $this->buildGroupSections($params, $payload->language()->value, $sources, (string) $basic->name()),
+            sections: $this->buildGroupSections($params, $payload->language()->value, $sources),
             sources: $sources,
             title: $this->seoTitle($params->metadata()->title()),
             metaDescription: $this->metaDescription($params->metadata()->metaDescription()),
@@ -236,7 +235,7 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
         return new GeneratedWikiData(
             alphabetName: $params->alphabetName(),
             basic: $basic,
-            sections: $this->buildTalentSections($params, $payload->language()->value, $sources, GoogleTrendsBlock::defaultSearchTerm((string) $basic->name(), $groupNames[0] ?? null)),
+            sections: $this->buildTalentSections($params, $payload->language()->value, $sources),
             sources: $sources,
             title: $this->seoTitle($params->metadata()->title()),
             metaDescription: $this->metaDescription($params->metadata()->metaDescription()),
@@ -307,7 +306,7 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
         return new GeneratedWikiData(
             alphabetName: $params->alphabetName(),
             basic: $basic,
-            sections: $this->buildSongSections($params, $payload->language()->value, $sources, (string) $basic->name()),
+            sections: $this->buildSongSections($params, $payload->language()->value, $sources),
             sources: $sources,
             title: $this->seoTitle($params->metadata()->title()),
             metaDescription: $this->metaDescription($params->metadata()->metaDescription()),
@@ -393,7 +392,7 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
     }
 
     /** @param list<SourceReference> $sources */
-    private function buildGroupSections(GenerateGroupParams $params, string $language, array $sources, string $name): SectionContentCollection
+    private function buildGroupSections(GenerateGroupParams $params, string $language, array $sources): SectionContentCollection
     {
         $sections = [];
         $order = 0;
@@ -448,7 +447,7 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
             );
         }
 
-        $sections[] = $this->buildGoogleTrendsSection($name, $language, $order++);
+        $sections[] = $this->buildGoogleTrendsSection($language, $order++);
 
         $sourcesSection = $this->buildSourcesSection($sources, $language, $order);
         if ($sourcesSection !== null) {
@@ -497,7 +496,7 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
     }
 
     /** @param list<SourceReference> $sources */
-    private function buildTalentSections(GenerateTalentParams $params, string $language, array $sources, string $name): SectionContentCollection
+    private function buildTalentSections(GenerateTalentParams $params, string $language, array $sources): SectionContentCollection
     {
         $sections = [];
         $order = 0;
@@ -534,7 +533,7 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
             );
         }
 
-        $sections[] = $this->buildGoogleTrendsSection($name, $language, $order++);
+        $sections[] = $this->buildGoogleTrendsSection($language, $order++);
 
         $sourcesSection = $this->buildSourcesSection($sources, $language, $order);
         if ($sourcesSection !== null) {
@@ -545,7 +544,7 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
     }
 
     /** @param list<SourceReference> $sources */
-    private function buildSongSections(GenerateSongParams $params, string $language, array $sources, string $name): SectionContentCollection
+    private function buildSongSections(GenerateSongParams $params, string $language, array $sources): SectionContentCollection
     {
         $sections = [];
         $order = 0;
@@ -578,7 +577,7 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
             );
         }
 
-        $sections[] = $this->buildGoogleTrendsSection($name, $language, $order++);
+        $sections[] = $this->buildGoogleTrendsSection($language, $order++);
 
         $sourcesSection = $this->buildSourcesSection($sources, $language, $order);
         if ($sourcesSection !== null) {
@@ -588,15 +587,13 @@ readonly class AutoWikiCreationService implements AutoWikiCreationServiceInterfa
         return new SectionContentCollection($sections);
     }
 
-    private function buildGoogleTrendsSection(string $name, string $language, int $displayOrder): Section
+    private function buildGoogleTrendsSection(string $language, int $displayOrder): Section
     {
         return new Section(
             title: section_title('google_trends', $language),
             displayOrder: $displayOrder,
             contents: new SectionContentCollection([new GoogleTrendsBlock(
                 displayOrder: 0,
-                searchTerm: $name,
-                region: GoogleTrendsBlock::defaultRegion(Language::from($language)),
             )]),
         );
     }

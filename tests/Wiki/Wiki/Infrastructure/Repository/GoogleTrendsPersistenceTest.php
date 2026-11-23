@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Wiki\Wiki\Infrastructure\Repository;
 
 use PHPUnit\Framework\Attributes\Group;
-use PHPUnit\Framework\Attributes\TestWith;
 use Source\Shared\Domain\ValueObject\Language;
 use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\Slug;
@@ -26,14 +25,10 @@ use Tests\TestCase;
 class GoogleTrendsPersistenceTest extends TestCase
 {
     #[Group('useDb')]
-    #[TestWith(['JP', 'today 12-m'])]
-    #[TestWith(['KR', 'today 5-y'])]
-    #[TestWith(['all', 'today 12-m'])]
-    public function testDraftAndPublishedPersistenceAndQueriesPreserveSettings(string $region, string $timeRange): void
+    public function testDraftAndPublishedPersistenceAndQueriesPreserveBlock(): void
     {
         $data = [['type' => 'section', 'sectionKey' => 'trends-section', 'title' => 'Trends', 'displayOrder' => 4, 'contents' => [[
             'type' => 'google_trends', 'blockKey' => 'trends-block', 'displayOrder' => 2,
-            'searchTerm' => '少女時代 & Girls Generation', 'region' => $region, 'timeRange' => $timeRange,
         ]]]];
         $publishedId = new WikiIdentifier(StrTestHelper::generateUuid());
         CreateWiki::create((string) $publishedId, 'group', ['slug' => 'gr-trends', 'language' => 'ja']);

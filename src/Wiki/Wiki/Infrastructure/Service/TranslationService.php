@@ -30,7 +30,6 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\Position;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\RealName;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Talent\TalentBasic;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\EmbedBlock;
-use Source\Wiki\Wiki\Domain\ValueObject\Block\GoogleTrendsBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\HistoryBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\HistoryEntry;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\ImageBlock;
@@ -64,7 +63,6 @@ readonly class TranslationService implements TranslationServiceInterface
     {
         $existing = $this->wikiRepository->findByTranslationSetIdentifierAndLanguages($wiki->translationSetIdentifier(), [$targetLanguage])[0] ?? null;
         $baseline = $this->comparisonSource($wiki, $existing);
-        $googleTrendsGroupName = $this->googleTrendsGroupName($wiki->basic(), $targetLanguage);
         $texts = [];
         $this->mapWikiTexts($wiki, $targetLanguage, static function (string $text, ?int $maxLength, ?string $reused = null) use (&$texts): string {
             if ($reused !== null) {
@@ -75,10 +73,10 @@ readonly class TranslationService implements TranslationServiceInterface
             }
 
             return $text;
-        }, $baseline, $existing, $googleTrendsGroupName);
+        }, $baseline, $existing);
 
         if ($texts === []) {
-            return $this->mapWikiTexts($wiki, $targetLanguage, static fn (string $text, ?int $maxLength, ?string $reused = null): string => $reused ?? $text, $baseline, $existing, $googleTrendsGroupName);
+            return $this->mapWikiTexts($wiki, $targetLanguage, static fn (string $text, ?int $maxLength, ?string $reused = null): string => $reused ?? $text, $baseline, $existing);
         }
 
         $translations = $this->googleTranslateClient->translateTexts(new TranslateTextsRequest(
@@ -101,7 +99,7 @@ readonly class TranslationService implements TranslationServiceInterface
             }
 
             return $maxLength === null ? $translated : mb_substr(trim($translated), 0, $maxLength);
-        }, $baseline, $existing, $googleTrendsGroupName);
+        }, $baseline, $existing);
     }
 
     /**
@@ -260,51 +258,6 @@ readonly class TranslationService implements TranslationServiceInterface
         return new SectionContentCollection($mapped);
     }
 
-    private function googleTrendsGroupName(BasicInterface $basic, Language $language): ?string
-    {
-        if (! $basic instanceof TalentBasic) {
-            return null;
-        }
-
-        foreach ($basic->groupIdentifiers() as $groupIdentifier) {
-            $group = $this->wikiRepository->findById($groupIdentifier);
-            if ($group === null || ! $group->basic() instanceof GroupBasic) {
-                continue;
-            }
-            $translated = $this->wikiRepository->findByTranslationSetIdentifierAndLanguages($group->translationSetIdentifier(), [$language])[0] ?? null;
-
-            return (string) ($translated ?? $group)->basic()->name();
-        }
-
-        return null;
-    }
-
-    private function mapGoogleTrendsSettings(SectionContentCollection $sections, string $name, Language $language): SectionContentCollection
-    {
-        return new SectionContentCollection(array_map(function (SectionContentInterface $content) use ($name, $language): SectionContentInterface {
-            if ($content instanceof Section) {
-                return new Section(
-                    $content->title(),
-                    $content->displayOrder(),
-                    $this->mapGoogleTrendsSettings($content->contents(), $name, $language),
-                    $content->depth(),
-                    key: $content->key(),
-                );
-            }
-            if ($content instanceof GoogleTrendsBlock) {
-                return new GoogleTrendsBlock(
-                    $content->displayOrder(),
-                    $name,
-                    GoogleTrendsBlock::defaultRegion($language),
-                    $content->timeRange(),
-                    $content->key(),
-                );
-            }
-
-            return $content;
-        }, $sections->all()));
-    }
-
     private function reusableText(?string $current, ?string $previous, ?string $translated): ?string
     {
         return $current !== null && $current === $previous && $translated !== null && trim($translated) !== '' ? $translated : null;
@@ -327,7 +280,7 @@ readonly class TranslationService implements TranslationServiceInterface
     /**
      * @param callable(string, ?int, ?string=): string $translate
      */
-    private function mapWikiTexts(Wiki $wiki, Language $targetLanguage, callable $translate, Wiki|WikiSnapshot|null $baseline = null, ?Wiki $existing = null, ?string $googleTrendsGroupName = null): TranslatedWikiData
+    private function mapWikiTexts(Wiki $wiki, Language $targetLanguage, callable $translate, Wiki|WikiSnapshot|null $baseline = null, ?Wiki $existing = null): TranslatedWikiData
     {
         $basic = $this->mapBasic($wiki->basic(), $translate, $baseline?->basic(), $existing?->basic());
         $reuse = [];
@@ -343,11 +296,7 @@ readonly class TranslationService implements TranslationServiceInterface
         }
         $counts = [];
         $this->countSectionScopes($wiki->sections(), $counts);
-        $sections = $this->mapGoogleTrendsSettings(
-            $this->mapDifferentialSections($wiki->sections(), $targetLanguage, $translate, $reuse, $counts),
-            GoogleTrendsBlock::defaultSearchTerm((string) $basic->name(), $googleTrendsGroupName),
-            $targetLanguage,
-        );
+        $sections = $this->mapDifferentialSections($wiki->sections(), $targetLanguage, $translate, $reuse, $counts);
         $title = $wiki->title();
         $description = $wiki->metaDescription();
         $keywords = $wiki->keywords();

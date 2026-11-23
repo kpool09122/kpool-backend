@@ -12,7 +12,6 @@ use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Emoji;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\FandomName;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\Name;
 use Source\Wiki\Wiki\Domain\ValueObject\Basic\Shared\RepresentativeSymbol;
-use Source\Wiki\Wiki\Domain\ValueObject\Block\GoogleTrendsBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Block\TextBlock;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\Section;
 use Source\Wiki\Wiki\Domain\ValueObject\Section\SectionContentCollection;
@@ -27,12 +26,6 @@ class WikiNgWordValidationServiceTest extends TestCase
         $this->validateText($text);
     }
 
-    public function testRejectsProhibitedSearchTerm(): void
-    {
-        $this->expectException(NgWordDetectedException::class);
-        $this->validateText('死ね', true);
-    }
-
     public function testAcceptsTermsEmbeddedInOtherWords(): void
     {
         $this->expectNotToPerformAssertions();
@@ -45,7 +38,7 @@ class WikiNgWordValidationServiceTest extends TestCase
         $this->validateText('The concert video leaked. 한국어 공부를 시작했다. 她喜欢拍照。 La cantante habló de salud sexual.');
     }
 
-    private function validateText(string $text, bool $trends = false): void
+    private function validateText(string $text): void
     {
         $basic = new GroupBasic(
             name: new Name('TWICE'),
@@ -62,7 +55,7 @@ class WikiNgWordValidationServiceTest extends TestCase
             representativeSymbol: new RepresentativeSymbol(''),
         );
         $sections = new SectionContentCollection([
-            new Section('Profile', 0, new SectionContentCollection([$trends ? new GoogleTrendsBlock(0, $text) : new TextBlock(0, $text)])),
+            new Section('Profile', 0, new SectionContentCollection([new TextBlock(0, $text)])),
         ]);
 
         new WikiNgWordValidationService()->validate($basic, $sections, null, null, null);

@@ -155,14 +155,6 @@ model WikiContentInput {
   listType?: "bullet" | "numbered";
   items?: string[];
   entries?: WikiHistoryEntryInput[];
-  @doc("Required for google_trends. A non-blank search term (maximum 100 characters). Defaults on generation/translation to the displayed Wiki name. For talents with a group, appends the first available group name separated by a space; otherwise uses the name alone. Defaults are limited to 100 characters.")
-  @minLength(1)
-  @maxLength(100)
-  searchTerm?: string;
-  @doc("Required for google_trends. Searcher location, not search language: JP=Japan, KR=Korea, all=worldwide. Use all for worldwide in requests and responses. Generation/translation defaults: ja=JP, ko=KR, en=worldwide.")
-  region?: "JP" | "KR" | "all";
-  @doc("Required for google_trends. Supported periods: past 3 months, 6 months, 1 year, 2 years, 5 years, and 10 years (generation default). Preserved on translation. Only structured configuration is accepted, not HTML or JavaScript.")
-  timeRange?: "today 3-m" | "today 6-m" | "today 12-m" | "today 2-y" | "today 5-y" | "today 10-y";
   headerCells?: string[] | null;
   rowCells?: string[][];
   tableWidth?: string | null;
