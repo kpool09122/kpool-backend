@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 return [
+    'account_snapshot_not_found' => 'Account snapshot not found.',
+    'incomplete_account_snapshot' => 'Account type and complete contact information are required.',
     'authorization_connection_not_found' => 'Authorization connection not found.',
     'oauth_invalid_request' => 'The authorization request is invalid.',
     'oauth_request_expired' => 'The authorization request has expired. Start authorization again.',

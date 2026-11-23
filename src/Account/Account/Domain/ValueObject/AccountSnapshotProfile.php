@@ -7,21 +7,76 @@ namespace Source\Account\Account\Domain\ValueObject;
 use InvalidArgumentException;
 use Source\Account\Account\Domain\Entity\Account;
 
-readonly class AccountCategoryChangeRequestAccount
+readonly class AccountSnapshotProfile
 {
     public function __construct(
-        public string $email,
-        public string $type,
-        public string $name,
-        public string $status,
-        public string $phone,
-        public string $countryCode,
-        public ?string $administrativeAreaCode,
-        public string $postalCode,
-        public ?string $locality,
-        public string $addressLine1,
-        public ?string $addressLine2,
+        private string $email,
+        private string $type,
+        private string $name,
+        private string $status,
+        private string $phone,
+        private string $countryCode,
+        private ?string $administrativeAreaCode,
+        private string $postalCode,
+        private ?string $locality,
+        private string $addressLine1,
+        private ?string $addressLine2,
     ) {
+    }
+
+    public function email(): string
+    {
+        return $this->email;
+    }
+
+    public function type(): string
+    {
+        return $this->type;
+    }
+
+    public function name(): string
+    {
+        return $this->name;
+    }
+
+    public function status(): string
+    {
+        return $this->status;
+    }
+
+    public function phone(): string
+    {
+        return $this->phone;
+    }
+
+    public function countryCode(): string
+    {
+        return $this->countryCode;
+    }
+
+    public function administrativeAreaCode(): ?string
+    {
+        return $this->administrativeAreaCode;
+    }
+
+    public function postalCode(): string
+    {
+        return $this->postalCode;
+    }
+
+    public function locality(): ?string
+    {
+        return $this->locality;
+    }
+
+    public function addressLine1(): string
+    {
+        return $this->addressLine1;
+    }
+
+    public function addressLine2(): ?string
+    {
+        return $this->addressLine2;
     }
 
     public static function fromAccount(Account $account): self

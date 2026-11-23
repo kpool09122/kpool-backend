@@ -13,7 +13,7 @@ use Source\Account\Account\Domain\ValueObject\RejectionReason;
 use Source\Account\Account\Domain\ValueObject\RejectionReasonCode;
 use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
-use Tests\Helper\CreateAccountCategoryChangeRequestAccount;
+use Tests\Helper\CreateAccountSnapshotProfile;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -27,7 +27,7 @@ class WithdrawAccountCategoryChangeRequestOutputTest extends TestCase
         $requestedAt = new DateTimeImmutable('2026-08-11 00:00:00+09:00');
         $reviewedAt = new DateTimeImmutable('2026-08-12 00:00:00+09:00');
         $rejectionReason = new RejectionReason(RejectionReasonCode::OTHER, 'missing information');
-        $request = new AccountCategoryChangeRequest($requestIdentifier, $accountIdentifier, AccountCategory::GENERAL, AccountCategory::AGENCY, AccountCategoryChangeRequestStatus::WITHDRAWN, $requestedAt, $reviewedBy, $reviewedAt, $rejectionReason, CreateAccountCategoryChangeRequestAccount::create());
+        $request = new AccountCategoryChangeRequest($requestIdentifier, $accountIdentifier, AccountCategory::GENERAL, AccountCategory::AGENCY, AccountCategoryChangeRequestStatus::WITHDRAWN, $requestedAt, $reviewedBy, $reviewedAt, $rejectionReason, CreateAccountSnapshotProfile::create());
 
         $output = new WithdrawAccountCategoryChangeRequestOutput();
         $output->setRequest($request);

@@ -21,6 +21,8 @@ use Source\Account\Account\Application\UseCase\Command\RequestAccountCategoryCha
 use Source\Account\Account\Application\UseCase\Command\RequestAccountCategoryChange\RequestAccountCategoryChangeInterface;
 use Source\Account\Account\Application\UseCase\Command\RevokeOperations\RevokeOperations;
 use Source\Account\Account\Application\UseCase\Command\RevokeOperations\RevokeOperationsInterface;
+use Source\Account\Account\Application\UseCase\Command\SaveAccountSnapshot\SaveAccountSnapshot;
+use Source\Account\Account\Application\UseCase\Command\SaveAccountSnapshot\SaveAccountSnapshotInterface;
 use Source\Account\Account\Application\UseCase\Command\SwitchAccount\SwitchAccount;
 use Source\Account\Account\Application\UseCase\Command\SwitchAccount\SwitchAccountInterface;
 use Source\Account\Account\Application\UseCase\Command\UpdateAccount\UpdateAccount;
@@ -33,11 +35,13 @@ use Source\Account\Account\Application\UseCase\Command\WithdrawFromService\Withd
 use Source\Account\Account\Application\UseCase\Command\WithdrawFromService\WithdrawFromServiceInterface;
 use Source\Account\Account\Application\UseCase\Query\GetAccount\GetAccountInterface;
 use Source\Account\Account\Application\UseCase\Query\GetAccountCategoryChangeRequest\GetAccountCategoryChangeRequestInterface;
+use Source\Account\Account\Application\UseCase\Query\GetAccountSnapshot\GetAccountSnapshotInterface;
 use Source\Account\Account\Application\UseCase\Query\GetLatestAccountCategoryChangeRequest\GetLatestAccountCategoryChangeRequestInterface;
 use Source\Account\Account\Application\UseCase\Query\ListAccountCategoryChangeRequests\ListAccountCategoryChangeRequestsInterface;
 use Source\Account\Account\Application\UseCase\Query\ListAccountDocuments\ListAccountDocumentsInterface;
 use Source\Account\Account\Infrastructure\Query\GetAccount;
 use Source\Account\Account\Infrastructure\Query\GetAccountCategoryChangeRequest;
+use Source\Account\Account\Infrastructure\Query\GetAccountSnapshot;
 use Source\Account\Account\Infrastructure\Query\GetLatestAccountCategoryChangeRequest;
 use Source\Account\Account\Infrastructure\Query\ListAccountCategoryChangeRequests;
 use Source\Account\Account\Infrastructure\Query\ListAccountDocuments;
@@ -84,6 +88,8 @@ class UseCaseServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        $this->app->singleton(GetAccountSnapshotInterface::class, GetAccountSnapshot::class);
+        $this->app->singleton(SaveAccountSnapshotInterface::class, SaveAccountSnapshot::class);
         $this->app->singleton(UpdateNotificationSettingsInterface::class, UpdateNotificationSettings::class);
         $this->app->singleton(GetNotificationSettingsInterface::class, GetNotificationSettings::class);
 

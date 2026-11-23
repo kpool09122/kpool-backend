@@ -13,7 +13,7 @@ use Source\Account\Account\Domain\ValueObject\RejectionReason;
 use Source\Account\Account\Domain\ValueObject\RejectionReasonCode;
 use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
-use Tests\Helper\CreateAccountCategoryChangeRequestAccount;
+use Tests\Helper\CreateAccountSnapshotProfile;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -37,7 +37,7 @@ class RequestAccountCategoryChangeOutputTest extends TestCase
             $reviewedBy,
             $reviewedAt,
             $rejectionReason,
-            CreateAccountCategoryChangeRequestAccount::create(),
+            CreateAccountSnapshotProfile::create(),
         );
 
         $output = new RequestAccountCategoryChangeOutput();

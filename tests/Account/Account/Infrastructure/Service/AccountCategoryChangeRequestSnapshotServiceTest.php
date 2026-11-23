@@ -15,7 +15,7 @@ use Source\Account\Account\Domain\Entity\AccountCategoryChangeRequest;
 use Source\Account\Account\Domain\Factory\AccountCategoryChangeRequestFactoryInterface;
 use Source\Account\Account\Domain\Repository\AccountCategoryChangeRequestRepositoryInterface;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
-use Source\Account\Account\Domain\ValueObject\AccountCategoryChangeRequestAccount;
+use Source\Account\Account\Domain\ValueObject\AccountSnapshotProfile;
 use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Tests\Helper\CreateAccount;
@@ -137,7 +137,7 @@ class AccountCategoryChangeRequestSnapshotServiceTest extends TestCase
         }
         $account = $this->app()->make(AccountRepositoryInterface::class)->findById($accountIdentifier);
         self::assertNotNull($account);
-        $request = $this->app()->make(AccountCategoryChangeRequestFactoryInterface::class)->create($accountIdentifier, AccountCategory::GENERAL, AccountCategory::TALENT, AccountCategoryChangeRequestAccount::fromAccount($account));
+        $request = $this->app()->make(AccountCategoryChangeRequestFactoryInterface::class)->create($accountIdentifier, AccountCategory::GENERAL, AccountCategory::TALENT, AccountSnapshotProfile::fromAccount($account));
         $this->app()->make(AccountCategoryChangeRequestRepositoryInterface::class)->save($request);
 
         return [$request, $account];

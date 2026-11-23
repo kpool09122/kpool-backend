@@ -24,7 +24,7 @@ use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Tests\Helper\CreateAccount;
-use Tests\Helper\CreateAccountCategoryChangeRequestAccount;
+use Tests\Helper\CreateAccountSnapshotProfile;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -167,7 +167,7 @@ class ListAccountCategoryChangeRequestsTest extends TestCase
         $account = DB::table('accounts')->where('id', (string) $accountIdentifier)->first();
         self::assertNotNull($account);
         DB::table('account_category_change_requests')->insert([
-            ...CreateAccountCategoryChangeRequestAccount::columns(),
+            ...CreateAccountSnapshotProfile::columns(),
             'account_email' => $account->email,
             'account_name' => $account->name,
             'account_type' => $account->type,

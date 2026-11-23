@@ -751,6 +751,308 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /accounts/{accountIdentifier}/snapshot:
+    put:
+      operationId: AccountSnapshotOperations_saveAccountSnapshot
+      description: Save the current authenticated account profile and uploaded documents without review. Requires the same account and account:update. Complete contact/type and required documents are validated. Changed content creates a new immutable version; previous versions and document files are retained. Identical-content saves succeed without writes. Does not change category-change requests.
+      parameters:
+        - name: accountIdentifier
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountSnapshotSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '419':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+    get:
+      operationId: AccountSnapshotOperations_getCurrentAccountSnapshot
+      description: Read the current version, defined as the highest saved version number for the account. Same-account readers require account:read; cross-account operations readers require account:category-change-request:manage on their own account. No current version returns 404.
+      parameters:
+        - name: accountIdentifier
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+      responses:
+        '200':
+          description: The request has succeeded.
+          headers:
+            Cache-Control:
+              required: true
+              schema:
+                type: string
+                enum:
+                  - private, no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountSnapshotDetail'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /accounts/{accountIdentifier}/snapshots/{snapshotIdentifier}:
+    get:
+      operationId: AccountSnapshotOperations_getAccountSnapshot
+      description: Read a specific immutable version with the same owner/operations authorization as the current-version endpoint. Mismatched account/version returns 404. Old application references remain valid after the current version changes.
+      parameters:
+        - name: accountIdentifier
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+        - name: snapshotIdentifier
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+      responses:
+        '200':
+          description: The request has succeeded.
+          headers:
+            Cache-Control:
+              required: true
+              schema:
+                type: string
+                enum:
+                  - private, no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountSnapshotDetail'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /accounts/{accountIdentifier}/snapshots/{snapshotIdentifier}/documents/{documentType}:
+    get:
+      operationId: AccountSnapshotOperations_getAccountSnapshotDocument
+      description: Stream the copied document belonging to the specified account/version after the same owner/operations authorization as snapshot reads. Missing document returns 404. Original-file edits/deletion do not change this file.
+      parameters:
+        - name: accountIdentifier
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+        - name: snapshotIdentifier
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+        - name: documentType
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Response returned when an account document file is streamed.
+          headers:
+            Cache-Control:
+              required: true
+              schema:
+                type: string
+                enum:
+                  - private, no-store
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /accounts/{accountId}:
     get:
       operationId: AccountOperations_getAccount
@@ -2661,6 +2963,98 @@ components:
           format: int32
           minimum: 0
           maximum: 5
+    AccountSnapshotDetail:
+      type: object
+      required:
+        - isCurrent
+        - account
+        - documents
+      properties:
+        isCurrent:
+          type: boolean
+        account:
+          $ref: '#/components/schemas/AccountSnapshotProfile'
+        documents:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccountSnapshotDocument'
+          description: Documents ordered by documentType. Storage paths and content hashes are never returned. Read files through the authorized version-specific endpoint.
+      allOf:
+        - $ref: '#/components/schemas/AccountSnapshotSummary'
+    AccountSnapshotDocument:
+      type: object
+      required:
+        - documentType
+        - uploadedAt
+      properties:
+        documentType:
+          type: string
+        uploadedAt:
+          type: string
+          format: date-time
+    AccountSnapshotProfile:
+      type: object
+      required:
+        - email
+        - type
+        - name
+        - status
+        - phone
+        - countryCode
+        - administrativeAreaCode
+        - postalCode
+        - locality
+        - addressLine1
+        - addressLine2
+      properties:
+        email:
+          type: string
+        type:
+          type: string
+          enum:
+            - corporation
+            - individual
+        name:
+          type: string
+        status:
+          type: string
+        phone:
+          type: string
+        countryCode:
+          type: string
+        administrativeAreaCode:
+          type: string
+          nullable: true
+        postalCode:
+          type: string
+        locality:
+          type: string
+          nullable: true
+        addressLine1:
+          type: string
+        addressLine2:
+          type: string
+          nullable: true
+    AccountSnapshotSummary:
+      type: object
+      required:
+        - snapshotIdentifier
+        - accountIdentifier
+        - version
+        - savedAt
+      properties:
+        snapshotIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        accountIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        version:
+          type: integer
+          format: int32
+          minimum: 1
+        savedAt:
+          type: string
+          format: date-time
+      description: A saved account version. Saving does not approve service use. Identical account data and document bytes return the same identifier, version and savedAt without copying files or writing data.
     AccountSummary:
       type: object
       required:
