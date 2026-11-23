@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Wiki\Wiki\Infrastructure\Repository;
 
-use InvalidArgumentException;
-use PHPUnit\Framework\Attributes\TestWith;
 use PHPUnit\Framework\TestCase;
 use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Shared\Domain\ValueObject\ImageIdentifier;
@@ -30,28 +28,22 @@ use Tests\Helper\StrTestHelper;
 
 class SectionContentMapperTest extends TestCase
 {
-    #[TestWith(['searchTerm', null])]
-    #[TestWith(['searchTerm', 123])]
-    #[TestWith(['searchTerm', []])]
-    #[TestWith(['region', null])]
-    #[TestWith(['region', false])]
-    #[TestWith(['timeRange', null])]
-    #[TestWith(['timeRange', []])]
-    public function testGoogleTrendsRejectsMissingOrNonStringSettings(string $field, mixed $value): void
-    {
-        $data = ['type' => 'google_trends', 'searchTerm' => 'Title', 'region' => 'JP', 'timeRange' => 'today 12-m'];
-        $data[$field] = $value;
-        $this->expectException(InvalidArgumentException::class);
-        SectionContentMapper::collectionFromArray([$data]);
-    }
-
     public function testGoogleTrendsRoundTrip(): void
     {
         $data = [['type' => 'section', 'sectionKey' => 'trends-section', 'title' => 'Trends', 'displayOrder' => 4, 'contents' => [[
             'type' => 'google_trends', 'blockKey' => 'trends-block', 'displayOrder' => 2,
-            'searchTerm' => '少女時代', 'region' => 'KR', 'timeRange' => 'today 5-y',
         ]]]];
         self::assertSame($data, SectionContentMapper::collectionToArray(SectionContentMapper::collectionFromArray($data)));
+    }
+
+    public function testGoogleTrendsDropsLegacySettingsOnSave(): void
+    {
+        $data = [['type' => 'google_trends', 'blockKey' => 'trends', 'displayOrder' => 2,
+            'searchTerm' => 'Old name', 'region' => 'JP', 'timeRange' => 'today 5-y']];
+        self::assertSame(
+            [['type' => 'google_trends', 'blockKey' => 'trends', 'displayOrder' => 2]],
+            SectionContentMapper::collectionToArray(SectionContentMapper::collectionFromArray($data))
+        );
     }
 
     public function testPreservesKeysForEveryBlockAndNestedSection(): void
