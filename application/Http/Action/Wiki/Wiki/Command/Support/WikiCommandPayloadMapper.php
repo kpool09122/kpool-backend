@@ -219,7 +219,8 @@ final class WikiCommandPayloadMapper
             'provider' => $content['provider'] ?? null,
             'embedId' => $content['embedId'] ?? '',
             'searchTerm' => $content['searchTerm'] ?? null,
-            'region' => $content['region'] ?? null,
+            // Use a non-empty API value so HTTP normalization cannot turn worldwide into null.
+            'region' => ($content['region'] ?? null) === 'all' ? '' : ($content['region'] ?? null),
             'timeRange' => $content['timeRange'] ?? null,
             'source' => $content['source'] ?? null,
             'listType' => $content['listType'] ?? 'bullet',
