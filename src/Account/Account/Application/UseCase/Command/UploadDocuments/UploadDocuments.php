@@ -12,14 +12,17 @@ use Source\Account\Account\Application\Service\AccountDocumentFileTypeDetectorIn
 use Source\Account\Account\Application\Service\DocumentStorageServiceInterface;
 use Source\Account\Account\Domain\Exception\AccountSetupUnavailableException;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
+use Source\Account\Account\Domain\Repository\AccountSnapshotChangeRequestRepositoryInterface;
 use Source\Account\Account\Domain\Service\AccountDocumentRequirementValidatorInterface;
 use Source\Account\Account\Domain\ValueObject\AccountDocument;
+use Source\Account\Account\Domain\ValueObject\AccountSnapshotChangeRequestStatus;
 use Throwable;
 
 readonly class UploadDocuments implements UploadDocumentsInterface
 {
     public function __construct(
         private AccountRepositoryInterface $accountRepository,
+        private AccountSnapshotChangeRequestRepositoryInterface $accountSnapshotChangeRequestRepository,
         private DocumentStorageServiceInterface $documentStorageService,
         private AccountDocumentFileTypeDetectorInterface $fileTypeDetector,
         private AccountDocumentRequirementValidatorInterface $documentRequirementValidator,
@@ -34,6 +37,10 @@ readonly class UploadDocuments implements UploadDocumentsInterface
         }
 
         if ((string) $input->principal()->accountIdentifier() !== (string) $account->accountIdentifier()) {
+            throw new AccountDocumentUploadForbiddenException();
+        }
+
+        if ($this->accountSnapshotChangeRequestRepository->findByAccountIdAndStatuses($account->accountIdentifier(), [AccountSnapshotChangeRequestStatus::PENDING]) !== []) {
             throw new AccountDocumentUploadForbiddenException();
         }
 

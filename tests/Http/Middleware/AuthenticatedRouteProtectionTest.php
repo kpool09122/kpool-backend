@@ -69,6 +69,17 @@ class AuthenticatedRouteProtectionTest extends TestCase
             ->group(__DIR__ . '/../../../routes/webhook.php');
     }
 
+    public function testAllSnapshotChangeRoutesHaveAuthenticationContextAndCorrectRateLimit(): void
+    {
+        $routes = array_values(array_filter(RouteFacade::getRoutes()->getRoutes(), static fn (Route $route): bool => str_starts_with($route->uri(), 'api/v1/account/') && str_contains($route->uri(), 'snapshot-change-requests')));
+        self::assertCount(7, $routes);
+        foreach ($routes as $route) {
+            foreach (['auth.api', 'account.active', 'principal.active', 'resolve.actor', 'resolve.account', in_array('GET', $route->methods(), true) ? 'rate-limit:screen,query' : 'rate-limit:screen,command'] as $middleware) {
+                self::assertContains($middleware, $route->gatherMiddleware());
+            }
+        }
+    }
+
     public function testMonetizationAuthorizationRoutesAreProtectedAndBusinessRoutesRemainDisabled(): void
     {
         $routes = array_values(array_filter(RouteFacade::getRoutes()->getRoutes(), static fn (Route $route): bool => str_starts_with($route->uri(), 'api/v1/monetization/')));

@@ -3,6 +3,11 @@
 declare(strict_types=1);
 
 return [
+    'account_snapshot_change_request_not_found' => '스냅샷 변경 신청을 찾을 수 없습니다.',
+    'invalid_account_snapshot_change_request' => '심사 대기 중인 스냅샷 변경 신청이 이미 있습니다.',
+    'invalid_account_snapshot_change_request_approval' => '이 스냅샷 변경 신청은 승인할 수 없습니다.',
+    'invalid_account_snapshot_change_request_rejection' => '이 스냅샷 변경 신청은 거절할 수 없습니다.',
+
     'account_snapshot_change_requires_approval' => '서비스 이용 시작 후 저장된 정보를 변경하려면 변경 승인이 필요합니다.',
     'account_snapshot_not_found' => '계정 스냅샷을 찾을 수 없습니다.',
     'incomplete_account_snapshot' => '계정 유형과 연락처 및 주소가 필요합니다.',

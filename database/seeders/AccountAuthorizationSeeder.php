@@ -114,6 +114,11 @@ class AccountAuthorizationSeeder extends Seeder
             'ACCOUNT_NOTIFICATION_SETTINGS_UPDATE',
             Action::NOTIFICATION_SETTINGS_UPDATE,
         );
+        $accountSnapshotChangeRequestManagePolicy = $this->createPolicy(
+            '01982020-0456-7000-8000-000000000015',
+            'ACCOUNT_SNAPSHOT_CHANGE_REQUEST_MANAGE',
+            Action::ACCOUNT_SNAPSHOT_CHANGE_REQUEST_MANAGE,
+        );
         $ownerPolicyIdentifiers = [
             $accountReadPolicy->policyIdentifier(),
             $corporationAccountInviteMemberPolicy->policyIdentifier(),
@@ -133,6 +138,7 @@ class AccountAuthorizationSeeder extends Seeder
         $this->saveRole(Role::OWNER, $ownerPolicyIdentifiers);
         $this->saveRole(Role::OPERATIONS, [
             $accountCategoryChangeRequestManagePolicy->policyIdentifier(),
+            $accountSnapshotChangeRequestManagePolicy->policyIdentifier(),
         ]);
 
         DB::table('account_principals')

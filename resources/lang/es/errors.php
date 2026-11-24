@@ -3,6 +3,11 @@
 declare(strict_types=1);
 
 return [
+    'account_snapshot_change_request_not_found' => 'No se encontró la solicitud de cambio de instantánea.',
+    'invalid_account_snapshot_change_request' => 'Ya existe una solicitud de cambio de instantánea pendiente.',
+    'invalid_account_snapshot_change_request_approval' => 'No se puede aprobar esta solicitud de cambio de instantánea.',
+    'invalid_account_snapshot_change_request_rejection' => 'No se puede rechazar esta solicitud de cambio de instantánea.',
+
     'account_snapshot_change_requires_approval' => 'Cambiar la información guardada tras iniciar el servicio requiere aprobación.',
     'account_snapshot_not_found' => 'No se encontró la instantánea de la cuenta.',
     'incomplete_account_snapshot' => 'Se requieren el tipo de cuenta y los datos de contacto completos.',

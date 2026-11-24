@@ -3,6 +3,11 @@
 declare(strict_types=1);
 
 return [
+    'account_snapshot_change_request_not_found' => '找不到快照變更申請。',
+    'invalid_account_snapshot_change_request' => '已存在待審核的快照變更申請。',
+    'invalid_account_snapshot_change_request_approval' => '無法核准此快照變更申請。',
+    'invalid_account_snapshot_change_request_rejection' => '無法拒絕此快照變更申請。',
+
     'account_snapshot_change_requires_approval' => '開始使用服務後，變更已儲存的資訊需要變更審核。',
     'account_snapshot_not_found' => '找不到帳戶快照。',
     'incomplete_account_snapshot' => '需要帳戶類型以及完整的聯絡資訊和地址。',

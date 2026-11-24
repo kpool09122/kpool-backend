@@ -13,6 +13,7 @@ enum Action: string
     case NOTIFICATION_SETTINGS_UPDATE = 'account:notification-settings:update';
     case PRINCIPAL_GROUP_MANAGE = 'account:principal-group:manage';
     case ACCOUNT_CATEGORY_CHANGE_REQUEST_MANAGE = 'account:category-change-request:manage';
+    case ACCOUNT_SNAPSHOT_CHANGE_REQUEST_MANAGE = 'account:snapshot-change-request:manage';
     case AFFILIATION_REQUEST_CREATE = 'account:affiliation-request:create';
     case DELEGATION_REQUEST_CREATE = 'account:delegation-request:create';
     case AFFILIATION_REQUEST_RECEIVE = 'account:affiliation-request:receive';

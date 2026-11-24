@@ -21,7 +21,7 @@ class CreateCategoryChangeSnapshot
             ...CreateAccountSnapshotProfile::columns(),
             'id' => (string) $id,
             'account_id' => (string) $accountIdentifier,
-            'version' => (AccountSnapshotModel::query()->where('account_id', (string) $accountIdentifier)->orderByDesc('version')->first()->version ?? 0) + 1,
+            'status' => 'approved',
             'saved_at' => '2026-08-11 10:00:00',
             'account_email' => $account->email,
             'account_type' => $account->type,

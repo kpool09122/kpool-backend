@@ -257,7 +257,7 @@ model VerificationRejectionReasonSummary {
 
 @doc("Account category change request state.")
 model AccountCategoryChangeRequestSummary {
-  @doc("Saved version fixed at application time; approval records refer to this same version.")
+  @doc("Approved snapshot fixed at application time; approval records refer to this same snapshot.")
   snapshotIdentifier: Uuid;
   @doc("Account category change request identifier.")
   requestIdentifier: Uuid;

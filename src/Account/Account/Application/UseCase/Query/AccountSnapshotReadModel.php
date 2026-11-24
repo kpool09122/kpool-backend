@@ -12,7 +12,7 @@ readonly class AccountSnapshotReadModel
     /** @param array<string, string|null> $account
      * @param list<array{documentType:string, documentPath:string, uploadedAt:string}> $documents
      */
-    public function __construct(private string $snapshotIdentifier, private string $accountIdentifier, private int $version, private string $savedAt, private bool $isCurrent, private array $account, private array $documents)
+    public function __construct(private string $snapshotIdentifier, private string $accountIdentifier, private string $status, private string $savedAt, private bool $isCurrent, private array $account, private array $documents)
     {
     }
 
@@ -26,9 +26,9 @@ readonly class AccountSnapshotReadModel
         return $this->accountIdentifier;
     }
 
-    public function version(): int
+    public function status(): string
     {
-        return $this->version;
+        return $this->status;
     }
 
     public function savedAt(): string
@@ -47,10 +47,10 @@ readonly class AccountSnapshotReadModel
         return $this->account;
     }
 
-    /** @return array{snapshotIdentifier:string,accountIdentifier:string,version:int,savedAt:string,isCurrent:bool,account:array<string,string|null>,documents:list<array{documentType:string,uploadedAt:string}>} */
+    /** @return array{snapshotIdentifier:string,accountIdentifier:string,status:string,savedAt:string,isCurrent:bool,account:array<string,string|null>,documents:list<array{documentType:string,uploadedAt:string}>} */
     public function toArray(): array
     {
-        return ['snapshotIdentifier' => $this->snapshotIdentifier,'accountIdentifier' => $this->accountIdentifier,'version' => $this->version,'savedAt' => $this->savedAt,'isCurrent' => $this->isCurrent,'account' => $this->account,'documents' => array_map(static fn (array $d): array => ['documentType' => $d['documentType'],'uploadedAt' => $d['uploadedAt']], $this->documents)];
+        return ['snapshotIdentifier' => $this->snapshotIdentifier,'accountIdentifier' => $this->accountIdentifier,'status' => $this->status,'savedAt' => $this->savedAt,'isCurrent' => $this->isCurrent,'account' => $this->account,'documents' => array_map(static fn (array $d): array => ['documentType' => $d['documentType'],'uploadedAt' => $d['uploadedAt']], $this->documents)];
     }
 
     public function documentPath(DocumentType $documentType): ?DocumentPath
