@@ -236,7 +236,7 @@ paths:
   /account-category-change-requests/{requestId}/documents/{documentType}:
     get:
       operationId: AccountCategoryChangeRequestOperations_viewAccountCategoryChangeRequestDocument
-      description: View the document from the saved version pinned to the application. Requires category request management permission.
+      description: View the document from the saved snapshot pinned to the application. Requires category request management permission.
       parameters:
         - name: requestId
           in: path
@@ -328,6 +328,422 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AccountCategoryChangeRequestSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '419':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RejectAccountCategoryChangeRequestBody'
+  /account-snapshot-change-requests:
+    get:
+      operationId: AccountSnapshotChangeRequestOperations_listAccountSnapshotChangeRequests
+      description: Operations-only list. Requires account:snapshot-change-request:manage on the operator Account. Ordered by requestedAt descending then identifier descending. Optional review status filter, bounded pagination (default 50, maximum 100).
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - pending
+              - approved
+              - rejected
+            nullable: true
+          explode: false
+        - name: perPage
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            nullable: true
+          explode: false
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            format: int32
+            nullable: true
+          explode: false
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requests:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AccountSnapshotChangeRequestSummary'
+                  pagination:
+                    type: object
+                    properties:
+                      currentPage:
+                        type: integer
+                        format: int32
+                      lastPage:
+                        type: integer
+                        format: int32
+                      total:
+                        type: integer
+                        format: int32
+                      perPage:
+                        type: integer
+                        format: int32
+                    required:
+                      - currentPage
+                      - lastPage
+                      - total
+                      - perPage
+                required:
+                  - requests
+                  - pagination
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /account-snapshot-change-requests/{requestId}:
+    get:
+      operationId: AccountSnapshotChangeRequestOperations_getAccountSnapshotChangeRequest
+      description: Compare the pinned original with the current Account while pending, or the reviewed snapshot after approval or rejection. Same Account requires account:read; cross-Account access requires account:snapshot-change-request:manage on the operator Account. Returns no storage paths or hashes.
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountSnapshotChangeRequestDetail'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /account-snapshot-change-requests/{requestId}/approve:
+    post:
+      operationId: AccountSnapshotChangeRequestOperations_approveAccountSnapshotChangeRequest
+      description: Requires account:snapshot-change-request:manage. Pending only; final requests return 422. Atomically save the current Account and copied documents as an approved snapshot and link reviewedSnapshotIdentifier to it. Historic references remain unchanged, and approved category history continues to prohibit changed-content normal saves (409 account_snapshot_change_requires_approval).
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountSnapshotChangeRequestSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '419':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /account-snapshot-change-requests/{requestId}/documents/{documentType}:
+    get:
+      operationId: AccountSnapshotChangeRequestOperations_getAccountSnapshotChangeRequestDocument
+      description: Stream a file from the original or proposal through the same owner/operations authorization as detail. source defaults to proposal. Arbitrary storage paths are not accepted. private,no-store response; missing file returns 404.
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+        - name: documentType
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: source
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - original
+              - proposal
+            nullable: true
+          explode: false
+      responses:
+        '200':
+          description: Response returned when an account document file is streamed.
+          headers:
+            Cache-Control:
+              required: true
+              schema:
+                type: string
+                enum:
+                  - private, no-store
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /account-snapshot-change-requests/{requestId}/reject:
+    post:
+      operationId: AccountSnapshotChangeRequestOperations_rejectAccountSnapshotChangeRequest
+      description: Requires account:snapshot-change-request:manage. Pending only; terminal requests return 422. Records reviewer, time and reason, saves the current Account and copied documents as a rejected snapshot, and links reviewedSnapshotIdentifier to it. The current approved snapshot remains unchanged.
+      parameters:
+        - name: requestId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountSnapshotChangeRequestSummary'
         '401':
           description: Access is unauthorized.
           content:
@@ -534,7 +950,7 @@ paths:
   /accounts/{accountIdentifier}/category-change-requests:
     post:
       operationId: AccountCategoryChangeRequestOperations_requestAccountCategoryChange
-      description: Request account category change using the highest saved snapshot version. A missing saved snapshot returns 404 (account_snapshot_not_found). Live address and documents are not revalidated or copied. The pinned version does not change when a newer version is saved. Same-category and pending/approved-history constraints remain; rejected or withdrawn history permits a new request.
+      description: Request account category change using the latest approved snapshot. A missing saved snapshot returns 404 (account_snapshot_not_found). Live address and documents are not revalidated or copied. The pinned snapshot does not change when a newer snapshot is saved. Same-category and pending/approved-history constraints remain; rejected or withdrawn history permits a new request.
       parameters:
         - name: accountIdentifier
           in: path
@@ -754,7 +1170,7 @@ paths:
   /accounts/{accountIdentifier}/snapshot:
     put:
       operationId: AccountSnapshotOperations_saveAccountSnapshot
-      description: Save the current authenticated account profile and uploaded documents without review. Requires the same account and account:update. Complete contact/type and required documents are validated. Changed content creates a new immutable version; previous versions and document files are retained. Identical-content saves succeed without writes even after approval. Changed contents are rejected with 409 (account_snapshot_change_requires_approval) if any category-change approval references a saved version for the account. Does not change category-change requests.
+      description: Save the current authenticated account profile and uploaded documents without review. Requires the same account and account:update. Complete contact/type and required documents are validated. Changed content creates a new immutable snapshot; previous snapshots and document files are retained. Profile updates, document uploads and snapshot saves are forbidden while a snapshot-change request is pending. Otherwise identical-content saves succeed without writes even after approval. Changed contents are rejected with 409 (account_snapshot_change_requires_approval) if any category-change approval references a saved snapshot for the account. Does not change category-change requests.
       parameters:
         - name: accountIdentifier
           in: path
@@ -830,7 +1246,7 @@ paths:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
     get:
       operationId: AccountSnapshotOperations_getCurrentAccountSnapshot
-      description: Read the current version, defined as the highest saved version number for the account. Same-account readers require account:read; cross-account operations readers require account:category-change-request:manage on their own account. No current version returns 404.
+      description: Read the current snapshot, defined as the latest approved snapshot ordered by savedAt descending then identifier descending for the account. Same-account readers require account:read; cross-account operations readers require account:category-change-request:manage on their own account. No current snapshot returns 404.
       parameters:
         - name: accountIdentifier
           in: path
@@ -899,10 +1315,170 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+  /accounts/{accountIdentifier}/snapshot-change-requests:
+    post:
+      operationId: AccountSnapshotChangeRequestOperations_requestAccountSnapshotChange
+      description: Submit a required reason and freeze the current editable Account profile and uploaded documents after the same complete-contact/type/required-document validation as normal snapshot save. Requires same Account and account:update. A saved original snapshot must exist (404 otherwise). While pending, profile updates, document uploads and normal snapshot saves return 403. Review reads the current Account and documents without a separate copy. No snapshot is created on submission; duplicate pending applications return 409. Rejected/approved history permits a new application, independently of category-change request states.
+      parameters:
+        - name: accountIdentifier
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+      responses:
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountSnapshotChangeRequestSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '419':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestAccountSnapshotChangeBody'
+  /accounts/{accountIdentifier}/snapshot-change-requests/latest:
+    get:
+      operationId: AccountSnapshotChangeRequestOperations_getLatestAccountSnapshotChangeRequest
+      description: Same Account and account:read required. Latest request ordered by requestedAt descending, then identifier descending, or null. changeRequiresApproval is derived from approved category applications, not snapshot-local flags.
+      parameters:
+        - name: accountIdentifier
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  request:
+                    type: object
+                    allOf:
+                      - $ref: '#/components/schemas/AccountSnapshotChangeRequestSummary'
+                    nullable: true
+                  changeRequiresApproval:
+                    type: boolean
+                    description: True when an approved category application exists for this Account. Remains true after snapshot-change approval; identical-content normal saves remain no-op successes. Use this field to choose the change-application flow, and request.status to display its review state.
+                required:
+                  - request
+                  - changeRequiresApproval
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
   /accounts/{accountIdentifier}/snapshots/{snapshotIdentifier}:
     get:
       operationId: AccountSnapshotOperations_getAccountSnapshot
-      description: Read a specific immutable version with the same owner/operations authorization as the current-version endpoint. Mismatched account/version returns 404. Old application references remain valid after the current version changes.
+      description: Read a specific immutable snapshot with the same owner/operations authorization as the current-snapshot endpoint. Mismatched account/snapshot returns 404. Old application references remain valid after the current snapshot changes.
       parameters:
         - name: accountIdentifier
           in: path
@@ -979,7 +1555,7 @@ paths:
   /accounts/{accountIdentifier}/snapshots/{snapshotIdentifier}/documents/{documentType}:
     get:
       operationId: AccountSnapshotOperations_getAccountSnapshotDocument
-      description: Stream the copied document belonging to the specified account/version after the same owner/operations authorization as snapshot reads. Missing document returns 404. Original-file edits/deletion do not change this file.
+      description: Stream the copied document belonging to the specified account/snapshot after the same owner/operations authorization as snapshot reads. Missing document returns 404. Original-file edits/deletion do not change this file.
       parameters:
         - name: accountIdentifier
           in: path
@@ -2689,7 +3265,7 @@ components:
         snapshotIdentifier:
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Saved version fixed at application time; approval records refer to this same version.
+          description: Approved snapshot fixed at application time; approval records refer to this same snapshot.
         requestIdentifier:
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
@@ -2753,7 +3329,7 @@ components:
         snapshotIdentifier:
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Saved version fixed at application time; approval records refer to this same version.
+          description: Approved snapshot fixed at application time; approval records refer to this same snapshot.
         requestIdentifier:
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
@@ -2915,6 +3491,91 @@ components:
           format: int32
           minimum: 0
           maximum: 5
+    AccountSnapshotChangeProposal:
+      type: object
+      required:
+        - account
+        - documents
+      properties:
+        account:
+          $ref: '#/components/schemas/AccountSnapshotProfile'
+        documents:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccountSnapshotDocument'
+    AccountSnapshotChangeRequestDetail:
+      type: object
+      required:
+        - request
+        - original
+        - proposal
+      properties:
+        request:
+          $ref: '#/components/schemas/AccountSnapshotChangeRequestSummary'
+        original:
+          $ref: '#/components/schemas/AccountSnapshotDetail'
+        proposal:
+          $ref: '#/components/schemas/AccountSnapshotChangeProposal'
+    AccountSnapshotChangeRequestSummary:
+      type: object
+      required:
+        - requestIdentifier
+        - accountIdentifier
+        - snapshotIdentifier
+        - reviewedSnapshotIdentifier
+        - changeReason
+        - status
+        - requestedAt
+        - reviewedBy
+        - reviewedAt
+        - rejectionReason
+      properties:
+        requestIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        accountIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        snapshotIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        reviewedSnapshotIdentifier:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
+        changeReason:
+          type: string
+          minLength: 1
+          maxLength: 2000
+        status:
+          type: string
+          enum:
+            - pending
+            - approved
+            - rejected
+        requestedAt:
+          type: string
+          format: date-time
+        reviewedBy:
+          type: string
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          nullable: true
+        reviewedAt:
+          type: string
+          format: date-time
+          nullable: true
+        rejectionReason:
+          type: object
+          properties:
+            code:
+              type: string
+            detail:
+              type: string
+              nullable: true
+          required:
+            - code
+            - detail
+          nullable: true
+      description: Independent snapshot-change review. Original snapshot and historic service/category application references never change. Approval and rejection both preserve a snapshot with the corresponding status; only approved snapshots can become current.
     AccountSnapshotDetail:
       type: object
       required:
@@ -2930,7 +3591,7 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AccountSnapshotDocument'
-          description: Documents ordered by documentType. Storage paths and content hashes are never returned. Read files through the authorized version-specific endpoint.
+          description: Documents ordered by documentType. Storage paths and content hashes are never returned. Read files through the authorized snapshot-specific endpoint.
       allOf:
         - $ref: '#/components/schemas/AccountSnapshotSummary'
     AccountSnapshotDocument:
@@ -2992,21 +3653,22 @@ components:
       required:
         - snapshotIdentifier
         - accountIdentifier
-        - version
+        - status
         - savedAt
       properties:
         snapshotIdentifier:
           $ref: '#/components/schemas/KPool.Common.Uuid'
         accountIdentifier:
           $ref: '#/components/schemas/KPool.Common.Uuid'
-        version:
-          type: integer
-          format: int32
-          minimum: 1
+        status:
+          type: string
+          enum:
+            - approved
+            - rejected
         savedAt:
           type: string
           format: date-time
-      description: A saved account version. Saving does not approve service use. Identical account data and document bytes return the same identifier, version and savedAt without copying files or writing data.
+      description: A saved account snapshot. Saving does not approve service use. Identical account data and document bytes return the same identifier, status and savedAt without copying files or writing data.
     AccountSummary:
       type: object
       required:
@@ -3645,6 +4307,15 @@ components:
             - general
           description: Requested account category.
       description: Request body for creating an account category change request.
+    RequestAccountSnapshotChangeBody:
+      type: object
+      required:
+        - changeReason
+      properties:
+        changeReason:
+          type: string
+          minLength: 1
+          maxLength: 2000
     RequestAffiliationRequestBody:
       type: object
       required:

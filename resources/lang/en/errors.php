@@ -3,6 +3,11 @@
 declare(strict_types=1);
 
 return [
+    'account_snapshot_change_request_not_found' => 'Snapshot change request not found.',
+    'invalid_account_snapshot_change_request' => 'A pending snapshot change request already exists.',
+    'invalid_account_snapshot_change_request_approval' => 'This snapshot change request cannot be approved.',
+    'invalid_account_snapshot_change_request_rejection' => 'This snapshot change request cannot be rejected.',
+
     'account_snapshot_change_requires_approval' => 'Changing saved information after service use requires approval.',
     'account_snapshot_not_found' => 'Account snapshot not found.',
     'incomplete_account_snapshot' => 'Account type and complete contact information are required.',

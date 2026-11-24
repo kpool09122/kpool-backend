@@ -25,7 +25,7 @@ class SaveAccountSnapshotOutput implements SaveAccountSnapshotOutputPort
         }
         $s = $this->snapshot;
 
-        return ['snapshotIdentifier' => (string)$s->snapshotIdentifier(),'accountIdentifier' => (string)$s->accountIdentifier(),'version' => $s->version(),'savedAt' => $s->savedAt()->format(DateTimeInterface::ATOM)];
+        return ['snapshotIdentifier' => (string)$s->snapshotIdentifier(),'accountIdentifier' => (string)$s->accountIdentifier(),'status' => $s->status()->value,'savedAt' => $s->savedAt()->format(DateTimeInterface::ATOM)];
 
     }
 }

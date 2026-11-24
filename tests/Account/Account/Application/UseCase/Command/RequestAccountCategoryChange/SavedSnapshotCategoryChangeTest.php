@@ -19,6 +19,7 @@ use Source\Account\Account\Application\UseCase\Query\GetAccountCategoryChangeReq
 use Source\Account\Account\Application\UseCase\Query\GetAccountCategoryChangeRequest\GetAccountCategoryChangeRequestInterface;
 use Source\Account\Account\Application\UseCase\Query\GetAccountCategoryChangeRequest\GetAccountCategoryChangeRequestOutput;
 use Source\Account\Account\Domain\ValueObject\AccountCategoryChangeRequestIdentifier;
+use Source\Account\Account\Domain\ValueObject\AccountSnapshotStatus;
 use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Shared\Application\Service\Event\EventDispatcherInterface;
 use Source\Shared\Domain\ValueObject\AccountCategory;
@@ -65,7 +66,7 @@ class SavedSnapshotCategoryChangeTest extends TestCase
         DB::table('accounts')->where('id', (string) $id)->update(['name' => 'New current name']);
         $disk->put($id.'/passport.pdf', 'new passport bytes');
         $second = CreateAccountSnapshot::save($id);
-        self::assertSame(2, $second->version());
+        self::assertSame(AccountSnapshotStatus::APPROVED, $second->status());
         $detail = new GetAccountCategoryChangeRequestOutput();
         $this->app()->make(GetAccountCategoryChangeRequestInterface::class)->process(new GetAccountCategoryChangeRequestInput(new AccountCategoryChangeRequestIdentifier($payload['requestIdentifier']), CreateAccountSnapshot::principal(CreateAccountSnapshot::account())), $detail);
         $review = $detail->toArray();
@@ -100,7 +101,7 @@ class SavedSnapshotCategoryChangeTest extends TestCase
         $this->app()->make(RequestAccountCategoryChangeInterface::class)->process(new RequestAccountCategoryChangeInput($id, CreateAccountSnapshot::principal($id), AccountCategory::AGENCY), $output);
         DB::table('account_category_change_requests')->where('account_id', (string) $id)->update(['status' => $status]);
         DB::table('accounts')->where('id', (string) $id)->update(['name' => 'Allowed new contents']);
-        self::assertSame(2, CreateAccountSnapshot::save($id)->version());
+        self::assertSame(AccountSnapshotStatus::APPROVED, CreateAccountSnapshot::save($id)->status());
     }
 
     public function testRequestUsesSavedVersionWithoutRevalidatingLiveProfileOrCopyingDocuments(): void

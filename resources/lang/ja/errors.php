@@ -3,6 +3,11 @@
 declare(strict_types=1);
 
 return [
+    'account_snapshot_change_request_not_found' => 'スナップショット変更申請が見つかりません。',
+    'invalid_account_snapshot_change_request' => '審査待ちのスナップショット変更申請が既に存在します。',
+    'invalid_account_snapshot_change_request_approval' => 'このスナップショット変更申請は承認できません。',
+    'invalid_account_snapshot_change_request_rejection' => 'このスナップショット変更申請は却下できません。',
+
     'account_snapshot_change_requires_approval' => 'サービス利用開始後の保存内容の変更には変更申請が必要です。',
     'account_snapshot_not_found' => 'アカウントスナップショットが見つかりません。',
     'incomplete_account_snapshot' => 'アカウント種別と連絡先・住所の入力が必要です。',

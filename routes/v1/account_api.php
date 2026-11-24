@@ -3,9 +3,12 @@
 declare(strict_types=1);
 
 use Application\Http\Action\Account\Account\Command\ApproveAccountCategoryChangeRequest\ApproveAccountCategoryChangeRequestAction;
+use Application\Http\Action\Account\Account\Command\ApproveAccountSnapshotChangeRequest\ApproveAccountSnapshotChangeRequestAction;
 use Application\Http\Action\Account\Account\Command\CompleteInitialSetup\CompleteInitialSetupAction;
 use Application\Http\Action\Account\Account\Command\RejectAccountCategoryChangeRequest\RejectAccountCategoryChangeRequestAction;
+use Application\Http\Action\Account\Account\Command\RejectAccountSnapshotChangeRequest\RejectAccountSnapshotChangeRequestAction;
 use Application\Http\Action\Account\Account\Command\RequestAccountCategoryChange\RequestAccountCategoryChangeAction;
+use Application\Http\Action\Account\Account\Command\RequestAccountSnapshotChange\RequestAccountSnapshotChangeAction;
 use Application\Http\Action\Account\Account\Command\SaveAccountSnapshot\SaveAccountSnapshotAction;
 use Application\Http\Action\Account\Account\Command\SwitchAccount\SwitchAccountAction;
 use Application\Http\Action\Account\Account\Command\UpdateAccount\UpdateAccountAction;
@@ -15,10 +18,14 @@ use Application\Http\Action\Account\Account\Query\GetAccount\GetAccountAction;
 use Application\Http\Action\Account\Account\Query\GetAccountCategoryChangeRequest\GetAccountCategoryChangeRequestAction;
 use Application\Http\Action\Account\Account\Query\GetAccountCategoryChangeRequestDocument\GetAccountCategoryChangeRequestDocumentAction;
 use Application\Http\Action\Account\Account\Query\GetAccountSnapshot\GetAccountSnapshotAction;
+use Application\Http\Action\Account\Account\Query\GetAccountSnapshotChangeRequest\GetAccountSnapshotChangeRequestAction;
+use Application\Http\Action\Account\Account\Query\GetAccountSnapshotChangeRequestDocument\GetAccountSnapshotChangeRequestDocumentAction;
 use Application\Http\Action\Account\Account\Query\GetAccountSnapshotDocument\GetAccountSnapshotDocumentAction;
 use Application\Http\Action\Account\Account\Query\GetCurrentAccountSnapshot\GetCurrentAccountSnapshotAction;
 use Application\Http\Action\Account\Account\Query\GetLatestAccountCategoryChangeRequest\GetLatestAccountCategoryChangeRequestAction;
+use Application\Http\Action\Account\Account\Query\GetLatestAccountSnapshotChangeRequest\GetLatestAccountSnapshotChangeRequestAction;
 use Application\Http\Action\Account\Account\Query\ListAccountCategoryChangeRequests\ListAccountCategoryChangeRequestsAction;
+use Application\Http\Action\Account\Account\Query\ListAccountSnapshotChangeRequests\ListAccountSnapshotChangeRequestsAction;
 use Application\Http\Action\Account\Account\Query\ListMyAccountDocuments\ListMyAccountDocumentsAction;
 use Application\Http\Action\Account\Account\Query\ViewMyAccountDocument\ViewMyAccountDocumentAction;
 use Application\Http\Action\Account\Affiliation\Command\ApproveAffiliation\ApproveAffiliationAction;
@@ -64,9 +71,13 @@ Route::middleware(['auth.api', 'account.active', 'principal.active', 'resolve.ac
 
         // AccountCategoryChangeRequest
         Route::get('/accounts/{accountIdentifier}/category-change-requests/latest', GetLatestAccountCategoryChangeRequestAction::class);
+        Route::get('/accounts/{accountIdentifier}/snapshot-change-requests/latest', GetLatestAccountSnapshotChangeRequestAction::class);
         Route::get('/account-category-change-requests', ListAccountCategoryChangeRequestsAction::class);
+        Route::get('/account-snapshot-change-requests', ListAccountSnapshotChangeRequestsAction::class);
         Route::get('/account-category-change-requests/{requestId}/documents/{documentType}', GetAccountCategoryChangeRequestDocumentAction::class);
+        Route::get('/account-snapshot-change-requests/{requestId}/documents/{documentType}', GetAccountSnapshotChangeRequestDocumentAction::class);
         Route::get('/account-category-change-requests/{requestId}', GetAccountCategoryChangeRequestAction::class);
+        Route::get('/account-snapshot-change-requests/{requestId}', GetAccountSnapshotChangeRequestAction::class);
 
         // Affiliation
         Route::get('/affiliations', ListAffiliationsAction::class);
@@ -98,8 +109,11 @@ Route::middleware(['auth.api', 'account.active', 'principal.active', 'resolve.ac
         // AccountCategoryChangeRequest
         Route::post('/accounts/{accountIdentifier}/category-change-requests/{requestId}/withdraw', WithdrawAccountCategoryChangeRequestAction::class);
         Route::post('/accounts/{accountIdentifier}/category-change-requests', RequestAccountCategoryChangeAction::class);
+        Route::post('/accounts/{accountIdentifier}/snapshot-change-requests', RequestAccountSnapshotChangeAction::class);
         Route::post('/account-category-change-requests/{requestId}/approve', ApproveAccountCategoryChangeRequestAction::class);
+        Route::post('/account-snapshot-change-requests/{requestId}/approve', ApproveAccountSnapshotChangeRequestAction::class);
         Route::post('/account-category-change-requests/{requestId}/reject', RejectAccountCategoryChangeRequestAction::class);
+        Route::post('/account-snapshot-change-requests/{requestId}/reject', RejectAccountSnapshotChangeRequestAction::class);
 
         // Affiliation
         Route::post('/affiliations', RequestAffiliationAction::class);

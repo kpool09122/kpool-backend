@@ -95,7 +95,7 @@ interface AccountCategoryChangeRequestOperations {
 
   @get
   @route("/account-category-change-requests/{requestId}/documents/{documentType}")
-  @doc("View the document from the saved version pinned to the application. Requires category request management permission.")
+  @doc("View the document from the saved snapshot pinned to the application. Requires category request management permission.")
   viewAccountCategoryChangeRequestDocument(
     @path requestId: Uuid,
     @path documentType: string,
@@ -103,7 +103,7 @@ interface AccountCategoryChangeRequestOperations {
 
   @post
   @route("/accounts/{accountIdentifier}/category-change-requests")
-  @doc("Request account category change using the highest saved snapshot version. A missing saved snapshot returns 404 (account_snapshot_not_found). Live address and documents are not revalidated or copied. The pinned version does not change when a newer version is saved. Same-category and pending/approved-history constraints remain; rejected or withdrawn history permits a new request.")
+  @doc("Request account category change using the latest approved snapshot. A missing saved snapshot returns 404 (account_snapshot_not_found). Live address and documents are not revalidated or copied. The pinned snapshot does not change when a newer snapshot is saved. Same-category and pending/approved-history constraints remain; rejected or withdrawn history permits a new request.")
   requestAccountCategoryChange(
     @path accountIdentifier: Uuid,
     @body body: RequestAccountCategoryChangeRequestBody,

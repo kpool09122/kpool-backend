@@ -9,6 +9,7 @@ use Illuminate\Support\Str;
 use Source\Account\Account\Application\Exception\DocumentStorageFailedException;
 use Source\Account\Account\Application\Service\AccountSnapshotDocumentServiceInterface;
 use Source\Account\Account\Application\Service\DocumentStorageServiceInterface;
+use Source\Account\Account\Domain\ValueObject\AccountDocument;
 use Source\Account\Account\Domain\ValueObject\AccountSnapshotDocument;
 use Source\Account\Account\Domain\ValueObject\AccountSnapshotIdentifier;
 use Source\Account\Account\Domain\ValueObject\DocumentPath;
@@ -43,12 +44,21 @@ readonly class AccountSnapshotDocumentService implements AccountSnapshotDocument
 
     public function capture(AccountIdentifier $accountIdentifier, AccountSnapshotIdentifier $snapshotIdentifier, array $documents): array
     {
+        return $this->captureDocuments($accountIdentifier, 'snapshots/' . $snapshotIdentifier, $documents);
+    }
+
+    /** @param AccountDocument[] $documents
+     * @return AccountSnapshotDocument[]
+     * @throws DocumentStorageFailedException
+     */
+    private function captureDocuments(AccountIdentifier $accountIdentifier, string $directory, array $documents): array
+    {
         $copied = [];
         $copiedPaths = [];
 
         try {
             foreach ($documents as $document) {
-                $path = new DocumentPath(sprintf('accounts/%s/snapshots/%s/%s_%s.%s', (string)$accountIdentifier, (string)$snapshotIdentifier, $document->documentType()->value, (string)Str::uuid(), pathinfo((string)$document->documentPath(), PATHINFO_EXTENSION)));
+                $path = new DocumentPath(sprintf('accounts/%s/%s/%s_%s.%s', (string)$accountIdentifier, $directory, $document->documentType()->value, (string)Str::uuid(), pathinfo((string)$document->documentPath(), PATHINFO_EXTENSION)));
                 $copiedPaths[] = $path;
                 $this->documentStorageService->copy($document->documentPath(), $path);
                 $copied[] = new AccountSnapshotDocument($document->documentType(), $path, $document->uploadedAt(), $this->hash($path));

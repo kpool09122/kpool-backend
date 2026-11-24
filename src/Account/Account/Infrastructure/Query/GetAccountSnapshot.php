@@ -28,23 +28,23 @@ readonly class GetAccountSnapshot implements GetAccountSnapshotInterface
         if (! $this->policyEvaluator->evaluate($input->principal(), $owner ? Action::READ : Action::ACCOUNT_CATEGORY_CHANGE_REQUEST_MANAGE, Resource::account($owner ? $input->accountIdentifier() : $input->principal()->accountIdentifier()))) {
             throw new AccountSnapshotForbiddenException();
         }
-        $currentVersion = AccountSnapshotModel::query()->where('account_id', (string)$input->accountIdentifier())->orderByDesc('version')->first(['version'])?->version;
+        $currentId = AccountSnapshotModel::query()->where('account_id', (string)$input->accountIdentifier())->where('status', 'approved')->orderByDesc('saved_at')->orderByDesc('id')->value('id');
         $query = AccountSnapshotModel::query()->with('documents')->where('account_id', (string)$input->accountIdentifier());
         if ($input->snapshotIdentifier() !== null) {
             $query->where('id', (string)$input->snapshotIdentifier());
         } else {
-            $query->where('version', $currentVersion);
+            $query->where('id', $currentId);
         }
         $m = $query->first();
         if ($m === null) {
             throw new AccountSnapshotNotFoundException();
         }
-        $isCurrent = $m->version === $currentVersion;
+        $isCurrent = $m->id === $currentId;
 
         return new AccountSnapshotReadModel(
             $m->id,
             $m->account_id,
-            $m->version,
+            $m->status,
             $m->saved_at->format(DateTimeInterface::ATOM),
             $isCurrent,
             ['email' => $m->account_email,'type' => $m->account_type,'name' => $m->account_name,'status' => $m->account_status,'phone' => $m->account_phone,'countryCode' => $m->account_address_country_code,'administrativeAreaCode' => $m->account_address_administrative_area_code,'postalCode' => $m->account_address_postal_code,'locality' => $m->account_address_locality,'addressLine1' => $m->account_address_line1,'addressLine2' => $m->account_address_line2],

@@ -28,6 +28,7 @@ use Source\Account\Account\Domain\ValueObject\AccountDocument;
 use Source\Account\Account\Domain\ValueObject\AccountDocuments;
 use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountSnapshotIdentifier;
+use Source\Account\Account\Domain\ValueObject\AccountSnapshotStatus;
 use Source\Account\Account\Domain\ValueObject\AccountStatus;
 use Source\Account\Account\Domain\ValueObject\DeletionReadinessChecklist;
 use Source\Account\Account\Domain\ValueObject\DocumentPath;
@@ -57,7 +58,7 @@ class RequestAccountCategoryChangeTest extends TestCase
         $repository = $this->createMock(AccountCategoryChangeRequestRepositoryInterface::class);
         $snapshotRepository = $this->createStub(AccountSnapshotRepositoryInterface::class);
         $snapshotId = new AccountSnapshotIdentifier(StrTestHelper::generateUuid());
-        $snapshot = new AccountSnapshot($snapshotId, $id, 2, CreateAccountSnapshotProfile::create(), [], new DateTimeImmutable());
+        $snapshot = new AccountSnapshot($snapshotId, $id, AccountSnapshotStatus::APPROVED, CreateAccountSnapshotProfile::create(), [], new DateTimeImmutable());
         $snapshotRepository->method('findCurrent')->willReturn($failure === 'missing-snapshot' ? null : $snapshot);
         $factory = $this->createMock(AccountCategoryChangeRequestFactoryInterface::class);
         $request = new AccountCategoryChangeRequest(new AccountCategoryChangeRequestIdentifier(StrTestHelper::generateUuid()), $id, AccountCategory::GENERAL, AccountCategory::AGENCY, AccountCategoryChangeRequestStatus::PENDING, new DateTimeImmutable(), null, null, null, $snapshotId);

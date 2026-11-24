@@ -87,9 +87,9 @@ class GetAccountSnapshotTest extends TestCase
         $first = CreateAccountSnapshot::save($id);
         DB::table('accounts')->where('id', (string) $id)->update(['name' => 'Changed']);
         $second = CreateAccountSnapshot::save($id);
-        DB::table('account_snapshots')->where('id', (string)$first->snapshotIdentifier())->update(['saved_at' => '2099-01-01']);
+        DB::table('account_snapshots')->where('id', (string)$first->snapshotIdentifier())->update(['saved_at' => '2000-01-01']);
         $other = CreateAccountSnapshot::save(CreateAccountSnapshot::account());
-        DB::table('account_snapshots')->where('id', (string)$other->snapshotIdentifier())->update(['version' => 50]);
+        DB::table('account_snapshots')->where('id', (string)$other->snapshotIdentifier())->update(['saved_at' => '2099-01-01']);
         $query = new GetAccountSnapshot($allow);
         $old = $query->process(new GetAccountSnapshotInput($id, CreateAccountSnapshot::principal($id), $first->snapshotIdentifier()));
         $current = $query->process(new GetAccountSnapshotInput($id, CreateAccountSnapshot::principal($id)));

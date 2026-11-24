@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Source\Account\Account\Domain\Entity;
 
 use DateTimeImmutable;
-use InvalidArgumentException;
 use Source\Account\Account\Domain\ValueObject\AccountSnapshotDocument;
 use Source\Account\Account\Domain\ValueObject\AccountSnapshotIdentifier;
 use Source\Account\Account\Domain\ValueObject\AccountSnapshotProfile;
+use Source\Account\Account\Domain\ValueObject\AccountSnapshotStatus;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 
 class AccountSnapshot
@@ -17,14 +17,11 @@ class AccountSnapshot
     public function __construct(
         private readonly AccountSnapshotIdentifier $snapshotIdentifier,
         private readonly AccountIdentifier $accountIdentifier,
-        private readonly int $version,
+        private readonly AccountSnapshotStatus $status,
         private readonly AccountSnapshotProfile $account,
         private readonly array $documents,
         private readonly DateTimeImmutable $savedAt,
     ) {
-        if ($version < 1) {
-            throw new InvalidArgumentException('Snapshot version must be positive.');
-        }
     }
 
     public function snapshotIdentifier(): AccountSnapshotIdentifier
@@ -37,14 +34,9 @@ class AccountSnapshot
         return $this->accountIdentifier;
     }
 
-    public function version(): int
+    public function status(): AccountSnapshotStatus
     {
-        return $this->version;
-    }
-
-    public function nextVersion(): int
-    {
-        return $this->version + 1;
+        return $this->status;
     }
 
     public function account(): AccountSnapshotProfile

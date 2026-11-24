@@ -21,6 +21,7 @@ use Source\Account\Account\Application\UseCase\Command\SaveAccountSnapshot\SaveA
 use Source\Account\Account\Domain\Entity\AccountSnapshot;
 use Source\Account\Account\Domain\Exception\AccountSetupUnavailableException;
 use Source\Account\Account\Domain\Repository\AccountSnapshotRepositoryInterface;
+use Source\Account\Account\Domain\ValueObject\AccountSnapshotStatus;
 use Source\Account\Account\Domain\ValueObject\DocumentPath;
 use Source\Account\Principal\Domain\Entity\Principal;
 use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
@@ -107,7 +108,7 @@ class SaveAccountSnapshotTest extends TestCase
             DB::table('account_documents')->insert(['account_id' => (string) $id, 'document_type' => 'resident_registration', 'document_path' => 'registration.pdf', 'uploaded_at' => '2026-01-01']);
         }
         $second = CreateAccountSnapshot::save($id);
-        self::assertSame(2, $second->version());
+        self::assertSame(AccountSnapshotStatus::APPROVED, $second->status());
         self::assertNotSame((string) $first->snapshotIdentifier(), (string) $second->snapshotIdentifier());
         self::assertSame('passport bytes', $disk->get((string) $first->documents()[1]->documentPath()));
         self::assertSame('Test Account', $this->app()->make(AccountSnapshotRepositoryInterface::class)->findById($first->snapshotIdentifier())?->account()->name());
@@ -216,7 +217,7 @@ class SaveAccountSnapshotTest extends TestCase
         $service = $this->app()->make(SaveAccountSnapshotInterface::class);
         $first = new SaveAccountSnapshotOutput();
         $service->process($input, $first);
-        self::assertSame(1, $first->toArray()['version']);
+        self::assertSame('approved', $first->toArray()['status']);
         $files = $disk->allFiles();
         DB::enableQueryLog();
         DB::flushQueryLog();

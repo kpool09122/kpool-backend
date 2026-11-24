@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Account\Account\Infrastructure\Factory;
 
 use PHPUnit\Framework\TestCase;
+use Source\Account\Account\Domain\ValueObject\AccountSnapshotStatus;
 use Source\Account\Account\Infrastructure\Factory\AccountSnapshotFactory;
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
@@ -23,11 +24,11 @@ class AccountSnapshotFactoryTest extends TestCase
         $id = $f->createIdentifier();
         $aid = new AccountIdentifier(StrTestHelper::generateUuid());
         $a = CreateAccountSnapshotProfile::create();
-        $s = $f->create($id, $aid, 2, $a, []);
+        $s = $f->create($id, $aid, AccountSnapshotStatus::APPROVED, $a, []);
         self::assertSame($first, (string)$s->snapshotIdentifier());
         self::assertSame($aid, $s->accountIdentifier());
         self::assertSame($a, $s->account());
-        self::assertSame(2, $s->version());
+        self::assertSame(AccountSnapshotStatus::APPROVED, $s->status());
         self::assertSame([], $s->documents());
         self::assertSame($second, (string)$f->createIdentifier());
     }

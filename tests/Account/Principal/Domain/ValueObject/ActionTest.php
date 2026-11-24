@@ -22,5 +22,6 @@ class ActionTest extends TestCase
     public function testAccountCategoryChangeRequestManageValue(): void
     {
         $this->assertSame('account:category-change-request:manage', Action::ACCOUNT_CATEGORY_CHANGE_REQUEST_MANAGE->value);
+        $this->assertSame('account:snapshot-change-request:manage', Action::ACCOUNT_SNAPSHOT_CHANGE_REQUEST_MANAGE->value);
     }
 }

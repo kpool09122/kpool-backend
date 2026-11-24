@@ -7,6 +7,8 @@ namespace Source\Account\Account\Application\UseCase\Command\UpdateAccount;
 use Source\Account\Account\Application\Exception\AccountNotFoundException;
 use Source\Account\Account\Application\Exception\AccountUpdateForbiddenException;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
+use Source\Account\Account\Domain\Repository\AccountSnapshotChangeRequestRepositoryInterface;
+use Source\Account\Account\Domain\ValueObject\AccountSnapshotChangeRequestStatus;
 use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Account\Principal\Domain\ValueObject\Action;
 use Source\Account\Principal\Domain\ValueObject\Resource;
@@ -16,6 +18,7 @@ readonly class UpdateAccount implements UpdateAccountInterface
 {
     public function __construct(
         private AccountRepositoryInterface $accountRepository,
+        private AccountSnapshotChangeRequestRepositoryInterface $accountSnapshotChangeRequestRepository,
         private PolicyEvaluatorInterface $policyEvaluator,
     ) {
     }
@@ -43,6 +46,10 @@ readonly class UpdateAccount implements UpdateAccountInterface
                 Resource::account($account->accountIdentifier(), $account->type()),
             )
         ) {
+            throw new AccountUpdateForbiddenException();
+        }
+
+        if ($this->accountSnapshotChangeRequestRepository->findByAccountIdAndStatuses($account->accountIdentifier(), [AccountSnapshotChangeRequestStatus::PENDING]) !== []) {
             throw new AccountUpdateForbiddenException();
         }
 

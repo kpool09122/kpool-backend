@@ -13,6 +13,7 @@ use Source\Account\Account\Application\UseCase\Command\UpdateAccount\UpdateAccou
 use Source\Account\Account\Application\UseCase\Command\UpdateAccount\UpdateAccountOutput;
 use Source\Account\Account\Domain\Entity\Account;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
+use Source\Account\Account\Domain\Repository\AccountSnapshotChangeRequestRepositoryInterface;
 use Source\Account\Account\Domain\ValueObject\AccountDocuments;
 use Source\Account\Account\Domain\ValueObject\AccountName;
 use Source\Account\Account\Domain\ValueObject\AccountStatus;
@@ -73,7 +74,7 @@ class UpdateAccountTest extends TestCase
             ))
             ->andReturnTrue();
 
-        $useCase = new UpdateAccount($accountRepository, $policyEvaluator);
+        $useCase = new UpdateAccount($accountRepository, $this->createStub(AccountSnapshotChangeRequestRepositoryInterface::class), $policyEvaluator);
         $output = new UpdateAccountOutput();
         $useCase->process($input, $output);
 
@@ -118,7 +119,7 @@ class UpdateAccountTest extends TestCase
         $policyEvaluator = Mockery::mock(PolicyEvaluatorInterface::class);
         $policyEvaluator->shouldReceive('evaluate')->once()->andReturnTrue();
 
-        $useCase = new UpdateAccount($accountRepository, $policyEvaluator);
+        $useCase = new UpdateAccount($accountRepository, $this->createStub(AccountSnapshotChangeRequestRepositoryInterface::class), $policyEvaluator);
         $output = new UpdateAccountOutput();
         $useCase->process($input, $output);
 
@@ -145,7 +146,7 @@ class UpdateAccountTest extends TestCase
 
         $this->expectException(AccountNotFoundException::class);
 
-        (new UpdateAccount($accountRepository, $policyEvaluator))->process($input, new UpdateAccountOutput());
+        (new UpdateAccount($accountRepository, $this->createStub(AccountSnapshotChangeRequestRepositoryInterface::class), $policyEvaluator))->process($input, new UpdateAccountOutput());
     }
 
     public function testProcessThrowsForbiddenWhenPolicyDenies(): void
@@ -168,7 +169,7 @@ class UpdateAccountTest extends TestCase
 
         $this->expectException(AccountUpdateForbiddenException::class);
 
-        (new UpdateAccount($accountRepository, $policyEvaluator))->process($input, new UpdateAccountOutput());
+        (new UpdateAccount($accountRepository, $this->createStub(AccountSnapshotChangeRequestRepositoryInterface::class), $policyEvaluator))->process($input, new UpdateAccountOutput());
     }
 
     public function testProcessThrowsForbiddenForDifferentAccount(): void
@@ -190,7 +191,7 @@ class UpdateAccountTest extends TestCase
 
         $this->expectException(AccountUpdateForbiddenException::class);
 
-        (new UpdateAccount($accountRepository, $policyEvaluator))->process($input, new UpdateAccountOutput());
+        (new UpdateAccount($accountRepository, $this->createStub(AccountSnapshotChangeRequestRepositoryInterface::class), $policyEvaluator))->process($input, new UpdateAccountOutput());
     }
 
     public function testProcessAllowsIndividualAccountToUpdateOwnAccount(): void
@@ -219,7 +220,7 @@ class UpdateAccountTest extends TestCase
             ->andReturnTrue();
 
         $output = new UpdateAccountOutput();
-        (new UpdateAccount($accountRepository, $policyEvaluator))->process($input, $output);
+        (new UpdateAccount($accountRepository, $this->createStub(AccountSnapshotChangeRequestRepositoryInterface::class), $policyEvaluator))->process($input, $output);
 
         self::assertTrue(array_key_exists('name', $output->toArray()));
         $this->assertSame('Updated Individual Account', $output->toArray()['name']);

@@ -14,20 +14,24 @@ use Source\Account\Account\Application\Service\DocumentStorageServiceInterface;
 use Source\Account\Account\Application\Service\WithdrawalEligibilityServiceInterface;
 use Source\Account\Account\Domain\Factory\AccountCategoryChangeRequestFactoryInterface;
 use Source\Account\Account\Domain\Factory\AccountFactoryInterface;
+use Source\Account\Account\Domain\Factory\AccountSnapshotChangeRequestFactoryInterface;
 use Source\Account\Account\Domain\Factory\AccountSnapshotFactoryInterface;
 use Source\Account\Account\Domain\Factory\ArchivedAccountFactoryInterface;
 use Source\Account\Account\Domain\Repository\AccountCategoryChangeRequestRepositoryInterface;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
+use Source\Account\Account\Domain\Repository\AccountSnapshotChangeRequestRepositoryInterface;
 use Source\Account\Account\Domain\Repository\AccountSnapshotRepositoryInterface;
 use Source\Account\Account\Domain\Repository\ArchivedAccountRepositoryInterface;
 use Source\Account\Account\Domain\Service\AccountDocumentRequirementValidator;
 use Source\Account\Account\Domain\Service\AccountDocumentRequirementValidatorInterface;
 use Source\Account\Account\Infrastructure\Factory\AccountCategoryChangeRequestFactory;
 use Source\Account\Account\Infrastructure\Factory\AccountFactory;
+use Source\Account\Account\Infrastructure\Factory\AccountSnapshotChangeRequestFactory;
 use Source\Account\Account\Infrastructure\Factory\AccountSnapshotFactory;
 use Source\Account\Account\Infrastructure\Factory\ArchivedAccountFactory;
 use Source\Account\Account\Infrastructure\Repository\AccountCategoryChangeRequestRepository;
 use Source\Account\Account\Infrastructure\Repository\AccountRepository;
+use Source\Account\Account\Infrastructure\Repository\AccountSnapshotChangeRequestRepository;
 use Source\Account\Account\Infrastructure\Repository\AccountSnapshotRepository;
 use Source\Account\Account\Infrastructure\Repository\ArchivedAccountRepository;
 use Source\Account\Account\Infrastructure\Service\AccountCategoryChangeNotificationService;
@@ -109,7 +113,9 @@ class DomainServiceProvider extends ServiceProvider
         $this->app->singleton(PolicyEvaluatorInterface::class, PolicyEvaluator::class);
         $this->app->singleton(DelegationPrincipalGroupServiceInterface::class, DelegationPrincipalGroupService::class);
         $this->app->singleton(AccountCategoryChangeRequestFactoryInterface::class, AccountCategoryChangeRequestFactory::class);
+        $this->app->singleton(AccountSnapshotChangeRequestFactoryInterface::class, AccountSnapshotChangeRequestFactory::class);
         $this->app->singleton(AccountCategoryChangeRequestRepositoryInterface::class, AccountCategoryChangeRequestRepository::class);
+        $this->app->singleton(AccountSnapshotChangeRequestRepositoryInterface::class, AccountSnapshotChangeRequestRepository::class);
         $this->app->singleton(AccountContextServiceInterface::class, AccountContextService::class);
         $this->app->singleton(AccountCategoryChangeNotificationServiceInterface::class, fn ($app) => new AccountCategoryChangeNotificationService(
             $app->make(AccountNotificationRecipientServiceInterface::class),

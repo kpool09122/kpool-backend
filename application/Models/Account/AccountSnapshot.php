@@ -26,13 +26,15 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property ?string $account_address_line2
  * @property string $id
  * @property string $account_id
- * @property int $version
+ * @property string $status
  * @property CarbonImmutable $saved_at
  */
-#[Fillable(['id', 'account_id', 'version', 'saved_at', 'account_email', 'account_type', 'account_name', 'account_status', 'account_phone', 'account_address_country_code', 'account_address_administrative_area_code', 'account_address_postal_code', 'account_address_locality', 'account_address_line1', 'account_address_line2'])]
+#[Fillable(['id', 'account_id', 'status', 'saved_at', 'account_email', 'account_type', 'account_name', 'account_status', 'account_phone', 'account_address_country_code', 'account_address_administrative_area_code', 'account_address_postal_code', 'account_address_locality', 'account_address_line1', 'account_address_line2'])]
 #[Table(name: 'account_snapshots', keyType: 'string')]
 class AccountSnapshot extends Model
 {
+    protected $dateFormat = 'Y-m-d H:i:s.u';
+
     public $incrementing = false;
     public $timestamps = false;
 
@@ -44,6 +46,6 @@ class AccountSnapshot extends Model
 
     protected function casts(): array
     {
-        return ['version' => 'integer','saved_at' => 'immutable_datetime'];
+        return ['saved_at' => 'immutable_datetime'];
     }
 }

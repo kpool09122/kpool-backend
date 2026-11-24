@@ -3,6 +3,11 @@
 declare(strict_types=1);
 
 return [
+    'account_snapshot_change_request_not_found' => '未找到快照变更申请。',
+    'invalid_account_snapshot_change_request' => '已存在待审核的快照变更申请。',
+    'invalid_account_snapshot_change_request_approval' => '无法批准此快照变更申请。',
+    'invalid_account_snapshot_change_request_rejection' => '无法拒绝此快照变更申请。',
+
     'account_snapshot_change_requires_approval' => '开始使用服务后，更改已保存的信息需要变更审批。',
     'account_snapshot_not_found' => '未找到帐户快照。',
     'incomplete_account_snapshot' => '需要帐户类型以及完整的联系信息和地址。',

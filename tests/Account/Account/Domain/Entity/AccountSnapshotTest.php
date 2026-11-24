@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Tests\Account\Account\Domain\Entity;
 
 use DateTimeImmutable;
-use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 use Source\Account\Account\Domain\Entity\AccountSnapshot;
 use Source\Account\Account\Domain\ValueObject\AccountSnapshotDocument;
 use Source\Account\Account\Domain\ValueObject\AccountSnapshotIdentifier;
+use Source\Account\Account\Domain\ValueObject\AccountSnapshotStatus;
 use Source\Account\Account\Domain\ValueObject\DocumentPath;
 use Source\Account\Account\Domain\ValueObject\DocumentType;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
@@ -37,28 +37,20 @@ class AccountSnapshotTest extends TestCase
         self::assertFalse($snapshot->hasSameContents(CreateAccountSnapshotProfile::create(), ['passport' => $hashes['passport']]));
     }
 
-    public function testComputesNextVersionWithoutChangingSavedVersion(): void
+    public function testPreservesReviewStatus(): void
     {
-        $snapshot = $this->snapshot(version: 5);
-
-        self::assertSame(6, $snapshot->nextVersion());
-        self::assertSame(5, $snapshot->version());
+        self::assertSame(AccountSnapshotStatus::APPROVED, $this->snapshot()->status());
+        self::assertSame(AccountSnapshotStatus::REJECTED, $this->snapshot(AccountSnapshotStatus::REJECTED)->status());
     }
 
-    public function testRejectsZeroVersion(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->snapshot(version: 0);
-    }
-
-    private function snapshot(int $version = 1): AccountSnapshot
+    private function snapshot(AccountSnapshotStatus $status = AccountSnapshotStatus::APPROVED): AccountSnapshot
     {
         $savedAt = new DateTimeImmutable('2026-01-01');
 
         return new AccountSnapshot(
             new AccountSnapshotIdentifier(StrTestHelper::generateUuid()),
             new AccountIdentifier(StrTestHelper::generateUuid()),
-            $version,
+            $status,
             CreateAccountSnapshotProfile::create(),
             [
                 new AccountSnapshotDocument(DocumentType::PASSPORT, new DocumentPath('saved/passport.pdf'), $savedAt, hash('sha256', 'passport')),

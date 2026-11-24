@@ -59,6 +59,19 @@ class AccountAuthorizationSeederTest extends TestCase
         $this->assertNull($statement['condition']);
     }
 
+    #[Group('useDb')]
+    public function testSnapshotChangeManagementIsGrantedOnlyToOperationsAndIdempotent(): void
+    {
+        $this->artisan('db:seed', ['--class' => AccountAuthorizationSeeder::class]);
+        $this->artisan('db:seed', ['--class' => AccountAuthorizationSeeder::class]);
+        self::assertContains('ACCOUNT_SNAPSHOT_CHANGE_REQUEST_MANAGE', $this->policyNames(Role::OPERATIONS));
+        self::assertNotContains('ACCOUNT_SNAPSHOT_CHANGE_REQUEST_MANAGE', $this->policyNames(Role::OWNER));
+        self::assertSame(1, DB::table('account_policies')->where('name', 'ACCOUNT_SNAPSHOT_CHANGE_REQUEST_MANAGE')->count());
+        $json = DB::table('account_policies')->where('name', 'ACCOUNT_SNAPSHOT_CHANGE_REQUEST_MANAGE')->value('statements');
+        self::assertIsString($json);
+        self::assertSame([['effect' => 'allow', 'actions' => ['account:snapshot-change-request:manage'], 'resource_types' => ['account'], 'condition' => null]], json_decode($json, true, flags: JSON_THROW_ON_ERROR));
+    }
+
     /** @return array<array-key, string> */
     private function policyNames(string $roleName): array
     {
