@@ -12,6 +12,8 @@ use Source\Shared\Domain\ValueObject\AccountIdentifier;
 
 interface AccountSnapshotDocumentServiceInterface
 {
+    public function deleteForAccount(AccountIdentifier $accountIdentifier): void;
+
     /** @param AccountDocument[] $documents
      * @return array<string, string>
      * @throws DocumentStorageFailedException

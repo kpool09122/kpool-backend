@@ -17,12 +17,13 @@ readonly class AccountCategoryChangeRequestReadModel
         private ?string $reviewedBy,
         private ?string $reviewedAt,
         private ?array $rejectionReason,
+        private string $snapshotIdentifier,
     ) {
     }
 
     /**
      * @return array{
-     *     requestIdentifier: string,
+     *     requestIdentifier: string, snapshotIdentifier: string,
      *     accountIdentifier: string,
      *     currentAccountCategory: string,
      *     requestedAccountCategory: string,
@@ -37,6 +38,7 @@ readonly class AccountCategoryChangeRequestReadModel
     {
         return [
             'requestIdentifier' => $this->requestIdentifier,
+            'snapshotIdentifier' => $this->snapshotIdentifier,
             'accountIdentifier' => $this->accountIdentifier,
             'currentAccountCategory' => $this->currentAccountCategory,
             'requestedAccountCategory' => $this->requestedAccountCategory,

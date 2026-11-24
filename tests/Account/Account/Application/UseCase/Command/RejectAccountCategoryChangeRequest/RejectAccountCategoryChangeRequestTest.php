@@ -18,6 +18,7 @@ use Source\Account\Account\Domain\Exception\InvalidAccountCategoryChangeRequestR
 use Source\Account\Account\Domain\Repository\AccountCategoryChangeRequestRepositoryInterface;
 use Source\Account\Account\Domain\ValueObject\AccountCategoryChangeRequestIdentifier;
 use Source\Account\Account\Domain\ValueObject\AccountCategoryChangeRequestStatus;
+use Source\Account\Account\Domain\ValueObject\AccountSnapshotIdentifier;
 use Source\Account\Account\Domain\ValueObject\RejectionReason;
 use Source\Account\Account\Domain\ValueObject\RejectionReasonCode;
 use Source\Account\Principal\Domain\Entity\Principal;
@@ -28,7 +29,6 @@ use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
-use Tests\Helper\CreateAccountSnapshotProfile;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -137,7 +137,7 @@ class RejectAccountCategoryChangeRequestTest extends TestCase
 
     private function request(AccountCategoryChangeRequestIdentifier $requestId, AccountIdentifier $accountId, AccountCategoryChangeRequestStatus $status): AccountCategoryChangeRequest
     {
-        return new AccountCategoryChangeRequest($requestId, $accountId, AccountCategory::GENERAL, AccountCategory::AGENCY, $status, new DateTimeImmutable(), null, null, null, CreateAccountSnapshotProfile::create());
+        return new AccountCategoryChangeRequest($requestId, $accountId, AccountCategory::GENERAL, AccountCategory::AGENCY, $status, new DateTimeImmutable(), null, null, null, new AccountSnapshotIdentifier(StrTestHelper::generateUuid()));
     }
 
     private function principal(AccountIdentifier $accountId): Principal

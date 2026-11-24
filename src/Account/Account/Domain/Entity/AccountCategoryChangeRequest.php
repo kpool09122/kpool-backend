@@ -10,7 +10,7 @@ use Source\Account\Account\Domain\Exception\InvalidAccountCategoryChangeRequestR
 use Source\Account\Account\Domain\Exception\InvalidAccountCategoryChangeRequestWithdrawalException;
 use Source\Account\Account\Domain\ValueObject\AccountCategoryChangeRequestIdentifier;
 use Source\Account\Account\Domain\ValueObject\AccountCategoryChangeRequestStatus;
-use Source\Account\Account\Domain\ValueObject\AccountSnapshotProfile;
+use Source\Account\Account\Domain\ValueObject\AccountSnapshotIdentifier;
 use Source\Account\Account\Domain\ValueObject\RejectionReason;
 use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
@@ -27,13 +27,13 @@ class AccountCategoryChangeRequest
         private ?AccountIdentifier $reviewedBy,
         private ?DateTimeImmutable $reviewedAt,
         private ?RejectionReason $rejectionReason,
-        private readonly AccountSnapshotProfile $accountSnapshot,
+        private readonly AccountSnapshotIdentifier $snapshotIdentifier,
     ) {
     }
 
-    public function accountSnapshot(): AccountSnapshotProfile
+    public function snapshotIdentifier(): AccountSnapshotIdentifier
     {
-        return $this->accountSnapshot;
+        return $this->snapshotIdentifier;
     }
 
     public function requestIdentifier(): AccountCategoryChangeRequestIdentifier

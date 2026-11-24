@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'account_snapshot_change_requires_approval' => 'サービス利用開始後の保存内容の変更には変更申請が必要です。',
     'account_snapshot_not_found' => 'アカウントスナップショットが見つかりません。',
     'incomplete_account_snapshot' => 'アカウント種別と連絡先・住所の入力が必要です。',
     'authorization_connection_not_found' => '指定された外部連携が見つかりません。',

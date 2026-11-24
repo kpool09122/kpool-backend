@@ -17,7 +17,7 @@ use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Tests\Helper\CreateAccount;
-use Tests\Helper\CreateAccountSnapshotProfile;
+use Tests\Helper\CreateCategoryChangeSnapshot;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -74,6 +74,7 @@ class GetLatestAccountCategoryChangeRequestTest extends TestCase
         $this->assertNotNull($payload);
         $this->assertSame([
             'requestIdentifier' => $latestId,
+            'snapshotIdentifier' => DB::table('account_category_change_requests')->where('id', $latestId)->value('snapshot_id'),
             'accountIdentifier' => (string) $accountId,
             'currentAccountCategory' => 'general',
             'requestedAccountCategory' => 'agency',
@@ -112,7 +113,9 @@ class GetLatestAccountCategoryChangeRequestTest extends TestCase
 
     private function insertRequest(string $id, AccountIdentifier $accountId, string $status, string $requestedAt): void
     {
+        $snapshotId = (string) CreateCategoryChangeSnapshot::create($accountId);
         DB::table('account_category_change_requests')->insert([
-            ...CreateAccountSnapshotProfile::columns(),'id' => $id, 'account_id' => (string) $accountId, 'current_account_category' => 'general', 'requested_account_category' => 'agency', 'status' => $status, 'requested_at' => $requestedAt]);
+            'approved_snapshot_id' => $status === 'approved' ? $snapshotId : null,
+            'snapshot_id' => $snapshotId,'id' => $id, 'account_id' => (string) $accountId, 'current_account_category' => 'general', 'requested_account_category' => 'agency', 'status' => $status, 'requested_at' => $requestedAt]);
     }
 }

@@ -9,7 +9,7 @@ use Source\Account\Account\Domain\Entity\AccountCategoryChangeRequest;
 use Source\Account\Account\Domain\Factory\AccountCategoryChangeRequestFactoryInterface;
 use Source\Account\Account\Domain\ValueObject\AccountCategoryChangeRequestIdentifier;
 use Source\Account\Account\Domain\ValueObject\AccountCategoryChangeRequestStatus;
-use Source\Account\Account\Domain\ValueObject\AccountSnapshotProfile;
+use Source\Account\Account\Domain\ValueObject\AccountSnapshotIdentifier;
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
 use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
@@ -20,7 +20,7 @@ readonly class AccountCategoryChangeRequestFactory implements AccountCategoryCha
     {
     }
 
-    public function create(AccountIdentifier $accountIdentifier, AccountCategory $currentAccountCategory, AccountCategory $requestedAccountCategory, AccountSnapshotProfile $accountSnapshot): AccountCategoryChangeRequest
+    public function create(AccountIdentifier $accountIdentifier, AccountCategory $currentAccountCategory, AccountCategory $requestedAccountCategory, AccountSnapshotIdentifier $snapshotIdentifier): AccountCategoryChangeRequest
     {
         return new AccountCategoryChangeRequest(
             new AccountCategoryChangeRequestIdentifier($this->uuidGenerator->generate()),
@@ -32,7 +32,7 @@ readonly class AccountCategoryChangeRequestFactory implements AccountCategoryCha
             null,
             null,
             null,
-            $accountSnapshot,
+            $snapshotIdentifier,
         );
     }
 }

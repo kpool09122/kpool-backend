@@ -16,7 +16,7 @@ class WithdrawAccountCategoryChangeRequestOutput implements WithdrawAccountCateg
         $this->request = $request;
     }
 
-    /** @return array{}|array{requestIdentifier: string, accountIdentifier: string, currentAccountCategory: string, requestedAccountCategory: string, status: string, requestedAt: string, reviewedBy: string|null, reviewedAt: string|null, rejectionReason: array{code: string, detail: string|null}|null} */
+    /** @return array{}|array{requestIdentifier: string, snapshotIdentifier: string, accountIdentifier: string, currentAccountCategory: string, requestedAccountCategory: string, status: string, requestedAt: string, reviewedBy: string|null, reviewedAt: string|null, rejectionReason: array{code: string, detail: string|null}|null} */
     public function toArray(): array
     {
         if ($this->request === null) {
@@ -26,6 +26,7 @@ class WithdrawAccountCategoryChangeRequestOutput implements WithdrawAccountCateg
 
         return [
             'requestIdentifier' => (string) $request->requestIdentifier(),
+            'snapshotIdentifier' => (string) $request->snapshotIdentifier(),
             'accountIdentifier' => (string) $request->accountIdentifier(),
             'currentAccountCategory' => $request->currentAccountCategory()->value,
             'requestedAccountCategory' => $request->requestedAccountCategory()->value,

@@ -8,8 +8,10 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
+ * @property-read AccountSnapshot|null $snapshot
  * @property string $snapshot_id
  * @property string $document_type
  * @property string $document_path
@@ -21,6 +23,12 @@ use Illuminate\Database\Eloquent\Model;
 class AccountSnapshotDocument extends Model
 {
     public $timestamps = false;
+
+    /** @return BelongsTo<AccountSnapshot, $this> */
+    public function snapshot(): BelongsTo
+    {
+        return $this->belongsTo(AccountSnapshot::class, 'snapshot_id');
+    }
 
     protected function casts(): array
     {

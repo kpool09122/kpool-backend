@@ -8,6 +8,7 @@ use Application\Models\Account\AccountCategoryChangeRequest as AccountCategoryCh
 use DateTimeInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Source\Account\Account\Application\Exception\AccountCategoryChangeRequestForbiddenException;
+use Source\Account\Account\Application\Exception\AccountSnapshotNotFoundException;
 use Source\Account\Account\Application\UseCase\Query\AccountCategoryChangeRequestListItemReadModel;
 use Source\Account\Account\Application\UseCase\Query\AccountCategoryChangeRequestReadModel;
 use Source\Account\Account\Application\UseCase\Query\AccountReadModel;
@@ -34,7 +35,7 @@ readonly class ListAccountCategoryChangeRequests implements ListAccountCategoryC
         )) {
             throw new AccountCategoryChangeRequestForbiddenException();
         }
-        $query = AccountCategoryChangeRequestModel::query();
+        $query = AccountCategoryChangeRequestModel::query()->with('snapshot');
         if ($input->status() !== null) {
             $query->where('status', $input->status());
         }
@@ -45,36 +46,41 @@ readonly class ListAccountCategoryChangeRequests implements ListAccountCategoryC
         $paginator = $query->orderByDesc('requested_at')->orderByDesc('id')
             ->paginate($input->perPage(), ['*'], 'page', $input->page());
         $requests = array_map(
-            static fn (AccountCategoryChangeRequestModel $request): AccountCategoryChangeRequestListItemReadModel => new AccountCategoryChangeRequestListItemReadModel(
-                request: new AccountCategoryChangeRequestReadModel(
-                    requestIdentifier: $request->id,
-                    accountIdentifier: $request->account_id,
-                    currentAccountCategory: $request->current_account_category,
-                    requestedAccountCategory: $request->requested_account_category,
-                    status: $request->status,
-                    requestedAt: $request->requested_at->format(DateTimeInterface::ATOM),
-                    reviewedBy: $request->reviewed_by,
-                    reviewedAt: $request->reviewed_at?->format(DateTimeInterface::ATOM),
-                    rejectionReason: $request->rejection_reason,
-                ),
-                account: new AccountReadModel(
-                    accountIdentifier: $request->account_id,
-                    email: $request->account_email,
-                    type: $request->account_type,
-                    name: $request->account_name,
-                    status: $request->account_status,
-                    accountCategory: $request->current_account_category,
-                    phone: $request->account_phone,
-                    address: [
-                        'countryCode' => $request->account_address_country_code,
-                        'administrativeAreaCode' => $request->account_address_administrative_area_code,
-                        'postalCode' => $request->account_address_postal_code,
-                        'locality' => $request->account_address_locality,
-                        'addressLine1' => $request->account_address_line1,
-                        'addressLine2' => $request->account_address_line2,
+            static function (AccountCategoryChangeRequestModel $request): AccountCategoryChangeRequestListItemReadModel {
+                $snapshot = $request->snapshot ?? throw new AccountSnapshotNotFoundException('Missing pinned snapshot.');
+
+                return new AccountCategoryChangeRequestListItemReadModel(
+                    request: new AccountCategoryChangeRequestReadModel(
+                        requestIdentifier: $request->id,
+                        accountIdentifier: $request->account_id,
+                        currentAccountCategory: $request->current_account_category,
+                        requestedAccountCategory: $request->requested_account_category,
+                        status: $request->status,
+                        requestedAt: $request->requested_at->format(DateTimeInterface::ATOM),
+                        reviewedBy: $request->reviewed_by,
+                        reviewedAt: $request->reviewed_at?->format(DateTimeInterface::ATOM),
+                        rejectionReason: $request->rejection_reason,
+                        snapshotIdentifier: $request->snapshot_id,
+                    ),
+                    account: new AccountReadModel(
+                        accountIdentifier: $request->account_id,
+                        email: $snapshot->account_email,
+                        type: $snapshot->account_type,
+                        name: $snapshot->account_name,
+                        status: $snapshot->account_status,
+                        accountCategory: $request->current_account_category,
+                        phone: $snapshot->account_phone,
+                        address: [
+                        'countryCode' => $snapshot->account_address_country_code,
+                        'administrativeAreaCode' => $snapshot->account_address_administrative_area_code,
+                        'postalCode' => $snapshot->account_address_postal_code,
+                        'locality' => $snapshot->account_address_locality,
+                        'addressLine1' => $snapshot->account_address_line1,
+                        'addressLine2' => $snapshot->account_address_line2,
                     ],
-                ),
-            ),
+                    ),
+                );
+            },
             $paginator->items(),
         );
         $output->output($requests, $paginator->currentPage(), $paginator->lastPage(), $paginator->total(), $paginator->perPage());

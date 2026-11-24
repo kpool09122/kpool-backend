@@ -9,9 +9,9 @@ use Source\Account\Account\Application\UseCase\Command\ApproveAccountCategoryCha
 use Source\Account\Account\Domain\Entity\AccountCategoryChangeRequest;
 use Source\Account\Account\Domain\ValueObject\AccountCategoryChangeRequestIdentifier;
 use Source\Account\Account\Domain\ValueObject\AccountCategoryChangeRequestStatus;
+use Source\Account\Account\Domain\ValueObject\AccountSnapshotIdentifier;
 use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
-use Tests\Helper\CreateAccountSnapshotProfile;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -34,14 +34,15 @@ class ApproveAccountCategoryChangeRequestOutputTest extends TestCase
             $reviewedBy,
             $reviewedAt,
             null,
-            CreateAccountSnapshotProfile::create(),
+            new AccountSnapshotIdentifier(StrTestHelper::generateUuid()),
         );
 
         $output = new ApproveAccountCategoryChangeRequestOutput();
         $output->setRequest($request);
 
-        $this->assertSame([
-            'requestIdentifier' => (string) $requestIdentifier,
+        $this->assertSame([                'requestIdentifier' => (string) $requestIdentifier,
+
+            'snapshotIdentifier' => (string) $request->snapshotIdentifier(),
             'accountIdentifier' => (string) $accountIdentifier,
             'currentAccountCategory' => AccountCategory::GENERAL->value,
             'requestedAccountCategory' => AccountCategory::AGENCY->value,

@@ -21,10 +21,12 @@ class AccountCategoryChangeRequestReadModelTest extends TestCase
             reviewedBy: 'reviewer-account-id',
             reviewedAt: '2026-08-12T10:00:00+00:00',
             rejectionReason: ['code' => 'other', 'detail' => '書類不足'],
+            snapshotIdentifier: 'snapshot-id'
         );
 
-        $this->assertSame([
-            'requestIdentifier' => 'request-id',
+        $this->assertSame([                'requestIdentifier' => 'request-id',
+
+            'snapshotIdentifier' => 'snapshot-id',
             'accountIdentifier' => 'account-id',
             'currentAccountCategory' => 'general',
             'requestedAccountCategory' => 'agency',
@@ -48,10 +50,12 @@ class AccountCategoryChangeRequestReadModelTest extends TestCase
             reviewedBy: null,
             reviewedAt: null,
             rejectionReason: null,
+            snapshotIdentifier: 'snapshot-id'
         );
 
-        $this->assertSame([
-            'requestIdentifier' => 'request-id',
+        $this->assertSame([                'requestIdentifier' => 'request-id',
+
+            'snapshotIdentifier' => 'snapshot-id',
             'accountIdentifier' => 'account-id',
             'currentAccountCategory' => 'general',
             'requestedAccountCategory' => 'talent',

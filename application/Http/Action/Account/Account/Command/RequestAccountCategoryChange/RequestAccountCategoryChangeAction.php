@@ -14,9 +14,8 @@ use Illuminate\Support\Facades\DB;
 use Psr\Log\LoggerInterface;
 use Source\Account\Account\Application\Exception\AccountCategoryChangeRequestForbiddenException;
 use Source\Account\Account\Application\Exception\AccountNotFoundException;
-use Source\Account\Account\Application\Exception\IncompleteAccountContactForCategoryChangeException;
+use Source\Account\Account\Application\Exception\AccountSnapshotNotFoundException;
 use Source\Account\Account\Application\Exception\InvalidAccountCategoryChangeRequestException;
-use Source\Account\Account\Application\Exception\InvalidDocumentsForVerificationException;
 use Source\Account\Account\Application\Exception\SameAccountCategoryChangeRequestException;
 use Source\Account\Account\Application\UseCase\Command\RequestAccountCategoryChange\RequestAccountCategoryChangeInput;
 use Source\Account\Account\Application\UseCase\Command\RequestAccountCategoryChange\RequestAccountCategoryChangeInterface;
@@ -65,14 +64,10 @@ readonly class RequestAccountCategoryChangeAction
                 DB::rollBack();
 
                 throw new UnprocessableEntityHttpException(detail: error_message('invalid_account_category_change_request', $language), previous: $e);
-            } catch (IncompleteAccountContactForCategoryChangeException $e) {
+            } catch (AccountSnapshotNotFoundException $e) {
                 DB::rollBack();
 
-                throw new UnprocessableEntityHttpException(detail: error_message('incomplete_account_contact_for_category_change', $language), previous: $e);
-            } catch (InvalidDocumentsForVerificationException $e) {
-                DB::rollBack();
-
-                throw new UnprocessableEntityHttpException(detail: error_message('invalid_documents_for_category_change', $language), previous: $e);
+                throw new NotFoundHttpException(detail: error_message('account_snapshot_not_found', $language), previous: $e);
             } catch (Throwable $e) {
                 DB::rollBack();
 

@@ -17,7 +17,7 @@ class GetLatestAccountCategoryChangeRequestOutput implements GetLatestAccountCat
 
     /**
      * @return array{request: array{
-     *     requestIdentifier: string,
+     *     requestIdentifier: string, snapshotIdentifier: string,
      *     accountIdentifier: string,
      *     currentAccountCategory: string,
      *     requestedAccountCategory: string,

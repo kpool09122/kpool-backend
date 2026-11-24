@@ -5,15 +5,18 @@ declare(strict_types=1);
 namespace Source\Account\Account\Application\UseCase\Command\SaveAccountSnapshot;
 
 use Source\Account\Account\Application\Exception\AccountNotFoundException;
+use Source\Account\Account\Application\Exception\AccountSnapshotChangeRequiresApprovalException;
 use Source\Account\Account\Application\Exception\AccountSnapshotForbiddenException;
 use Source\Account\Account\Application\Exception\DocumentStorageFailedException;
 use Source\Account\Account\Application\Exception\IncompleteAccountContactForCategoryChangeException;
 use Source\Account\Account\Application\Service\AccountSnapshotDocumentServiceInterface;
 use Source\Account\Account\Domain\Exception\AccountSetupUnavailableException;
 use Source\Account\Account\Domain\Factory\AccountSnapshotFactoryInterface;
+use Source\Account\Account\Domain\Repository\AccountCategoryChangeRequestRepositoryInterface;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Account\Domain\Repository\AccountSnapshotRepositoryInterface;
 use Source\Account\Account\Domain\Service\AccountDocumentRequirementValidatorInterface;
+use Source\Account\Account\Domain\ValueObject\AccountCategoryChangeRequestStatus;
 use Source\Account\Account\Domain\ValueObject\AccountSnapshotProfile;
 use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Account\Principal\Domain\ValueObject\Action;
@@ -22,7 +25,7 @@ use Throwable;
 
 readonly class SaveAccountSnapshot implements SaveAccountSnapshotInterface
 {
-    public function __construct(private AccountRepositoryInterface $accountRepository, private AccountSnapshotRepositoryInterface $accountSnapshotRepository, private AccountDocumentRequirementValidatorInterface $accountDocumentRequirementValidator, private AccountSnapshotDocumentServiceInterface $accountSnapshotDocumentService, private AccountSnapshotFactoryInterface $accountSnapshotFactory, private PolicyEvaluatorInterface $policyEvaluator)
+    public function __construct(private AccountRepositoryInterface $accountRepository, private AccountSnapshotRepositoryInterface $accountSnapshotRepository, private AccountDocumentRequirementValidatorInterface $accountDocumentRequirementValidator, private AccountSnapshotDocumentServiceInterface $accountSnapshotDocumentService, private AccountSnapshotFactoryInterface $accountSnapshotFactory, private PolicyEvaluatorInterface $policyEvaluator, private AccountCategoryChangeRequestRepositoryInterface $accountCategoryChangeRequestRepository)
     {
     }
 
@@ -47,6 +50,13 @@ readonly class SaveAccountSnapshot implements SaveAccountSnapshotInterface
             $output->setSnapshot($current);
 
             return;
+        }
+        $approvedRequests = $this->accountCategoryChangeRequestRepository->findByAccountIdAndStatuses(
+            $account->accountIdentifier(),
+            [AccountCategoryChangeRequestStatus::APPROVED],
+        );
+        if ($approvedRequests !== []) {
+            throw new AccountSnapshotChangeRequiresApprovalException();
         }
         $id = $this->accountSnapshotFactory->createIdentifier();
         $documents = $this->accountSnapshotDocumentService->capture($account->accountIdentifier(), $id, $account->documents()->all());

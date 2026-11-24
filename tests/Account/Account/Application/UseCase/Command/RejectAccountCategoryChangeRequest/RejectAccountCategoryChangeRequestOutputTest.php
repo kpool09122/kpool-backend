@@ -9,11 +9,11 @@ use Source\Account\Account\Application\UseCase\Command\RejectAccountCategoryChan
 use Source\Account\Account\Domain\Entity\AccountCategoryChangeRequest;
 use Source\Account\Account\Domain\ValueObject\AccountCategoryChangeRequestIdentifier;
 use Source\Account\Account\Domain\ValueObject\AccountCategoryChangeRequestStatus;
+use Source\Account\Account\Domain\ValueObject\AccountSnapshotIdentifier;
 use Source\Account\Account\Domain\ValueObject\RejectionReason;
 use Source\Account\Account\Domain\ValueObject\RejectionReasonCode;
 use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
-use Tests\Helper\CreateAccountSnapshotProfile;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -27,13 +27,14 @@ class RejectAccountCategoryChangeRequestOutputTest extends TestCase
         $requestedAt = new DateTimeImmutable('2026-08-11 00:00:00+09:00');
         $reviewedAt = new DateTimeImmutable('2026-08-12 00:00:00+09:00');
         $rejectionReason = new RejectionReason(RejectionReasonCode::OTHER, 'missing information');
-        $request = new AccountCategoryChangeRequest($requestIdentifier, $accountIdentifier, AccountCategory::GENERAL, AccountCategory::AGENCY, AccountCategoryChangeRequestStatus::REJECTED, $requestedAt, $reviewedBy, $reviewedAt, $rejectionReason, CreateAccountSnapshotProfile::create());
+        $request = new AccountCategoryChangeRequest($requestIdentifier, $accountIdentifier, AccountCategory::GENERAL, AccountCategory::AGENCY, AccountCategoryChangeRequestStatus::REJECTED, $requestedAt, $reviewedBy, $reviewedAt, $rejectionReason, new AccountSnapshotIdentifier(StrTestHelper::generateUuid()));
 
         $output = new RejectAccountCategoryChangeRequestOutput();
         $output->setRequest($request);
 
-        $this->assertSame([
-            'requestIdentifier' => (string) $requestIdentifier,
+        $this->assertSame([                'requestIdentifier' => (string) $requestIdentifier,
+
+            'snapshotIdentifier' => (string) $request->snapshotIdentifier(),
             'accountIdentifier' => (string) $accountIdentifier,
             'currentAccountCategory' => AccountCategory::GENERAL->value,
             'requestedAccountCategory' => AccountCategory::AGENCY->value,

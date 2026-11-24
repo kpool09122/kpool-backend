@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'account_snapshot_change_requires_approval' => '開始使用服務後，變更已儲存的資訊需要變更審核。',
     'account_snapshot_not_found' => '找不到帳戶快照。',
     'incomplete_account_snapshot' => '需要帳戶類型以及完整的聯絡資訊和地址。',
     'authorization_connection_not_found' => '找不到外部授權連線。',

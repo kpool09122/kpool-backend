@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\DB;
 use Mockery;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Account\Account\Application\Exception\AccountCategoryChangeRequestForbiddenException;
-use Source\Account\Account\Application\Service\AccountCategoryChangeRequestSnapshotServiceInterface;
 use Source\Account\Account\Application\UseCase\Query\ListAccountCategoryChangeRequests\ListAccountCategoryChangeRequestsInput;
 use Source\Account\Account\Application\UseCase\Query\ListAccountCategoryChangeRequests\ListAccountCategoryChangeRequestsInterface;
 use Source\Account\Account\Application\UseCase\Query\ListAccountCategoryChangeRequests\ListAccountCategoryChangeRequestsOutput;
@@ -24,7 +23,7 @@ use Source\Account\Shared\Domain\ValueObject\PrincipalIdentifier;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Tests\Helper\CreateAccount;
-use Tests\Helper\CreateAccountSnapshotProfile;
+use Tests\Helper\CreateCategoryChangeSnapshot;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -63,7 +62,7 @@ class ListAccountCategoryChangeRequestsTest extends TestCase
         $this->assertSame([$newerHighId, $newerLowId, $oldId], array_column($payload['requests'], 'requestIdentifier'));
         $this->assertSame('account-b@example.com', $payload['requests'][0]['account']['email']);
         $this->assertSame('Account B', $payload['requests'][0]['account']['name']);
-        $this->assertSame('+819012345678', $payload['requests'][0]['account']['phone']);
+        $this->assertSame('+819****5678', $payload['requests'][0]['account']['phone']);
         $this->assertNotNull($payload['requests'][0]['account']['address']);
         $this->assertSame('100-0001', $payload['requests'][0]['account']['address']['postalCode']);
         $this->assertSame('account-a@example.com', $payload['requests'][1]['account']['email']);
@@ -167,19 +166,7 @@ class ListAccountCategoryChangeRequestsTest extends TestCase
         $account = DB::table('accounts')->where('id', (string) $accountIdentifier)->first();
         self::assertNotNull($account);
         DB::table('account_category_change_requests')->insert([
-            ...CreateAccountSnapshotProfile::columns(),
-            'account_email' => $account->email,
-            'account_name' => $account->name,
-            'account_type' => $account->type,
-            'account_status' => $account->status,
-            'account_phone' => $account->phone ?? '+819012345678',
-            'account_address_country_code' => $account->address_country_code ?? 'JP',
-            'account_address_administrative_area_code' => $account->address_administrative_area_code,
-            'account_address_postal_code' => $account->address_postal_code ?? '100-0001',
-            'account_address_locality' => $account->address_locality ?? '千代田区',
-            'account_address_line1' => $account->address_line1 ?? 'Address',
-            'account_address_line2' => $account->address_line2,
-
+            'snapshot_id' => (string) CreateCategoryChangeSnapshot::create($accountIdentifier),
             'id' => $id,
             'account_id' => (string) $accountIdentifier,
             'current_account_category' => 'general',
@@ -194,7 +181,7 @@ class ListAccountCategoryChangeRequestsTest extends TestCase
         $request = $this->app()->make(AccountCategoryChangeRequestRepositoryInterface::class)->findById(new AccountCategoryChangeRequestIdentifier($id));
         self::assertNotNull($account);
         self::assertNotNull($request);
-        $this->app()->make(AccountCategoryChangeRequestSnapshotServiceInterface::class)->capture($request, $account);
+        CreateCategoryChangeSnapshot::capture($request->snapshotIdentifier(), $account);
     }
 
     private function principal(AccountIdentifier $accountIdentifier): Principal
