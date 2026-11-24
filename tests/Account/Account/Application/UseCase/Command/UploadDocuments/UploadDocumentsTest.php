@@ -20,6 +20,7 @@ use Source\Account\Account\Application\UseCase\Command\UploadDocuments\UploadDoc
 use Source\Account\Account\Domain\Entity\Account;
 use Source\Account\Account\Domain\Exception\AccountSetupUnavailableException;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
+use Source\Account\Account\Domain\Repository\AccountSnapshotChangeRequestRepositoryInterface;
 use Source\Account\Account\Domain\Service\AccountDocumentRequirementValidator;
 use Source\Account\Account\Domain\Service\AccountDocumentRequirementValidatorInterface;
 use Source\Account\Account\Domain\ValueObject\AccountDocument;
@@ -373,6 +374,9 @@ class UploadDocumentsTest extends TestCase
         DocumentStorageServiceInterface $storage,
         AccountDocumentFileTypeDetectorInterface $fileTypeDetector,
     ): void {
+        $accountSnapshotChangeRequestRepository = $this->createStub(AccountSnapshotChangeRequestRepositoryInterface::class);
+        $accountSnapshotChangeRequestRepository->method('findByAccountIdAndStatuses')->willReturn([]);
+        $this->app()->instance(AccountSnapshotChangeRequestRepositoryInterface::class, $accountSnapshotChangeRequestRepository);
         $this->app()->instance(AccountRepositoryInterface::class, $repository);
         $this->app()->instance(DocumentStorageServiceInterface::class, $storage);
         $this->app()->instance(AccountDocumentFileTypeDetectorInterface::class, $fileTypeDetector);
