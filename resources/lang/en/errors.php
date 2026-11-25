@@ -10,7 +10,8 @@ return [
 
     'account_snapshot_change_requires_approval' => 'Changing saved information after service use requires approval.',
     'account_snapshot_not_found' => 'Account snapshot not found.',
-    'incomplete_account_snapshot' => 'Account type and complete contact information are required.',
+    'no_account_snapshot_changes' => 'No changes to the profile or documents. A change request cannot be submitted.',
+    'incomplete_account_snapshot' => 'Complete and save your profile, and upload the required documents.',
     'authorization_connection_not_found' => 'Authorization connection not found.',
     'oauth_invalid_request' => 'The authorization request is invalid.',
     'oauth_request_expired' => 'The authorization request has expired. Start authorization again.',

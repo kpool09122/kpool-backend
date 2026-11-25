@@ -1170,7 +1170,7 @@ paths:
   /accounts/{accountIdentifier}/snapshot:
     put:
       operationId: AccountSnapshotOperations_saveAccountSnapshot
-      description: Save the current authenticated account profile and uploaded documents without review. Requires the same account and account:update. Complete contact/type and required documents are validated. Changed content creates a new immutable snapshot; previous snapshots and document files are retained. Profile updates, document uploads and snapshot saves are forbidden while a snapshot-change request is pending. Otherwise identical-content saves succeed without writes even after approval. Changed contents are rejected with 409 (account_snapshot_change_requires_approval) if any category-change approval references a saved snapshot for the account. Does not change category-change requests.
+      description: Save the current authenticated account profile and uploaded documents without review. Requires the same account and account:update. Complete contact/type and required documents are validated. Changed content creates a new immutable snapshot; previous snapshots and document files are retained. Profile updates, document uploads and snapshot saves are forbidden while a snapshot-change request is pending. Snapshot saves are also forbidden while a category-change request is pending; profile and document draft editing remains available. Otherwise identical-content saves succeed without writes even after approval. Changed contents are rejected with 409 (account_snapshot_change_requires_approval) if any category-change approval references a saved snapshot for the account. Does not change category-change requests.
       parameters:
         - name: accountIdentifier
           in: path
@@ -1318,7 +1318,7 @@ paths:
   /accounts/{accountIdentifier}/snapshot-change-requests:
     post:
       operationId: AccountSnapshotChangeRequestOperations_requestAccountSnapshotChange
-      description: Submit a required reason and freeze the current editable Account profile and uploaded documents after the same complete-contact/type/required-document validation as normal snapshot save. Requires same Account and account:update. A saved original snapshot must exist (404 otherwise). While pending, profile updates, document uploads and normal snapshot saves return 403. Review reads the current Account and documents without a separate copy. No snapshot is created on submission; duplicate pending applications return 409. Rejected/approved history permits a new application, independently of category-change request states.
+      description: Submit a required reason and freeze the current editable Account profile and uploaded documents after the same complete-contact/type/required-document validation as normal snapshot save. Requires same Account and account:update. A saved original snapshot must exist (404 otherwise). While pending, profile updates, document uploads and normal snapshot saves return 403. Review reads the current Account and documents without a separate copy. No snapshot is created on submission; duplicate pending applications return 409. Pending category-change requests forbid snapshot-change submissions (403). Identical profile and document bytes return 422 without creating a request. Rejected/approved snapshot-change history permits a new application when no category-change request is pending.
       parameters:
         - name: accountIdentifier
           in: path
@@ -1424,9 +1424,17 @@ paths:
                   changeRequiresApproval:
                     type: boolean
                     description: True when an approved category application exists for this Account. Remains true after snapshot-change approval; identical-content normal saves remain no-op successes. Use this field to choose the change-application flow, and request.status to display its review state.
+                  hasChanges:
+                    type: boolean
+                    description: True when the editable profile or document contents differ from the current saved snapshot. False if no saved snapshot exists. Change requests with identical contents are rejected with 422.
+                  categoryChangePending:
+                    type: boolean
+                    description: True while a category-change request is pending. Snapshot saves and change submissions are forbidden until that review ends or is withdrawn. Profile and document draft editing is unaffected.
                 required:
                   - request
                   - changeRequiresApproval
+                  - hasChanges
+                  - categoryChangePending
         '401':
           description: Access is unauthorized.
           content:

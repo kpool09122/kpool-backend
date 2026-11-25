@@ -10,7 +10,8 @@ return [
 
     'account_snapshot_change_requires_approval' => 'Cambiar la información guardada tras iniciar el servicio requiere aprobación.',
     'account_snapshot_not_found' => 'No se encontró la instantánea de la cuenta.',
-    'incomplete_account_snapshot' => 'Se requieren el tipo de cuenta y los datos de contacto completos.',
+    'no_account_snapshot_changes' => 'No hay cambios en el perfil ni en los documentos. No se puede enviar una solicitud de cambio.',
+    'incomplete_account_snapshot' => 'Completa y guarda tu perfil y sube los documentos necesarios.',
     'authorization_connection_not_found' => 'No se encontró la conexión de autorización.',
     'oauth_invalid_request' => 'La solicitud de autorización no es válida.',
     'oauth_request_expired' => 'La solicitud de autorización ha caducado. Inicie de nuevo la autorización.',

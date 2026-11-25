@@ -15,6 +15,7 @@ use Source\Account\Account\Application\Exception\AccountUpdateForbiddenException
 use Source\Account\Account\Application\Exception\IncompleteAccountContactForCategoryChangeException;
 use Source\Account\Account\Application\Exception\InvalidAccountSnapshotChangeRequestException;
 use Source\Account\Account\Application\Exception\InvalidDocumentsForVerificationException;
+use Source\Account\Account\Application\Exception\NoAccountSnapshotChangesException;
 use Source\Account\Account\Application\UseCase\Command\RequestAccountSnapshotChange\RequestAccountSnapshotChangeInput;
 use Source\Account\Account\Application\UseCase\Command\RequestAccountSnapshotChange\RequestAccountSnapshotChangeInterface;
 use Source\Account\Account\Application\UseCase\Command\RequestAccountSnapshotChange\RequestAccountSnapshotChangeOutput;
@@ -35,6 +36,7 @@ use Source\Account\Account\Domain\ValueObject\AccountSnapshotChangeRequestStatus
 use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Tests\Helper\CreateAccountSnapshot;
+use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
 #[Group('useDb')]
@@ -75,6 +77,82 @@ class RequestAccountSnapshotChangeTest extends TestCase
         self::assertSame($files, Storage::disk('verification-documents')->allFiles());
     }
 
+    #[DataProvider('categoryStates')]
+    public function testCategoryReviewControlsChangeSubmission(string $status): void
+    {
+        $id = $this->prepare();
+        DB::table('account_category_change_requests')->insert(['id' => StrTestHelper::generateUuid(), 'account_id' => (string) $id, 'current_account_category' => 'general', 'requested_account_category' => 'talent', 'status' => $status, 'requested_at' => now(), 'snapshot_id' => DB::table('account_snapshots')->where('account_id', (string) $id)->value('id')]);
+        DB::table('accounts')->where('id', (string) $id)->update(['name' => 'Changed draft']);
+        $output = new RequestAccountSnapshotChangeOutput();
+        if ($status === 'pending') {
+            $this->expectException(AccountSnapshotChangeRequestForbiddenException::class);
+        }
+
+        try {
+            $this->app()->make(RequestAccountSnapshotChangeInterface::class)->process(
+                new RequestAccountSnapshotChangeInput($id, CreateAccountSnapshot::principal($id), new AccountSnapshotChangeReason('変更')),
+                $output,
+            );
+            self::assertSame('pending', $output->toArray()['status'] ?? null);
+        } finally {
+            self::assertDatabaseCount('account_snapshot_change_requests', $status === 'pending' ? 0 : 1);
+        }
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function categoryStates(): iterable
+    {
+        foreach (['pending', 'withdrawn', 'rejected', 'approved'] as $status) {
+            yield $status => [$status];
+        }
+    }
+
+    public function testUnchangedContentsCannotSubmit(): void
+    {
+        $id = $this->prepare();
+        $files = Storage::disk('verification-documents')->allFiles();
+
+        try {
+            $this->expectException(NoAccountSnapshotChangesException::class);
+            $this->app()->make(RequestAccountSnapshotChangeInterface::class)->process(
+                new RequestAccountSnapshotChangeInput($id, CreateAccountSnapshot::principal($id), new AccountSnapshotChangeReason('変更なし')),
+                new RequestAccountSnapshotChangeOutput(),
+            );
+        } finally {
+            self::assertDatabaseCount('account_snapshot_change_requests', 0);
+            self::assertDatabaseCount('account_snapshots', 1);
+            self::assertSame($files, Storage::disk('verification-documents')->allFiles());
+        }
+    }
+
+    public function testIdenticalDocumentBytesAtNewPathCannotSubmit(): void
+    {
+        $id = $this->prepare();
+        Storage::disk('verification-documents')->put((string) $id.'/replacement.pdf', 'passport bytes');
+        DB::table('account_documents')->where('account_id', (string) $id)->where('document_type', 'passport')->update([
+            'document_path' => (string) $id.'/replacement.pdf',
+            'uploaded_at' => now(),
+        ]);
+        $this->expectException(NoAccountSnapshotChangesException::class);
+        $this->app()->make(RequestAccountSnapshotChangeInterface::class)->process(
+            new RequestAccountSnapshotChangeInput($id, CreateAccountSnapshot::principal($id), new AccountSnapshotChangeReason('再アップロード')),
+            new RequestAccountSnapshotChangeOutput(),
+        );
+    }
+
+    public function testChangedDocumentBytesCanSubmitWithoutProfileChange(): void
+    {
+        $id = $this->prepare();
+        Storage::disk('verification-documents')->put((string) $id.'/passport.pdf', 'changed passport bytes');
+        $output = new RequestAccountSnapshotChangeOutput();
+        $this->app()->make(RequestAccountSnapshotChangeInterface::class)->process(
+            new RequestAccountSnapshotChangeInput($id, CreateAccountSnapshot::principal($id), new AccountSnapshotChangeReason('書類更新')),
+            $output,
+        );
+        self::assertSame('pending', $output->toArray()['status'] ?? null);
+        self::assertDatabaseCount('account_snapshot_change_requests', 1);
+    }
+
     /** @return array<string, array{string}> */
     public static function blockedUpdates(): array
     {
@@ -85,6 +163,7 @@ class RequestAccountSnapshotChangeTest extends TestCase
     public function testPendingRequestBlocksEditsAndNormalSnapshotSave(string $operation): void
     {
         $id = $this->prepare();
+        DB::table('accounts')->where('id', (string) $id)->update(['name' => 'Proposed name']);
         $principal = CreateAccountSnapshot::principal($id);
         $this->app()->make(RequestAccountSnapshotChangeInterface::class)->process(
             new RequestAccountSnapshotChangeInput($id, $principal, new AccountSnapshotChangeReason('変更')),
@@ -105,7 +184,7 @@ class RequestAccountSnapshotChangeTest extends TestCase
             }
         } finally {
             self::assertSame($files, Storage::disk('verification-documents')->allFiles());
-            self::assertDatabaseHas('accounts', ['id' => (string) $id, 'name' => 'Test Account']);
+            self::assertDatabaseHas('accounts', ['id' => (string) $id, 'name' => 'Proposed name']);
             self::assertDatabaseCount('account_snapshots', 1);
         }
     }
@@ -113,6 +192,7 @@ class RequestAccountSnapshotChangeTest extends TestCase
     public function testDuplicatePendingRequestIsRejected(): void
     {
         $id = $this->prepare();
+        DB::table('accounts')->where('id', (string) $id)->update(['name' => 'Proposed name']);
         $input = new RequestAccountSnapshotChangeInput($id, CreateAccountSnapshot::principal($id), new AccountSnapshotChangeReason('住所変更'));
         $useCase = $this->app()->make(RequestAccountSnapshotChangeInterface::class);
         $useCase->process($input, new RequestAccountSnapshotChangeOutput());

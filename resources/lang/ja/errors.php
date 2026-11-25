@@ -10,7 +10,8 @@ return [
 
     'account_snapshot_change_requires_approval' => 'サービス利用開始後の保存内容の変更には変更申請が必要です。',
     'account_snapshot_not_found' => 'アカウントスナップショットが見つかりません。',
-    'incomplete_account_snapshot' => 'アカウント種別と連絡先・住所の入力が必要です。',
+    'no_account_snapshot_changes' => 'プロフィールや書類に変更がないため、変更申請できません。',
+    'incomplete_account_snapshot' => 'プロフィールの入力・保存と、必要書類のアップロードが必要です。',
     'authorization_connection_not_found' => '指定された外部連携が見つかりません。',
     'oauth_invalid_request' => '認可要求が無効です。',
     'oauth_request_expired' => '認可要求の有効期限が切れました。認可を開始し直してください。',

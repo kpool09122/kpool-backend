@@ -10,7 +10,8 @@ return [
 
     'account_snapshot_change_requires_approval' => '서비스 이용 시작 후 저장된 정보를 변경하려면 변경 승인이 필요합니다.',
     'account_snapshot_not_found' => '계정 스냅샷을 찾을 수 없습니다.',
-    'incomplete_account_snapshot' => '계정 유형과 연락처 및 주소가 필요합니다.',
+    'no_account_snapshot_changes' => '프로필이나 서류에 변경 사항이 없어 변경 신청을 할 수 없습니다.',
+    'incomplete_account_snapshot' => '프로필을 작성하고 저장한 후 필요한 서류를 업로드해 주세요.',
     'authorization_connection_not_found' => '외부 연동을 찾을 수 없습니다.',
     'oauth_invalid_request' => '인증 요청이 유효하지 않습니다.',
     'oauth_request_expired' => '인증 요청이 만료되었습니다. 다시 시작해 주세요.',

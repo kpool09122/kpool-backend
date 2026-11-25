@@ -45,6 +45,10 @@ readonly class SaveAccountSnapshot implements SaveAccountSnapshotInterface
             throw new AccountSnapshotForbiddenException();
         }
 
+        if ($this->accountCategoryChangeRequestRepository->findByAccountIdAndStatuses($account->accountIdentifier(), [AccountCategoryChangeRequestStatus::PENDING]) !== []) {
+            throw new AccountSnapshotForbiddenException();
+        }
+
         if (! $account->hasRequiredContactForCategoryChange()) {
             throw new IncompleteAccountContactForCategoryChangeException();
         }

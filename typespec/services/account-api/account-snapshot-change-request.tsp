@@ -45,6 +45,10 @@ model OkLatestAccountSnapshotChangeRequest {
     request: AccountSnapshotChangeRequestSummary | null;
     @doc("True when an approved category application exists for this Account. Remains true after snapshot-change approval; identical-content normal saves remain no-op successes. Use this field to choose the change-application flow, and request.status to display its review state.")
     changeRequiresApproval: boolean;
+    @doc("True when the editable profile or document contents differ from the current saved snapshot. False if no saved snapshot exists. Change requests with identical contents are rejected with 422.")
+    hasChanges: boolean;
+    @doc("True while a category-change request is pending. Snapshot saves and change submissions are forbidden until that review ends or is withdrawn. Profile and document draft editing is unaffected.")
+    categoryChangePending: boolean;
   };
 }
 model OkAccountSnapshotChangeRequestList {
@@ -56,7 +60,7 @@ model OkAccountSnapshotChangeRequestList {
 }
 interface AccountSnapshotChangeRequestOperations {
   @post @route("/accounts/{accountIdentifier}/snapshot-change-requests")
-  @doc("Submit a required reason and freeze the current editable Account profile and uploaded documents after the same complete-contact/type/required-document validation as normal snapshot save. Requires same Account and account:update. A saved original snapshot must exist (404 otherwise). While pending, profile updates, document uploads and normal snapshot saves return 403. Review reads the current Account and documents without a separate copy. No snapshot is created on submission; duplicate pending applications return 409. Rejected/approved history permits a new application, independently of category-change request states.")
+  @doc("Submit a required reason and freeze the current editable Account profile and uploaded documents after the same complete-contact/type/required-document validation as normal snapshot save. Requires same Account and account:update. A saved original snapshot must exist (404 otherwise). While pending, profile updates, document uploads and normal snapshot saves return 403. Review reads the current Account and documents without a separate copy. No snapshot is created on submission; duplicate pending applications return 409. Pending category-change requests forbid snapshot-change submissions (403). Identical profile and document bytes return 422 without creating a request. Rejected/approved snapshot-change history permits a new application when no category-change request is pending.")
   requestAccountSnapshotChange(@path accountIdentifier: Uuid, @body body: RequestAccountSnapshotChangeBody): CreatedAccountSnapshotChangeRequest | UnauthorizedProblemResponse | ForbiddenProblemResponse | NotFoundProblemResponse | ConflictProblemResponse | UnprocessableEntityProblemResponse | InternalServerErrorProblemResponse | CsrfTokenMismatchProblemResponse | TooManyRequestsProblemResponse | ServiceUnavailableProblemResponse;
 
   @get @route("/accounts/{accountIdentifier}/snapshot-change-requests/latest")

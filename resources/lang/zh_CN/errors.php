@@ -10,7 +10,8 @@ return [
 
     'account_snapshot_change_requires_approval' => '开始使用服务后，更改已保存的信息需要变更审批。',
     'account_snapshot_not_found' => '未找到帐户快照。',
-    'incomplete_account_snapshot' => '需要帐户类型以及完整的联系信息和地址。',
+    'no_account_snapshot_changes' => '个人资料和文件没有变更，无法提交变更申请。',
+    'incomplete_account_snapshot' => '请填写并保存个人资料，并上传所需文件。',
     'authorization_connection_not_found' => '未找到外部授权连接。',
     'oauth_invalid_request' => '授权请求无效。',
     'oauth_request_expired' => '授权请求已过期，请重新开始授权。',
