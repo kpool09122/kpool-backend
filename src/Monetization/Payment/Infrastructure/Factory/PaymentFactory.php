@@ -6,10 +6,10 @@ namespace Source\Monetization\Payment\Infrastructure\Factory;
 
 use DateTimeImmutable;
 use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
+use Source\Monetization\Account\Domain\ValueObject\PaymentMethodIdentifier;
 use Source\Monetization\Payment\Domain\Entity\Payment;
 use Source\Monetization\Payment\Domain\Factory\PaymentFactoryInterface;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentIdentifier;
-use Source\Monetization\Payment\Domain\ValueObject\PaymentMethod;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentStatus;
 use Source\Shared\Application\Service\Uuid\UuidGeneratorInterface;
 use Source\Shared\Domain\ValueObject\Money;
@@ -26,7 +26,7 @@ readonly class PaymentFactory implements PaymentFactoryInterface
         OrderIdentifier   $orderIdentifier,
         MonetizationAccountIdentifier $buyerMonetizationAccountIdentifier,
         Money             $money,
-        PaymentMethod     $paymentMethod,
+        PaymentMethodIdentifier     $paymentMethodIdentifier,
         DateTimeImmutable $createdAt,
     ): Payment {
         return new Payment(
@@ -34,7 +34,7 @@ readonly class PaymentFactory implements PaymentFactoryInterface
             $orderIdentifier,
             $buyerMonetizationAccountIdentifier,
             $money,
-            $paymentMethod,
+            $paymentMethodIdentifier,
             $createdAt,
             PaymentStatus::PENDING,
             null,

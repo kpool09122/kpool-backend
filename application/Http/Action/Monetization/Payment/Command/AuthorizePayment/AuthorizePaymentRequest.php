@@ -23,9 +23,6 @@ class AuthorizePaymentRequest extends FormRequest
             'amount' => ['required', 'integer', 'min:1'],
             'currency' => ['required', 'string', 'in:JPY,USD,KRW'],
             'paymentMethodId' => ['required', 'uuid'],
-            'paymentMethodType' => ['required', 'string', 'in:card,bank_transfer,wallet'],
-            'paymentMethodLabel' => ['required', 'string'],
-            'paymentMethodRecurringEnabled' => ['required', 'boolean'],
         ];
     }
 
@@ -52,20 +49,5 @@ class AuthorizePaymentRequest extends FormRequest
     public function paymentMethodId(): string
     {
         return RequestValue::string($this->input('paymentMethodId'));
-    }
-
-    public function paymentMethodType(): string
-    {
-        return RequestValue::string($this->input('paymentMethodType'));
-    }
-
-    public function paymentMethodLabel(): string
-    {
-        return RequestValue::string($this->input('paymentMethodLabel'));
-    }
-
-    public function paymentMethodRecurringEnabled(): bool
-    {
-        return (bool) $this->input('paymentMethodRecurringEnabled');
     }
 }

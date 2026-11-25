@@ -34,7 +34,11 @@ class MonetizationAuthorizationSeeder extends Seeder
         $this->policyRepository->save(new Policy($manage, 'PRINCIPAL_GROUP_MANAGE', [
             new Statement(Effect::ALLOW, [Action::PRINCIPAL_GROUP_MANAGE], [ResourceType::PRINCIPAL_GROUP]),
         ], null));
-        $this->roleRepository->save(new Role(new RoleIdentifier('09290000-0000-7000-8000-000000000003'), Role::OWNER, [$read, $manage], null));
+        $registerPaymentMethod = new PolicyIdentifier('09290000-0000-7000-8000-000000000005');
+        $this->policyRepository->save(new Policy($registerPaymentMethod, 'PAYMENT_METHOD_REGISTER', [
+            new Statement(Effect::ALLOW, [Action::PAYMENT_METHOD_REGISTER], [ResourceType::PAYMENT_METHOD]),
+        ], null));
+        $this->roleRepository->save(new Role(new RoleIdentifier('09290000-0000-7000-8000-000000000003'), Role::OWNER, [$read, $manage, $registerPaymentMethod], null));
         $this->roleRepository->save(new Role(new RoleIdentifier('09290000-0000-7000-8000-000000000004'), Role::GENERAL, [$read], null));
     }
 }

@@ -11,6 +11,6 @@ class ActionTest extends TestCase
 {
     public function testContract(): void
     {
-        self::assertSame(['principal_group_read', 'principal_group_manage'], array_map(static fn (Action $action): string => $action->value, Action::cases()));
+        self::assertSame(['principal_group_read', 'principal_group_manage', 'payment_method_register'], array_map(static fn (Action $action): string => $action->value, Action::cases()));
     }
 }

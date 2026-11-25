@@ -230,9 +230,21 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RegisteredPaymentMethodSummary'
+                $ref: '#/components/schemas/PaymentMethodSummary'
         '401':
           description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
           content:
             application/json:
               schema:
@@ -490,7 +502,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaymentSummary'
+                $ref: '#/components/schemas/AuthorizedPaymentSummary'
         '401':
           description: Access is unauthorized.
           content:
@@ -1106,11 +1118,6 @@ components:
         - individual
         - company
       description: Account holder classification for payout accounts.
-    AccountPaymentMethodType:
-      type: string
-      enum:
-        - card
-      description: Account payment method type accepted by registration.
     AuthorizePaymentRequestBody:
       type: object
       required:
@@ -1119,9 +1126,6 @@ components:
         - amount
         - currency
         - paymentMethodId
-        - paymentMethodType
-        - paymentMethodLabel
-        - paymentMethodRecurringEnabled
       properties:
         orderId:
           allOf:
@@ -1143,17 +1147,29 @@ components:
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Payment method identifier.
+      description: Request body for authorizing a payment.
+    AuthorizedPaymentSummary:
+      type: object
+      required:
+        - paymentMethodType
+        - paymentMethodBrand
+        - paymentMethodLast4
+      properties:
         paymentMethodType:
           allOf:
             - $ref: '#/components/schemas/PaymentMethodType'
           description: Payment method type.
-        paymentMethodLabel:
+        paymentMethodBrand:
           type: string
-          description: Human-readable payment method label.
-        paymentMethodRecurringEnabled:
-          type: boolean
-          description: Whether recurring usage is enabled.
-      description: Request body for authorizing a payment.
+          nullable: true
+          description: Card brand loaded from the payment method metadata.
+        paymentMethodLast4:
+          type: string
+          nullable: true
+          description: Last four digits for masked payment method display.
+      allOf:
+        - $ref: '#/components/schemas/PaymentSummary'
+      description: Authorized payment with payment method display information.
     CreateInvoiceRequestBody:
       type: object
       required:
@@ -1461,12 +1477,51 @@ components:
             - $ref: '#/components/schemas/CurrencyCode'
           description: Currency for the paid amount.
       description: Paid amount entry used during settlement.
+    PaymentMethodSummary:
+      type: object
+      required:
+        - paymentMethodIdentifier
+        - externalPaymentMethodId
+        - type
+        - isDefault
+      properties:
+        paymentMethodIdentifier:
+          allOf:
+            - $ref: '#/components/schemas/KPool.Common.Uuid'
+          description: Internal payment method identifier.
+        externalPaymentMethodId:
+          type: string
+          description: Gateway payment method identifier.
+        type:
+          allOf:
+            - $ref: '#/components/schemas/PaymentMethodType'
+          description: Payment method type.
+        brand:
+          type: string
+          nullable: true
+          description: Card brand returned from metadata.
+        last4:
+          type: string
+          nullable: true
+          description: Last four digits returned from metadata.
+        expMonth:
+          type: integer
+          format: int32
+          nullable: true
+          description: Expiration month returned from metadata.
+        expYear:
+          type: integer
+          format: int32
+          nullable: true
+          description: Expiration year returned from metadata.
+        isDefault:
+          type: boolean
+          description: Whether the method is the default one.
+      description: Current payment method managed by the monetization account.
     PaymentMethodType:
       type: string
       enum:
         - card
-        - bank_transfer
-        - wallet
       description: Supported payment method types.
     PaymentStatus:
       type: string
@@ -1487,9 +1542,6 @@ components:
         - amount
         - currency
         - paymentMethodIdentifier
-        - paymentMethodType
-        - paymentMethodLabel
-        - paymentMethodRecurringEnabled
         - status
         - createdAt
         - refundedAmount
@@ -1519,16 +1571,6 @@ components:
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Payment method identifier.
-        paymentMethodType:
-          allOf:
-            - $ref: '#/components/schemas/PaymentMethodType'
-          description: Payment method type.
-        paymentMethodLabel:
-          type: string
-          description: Human-readable payment method label.
-        paymentMethodRecurringEnabled:
-          type: boolean
-          description: Whether recurring usage is enabled.
         status:
           allOf:
             - $ref: '#/components/schemas/PaymentStatus'
@@ -1687,12 +1729,14 @@ components:
             enum:
               - principal_group_read
               - principal_group_manage
+              - payment_method_register
         resourceTypes:
           type: array
           items:
             type: string
             enum:
               - principal_group
+              - payment_method
         condition:
           type: object
           properties:
@@ -1814,62 +1858,17 @@ components:
     RegisterPaymentMethodRequestBody:
       type: object
       required:
-        - paymentMethodId
+        - externalPaymentMethodId
         - type
       properties:
-        paymentMethodId:
+        externalPaymentMethodId:
           type: string
           description: Gateway payment method identifier.
         type:
           allOf:
-            - $ref: '#/components/schemas/AccountPaymentMethodType'
+            - $ref: '#/components/schemas/PaymentMethodType'
           description: Payment method type.
       description: Request body for registering a payment method.
-    RegisteredPaymentMethodSummary:
-      type: object
-      required:
-        - registeredPaymentMethodIdentifier
-        - paymentMethodId
-        - type
-        - isDefault
-        - skipped
-      properties:
-        registeredPaymentMethodIdentifier:
-          allOf:
-            - $ref: '#/components/schemas/KPool.Common.Uuid'
-          description: Registered payment method identifier.
-        paymentMethodId:
-          type: string
-          description: Gateway payment method identifier.
-        type:
-          allOf:
-            - $ref: '#/components/schemas/AccountPaymentMethodType'
-          description: Registered payment method type.
-        brand:
-          type: string
-          nullable: true
-          description: Card brand returned from metadata.
-        last4:
-          type: string
-          nullable: true
-          description: Last four digits returned from metadata.
-        expMonth:
-          type: integer
-          format: int32
-          nullable: true
-          description: Expiration month returned from metadata.
-        expYear:
-          type: integer
-          format: int32
-          nullable: true
-          description: Expiration year returned from metadata.
-        isDefault:
-          type: boolean
-          description: Whether the method is the default one.
-        skipped:
-          type: boolean
-          description: Whether registration was skipped because the method already existed.
-      description: Registered payment method snapshot.
     SellerOnboardingCountryCode:
       type: string
       enum:

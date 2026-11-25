@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 return [
+    'payment_method_already_exists' => 'This payment method is already registered.',
+    'invalid_payment_method' => 'The payment method is unavailable for this payment.',
     'account_snapshot_change_request_not_found' => 'Snapshot change request not found.',
     'invalid_account_snapshot_change_request' => 'A pending snapshot change request already exists.',
     'invalid_account_snapshot_change_request_approval' => 'This snapshot change request cannot be approved.',

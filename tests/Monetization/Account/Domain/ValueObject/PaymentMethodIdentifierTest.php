@@ -6,10 +6,10 @@ namespace Tests\Monetization\Account\Domain\ValueObject;
 
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
-use Source\Monetization\Account\Domain\ValueObject\RegisteredPaymentMethodIdentifier;
+use Source\Monetization\Account\Domain\ValueObject\PaymentMethodIdentifier;
 use Tests\Helper\StrTestHelper;
 
-class RegisteredPaymentMethodIdentifierTest extends TestCase
+class PaymentMethodIdentifierTest extends TestCase
 {
     /**
      * 正常系: インスタンスが生成されること
@@ -19,8 +19,8 @@ class RegisteredPaymentMethodIdentifierTest extends TestCase
     public function test__construct(): void
     {
         $id = StrTestHelper::generateUuid();
-        $registeredPaymentMethodIdentifier = new RegisteredPaymentMethodIdentifier($id);
-        $this->assertSame($id, (string)$registeredPaymentMethodIdentifier);
+        $paymentMethodIdentifier = new PaymentMethodIdentifier($id);
+        $this->assertSame($id, (string)$paymentMethodIdentifier);
     }
 
     /**
@@ -32,6 +32,6 @@ class RegisteredPaymentMethodIdentifierTest extends TestCase
     {
         $id = 'invalid-id';
         $this->expectException(InvalidArgumentException::class);
-        new RegisteredPaymentMethodIdentifier($id);
+        new PaymentMethodIdentifier($id);
     }
 }

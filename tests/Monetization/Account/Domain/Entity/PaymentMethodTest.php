@@ -5,26 +5,26 @@ declare(strict_types=1);
 namespace Tests\Monetization\Account\Domain\Entity;
 
 use PHPUnit\Framework\TestCase;
-use Source\Monetization\Account\Domain\Entity\RegisteredPaymentMethod;
+use Source\Monetization\Account\Domain\Entity\PaymentMethod;
+use Source\Monetization\Account\Domain\ValueObject\ExternalPaymentMethodId;
 use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
-use Source\Monetization\Account\Domain\ValueObject\PaymentMethodId;
+use Source\Monetization\Account\Domain\ValueObject\PaymentMethodIdentifier;
 use Source\Monetization\Account\Domain\ValueObject\PaymentMethodMeta;
 use Source\Monetization\Account\Domain\ValueObject\PaymentMethodStatus;
 use Source\Monetization\Account\Domain\ValueObject\PaymentMethodType;
-use Source\Monetization\Account\Domain\ValueObject\RegisteredPaymentMethodIdentifier;
 use Tests\Helper\StrTestHelper;
 
-class RegisteredPaymentMethodTest extends TestCase
+class PaymentMethodTest extends TestCase
 {
     private function createPaymentMethod(
         ?PaymentMethodMeta $meta = null,
         bool $isDefault = false,
         PaymentMethodStatus $status = PaymentMethodStatus::ACTIVE,
-    ): RegisteredPaymentMethod {
-        return new RegisteredPaymentMethod(
-            new RegisteredPaymentMethodIdentifier(StrTestHelper::generateUuid()),
+    ): PaymentMethod {
+        return new PaymentMethod(
+            new PaymentMethodIdentifier(StrTestHelper::generateUuid()),
             new MonetizationAccountIdentifier(StrTestHelper::generateUuid()),
-            new PaymentMethodId('pm_1234567890abcdef'),
+            new ExternalPaymentMethodId('pm_1234567890abcdef'),
             PaymentMethodType::CARD,
             $meta,
             $isDefault,
@@ -37,15 +37,15 @@ class RegisteredPaymentMethodTest extends TestCase
      */
     public function test__construct(): void
     {
-        $paymentMethodIdentifier = new RegisteredPaymentMethodIdentifier(StrTestHelper::generateUuid());
+        $paymentMethodIdentifier = new PaymentMethodIdentifier(StrTestHelper::generateUuid());
         $monetizationAccountIdentifier = new MonetizationAccountIdentifier(StrTestHelper::generateUuid());
-        $paymentMethodId = new PaymentMethodId('pm_1234567890abcdef');
+        $externalPaymentMethodId = new ExternalPaymentMethodId('pm_1234567890abcdef');
         $meta = new PaymentMethodMeta('visa', '4242', 12, 2026);
 
-        $paymentMethod = new RegisteredPaymentMethod(
+        $paymentMethod = new PaymentMethod(
             $paymentMethodIdentifier,
             $monetizationAccountIdentifier,
-            $paymentMethodId,
+            $externalPaymentMethodId,
             PaymentMethodType::CARD,
             $meta,
             true,
@@ -54,7 +54,7 @@ class RegisteredPaymentMethodTest extends TestCase
 
         $this->assertSame($paymentMethodIdentifier, $paymentMethod->paymentMethodIdentifier());
         $this->assertSame($monetizationAccountIdentifier, $paymentMethod->monetizationAccountIdentifier());
-        $this->assertSame($paymentMethodId, $paymentMethod->paymentMethodId());
+        $this->assertSame($externalPaymentMethodId, $paymentMethod->externalPaymentMethodId());
         $this->assertSame(PaymentMethodType::CARD, $paymentMethod->type());
         $this->assertSame($meta, $paymentMethod->meta());
         $this->assertTrue($paymentMethod->isDefault());

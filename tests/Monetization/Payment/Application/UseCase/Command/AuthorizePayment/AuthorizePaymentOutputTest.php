@@ -6,14 +6,18 @@ namespace Tests\Monetization\Payment\Application\UseCase\Command\AuthorizePaymen
 
 use DateTimeImmutable;
 use DateTimeInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
+use Source\Monetization\Account\Domain\Entity\PaymentMethod;
+use Source\Monetization\Account\Domain\ValueObject\ExternalPaymentMethodId;
 use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
+use Source\Monetization\Account\Domain\ValueObject\PaymentMethodIdentifier;
+use Source\Monetization\Account\Domain\ValueObject\PaymentMethodMeta;
+use Source\Monetization\Account\Domain\ValueObject\PaymentMethodType;
 use Source\Monetization\Payment\Application\UseCase\Command\AuthorizePayment\AuthorizePaymentOutput;
 use Source\Monetization\Payment\Domain\Entity\Payment;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentIdentifier;
-use Source\Monetization\Payment\Domain\ValueObject\PaymentMethod;
-use Source\Monetization\Payment\Domain\ValueObject\PaymentMethodIdentifier;
-use Source\Monetization\Payment\Domain\ValueObject\PaymentMethodType;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentStatus;
+use Source\Monetization\Payment\Domain\ValueObject\StripePaymentIntentId;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
 use Source\Shared\Domain\ValueObject\OrderIdentifier;
@@ -22,23 +26,29 @@ use Tests\TestCase;
 
 class AuthorizePaymentOutputTest extends TestCase
 {
+    /** @return array<string, array{?PaymentMethodMeta, ?string, ?string}> */
+    public static function paymentMethodMetadataProvider(): array
+    {
+        return [
+            'card metadata' => [new PaymentMethodMeta('visa', '1234', 12, 2030), 'visa', '1234'],
+            'missing metadata' => [null, null, null],
+            'partial metadata' => [new PaymentMethodMeta(last4: '1234'), null, '1234'],
+        ];
+    }
+
     /**
      * 正常系: Paymentがセットされている場合、toArrayが正しい値を返すこと.
      *
      * @return void
      */
-    public function testToArrayWithPayment(): void
+    #[DataProvider('paymentMethodMetadataProvider')]
+    public function testToArrayWithPayment(?PaymentMethodMeta $meta, ?string $expectedBrand, ?string $expectedLast4): void
     {
         $paymentId = new PaymentIdentifier(StrTestHelper::generateUuid());
         $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUuid());
         $buyerMonetizationAccountIdentifier = new MonetizationAccountIdentifier(StrTestHelper::generateUuid());
         $money = new Money(1000, Currency::JPY);
-        $paymentMethod = new PaymentMethod(
-            new PaymentMethodIdentifier(StrTestHelper::generateUuid()),
-            PaymentMethodType::CARD,
-            'Visa **** 1234',
-            true,
-        );
+        $paymentMethodIdentifier = new PaymentMethodIdentifier(StrTestHelper::generateUuid());
         $now = new DateTimeImmutable();
 
         $payment = new Payment(
@@ -46,7 +56,7 @@ class AuthorizePaymentOutputTest extends TestCase
             $orderIdentifier,
             $buyerMonetizationAccountIdentifier,
             $money,
-            $paymentMethod,
+            $paymentMethodIdentifier,
             $now,
             PaymentStatus::AUTHORIZED,
             $now,
@@ -55,10 +65,12 @@ class AuthorizePaymentOutputTest extends TestCase
             null,
             new Money(0, Currency::JPY),
             null,
+            stripePaymentIntentId: new StripePaymentIntentId('pi_test123456'),
         );
 
         $output = new AuthorizePaymentOutput();
         $output->setPayment($payment);
+        $output->setPaymentMethod(new PaymentMethod($paymentMethodIdentifier, $buyerMonetizationAccountIdentifier, new ExternalPaymentMethodId('pm_1234567890'), PaymentMethodType::CARD, meta: $meta));
 
         $result = $output->toArray();
 
@@ -67,10 +79,10 @@ class AuthorizePaymentOutputTest extends TestCase
         $this->assertSame((string) $buyerMonetizationAccountIdentifier, $result['buyerMonetizationAccountIdentifier']);
         $this->assertSame(1000, $result['amount']);
         $this->assertSame('JPY', $result['currency']);
-        $this->assertSame((string) $paymentMethod->paymentMethodIdentifier(), $result['paymentMethodIdentifier']);
+        $this->assertSame((string) $paymentMethodIdentifier, $result['paymentMethodIdentifier']);
         $this->assertSame('card', $result['paymentMethodType']);
-        $this->assertSame('Visa **** 1234', $result['paymentMethodLabel']);
-        $this->assertTrue($result['paymentMethodRecurringEnabled']);
+        $this->assertSame($expectedBrand, $result['paymentMethodBrand']);
+        $this->assertSame($expectedLast4, $result['paymentMethodLast4']);
         $this->assertSame('authorized', $result['status']);
         $this->assertSame($now->format(DateTimeInterface::ATOM), $result['createdAt']);
         $this->assertSame($now->format(DateTimeInterface::ATOM), $result['authorizedAt']);
@@ -102,8 +114,8 @@ class AuthorizePaymentOutputTest extends TestCase
             'currency' => null,
             'paymentMethodIdentifier' => null,
             'paymentMethodType' => null,
-            'paymentMethodLabel' => null,
-            'paymentMethodRecurringEnabled' => null,
+            'paymentMethodBrand' => null,
+            'paymentMethodLast4' => null,
             'status' => null,
             'createdAt' => null,
             'authorizedAt' => null,

@@ -5,22 +5,24 @@ declare(strict_types=1);
 namespace Tests\Monetization\Account\Infrastructure\Repository;
 
 use Illuminate\Contracts\Container\BindingResolutionException;
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Group;
-use Source\Monetization\Account\Domain\Entity\RegisteredPaymentMethod;
-use Source\Monetization\Account\Domain\Repository\RegisteredPaymentMethodRepositoryInterface;
+use Source\Monetization\Account\Domain\Entity\PaymentMethod;
+use Source\Monetization\Account\Domain\Repository\PaymentMethodRepositoryInterface;
+use Source\Monetization\Account\Domain\ValueObject\ExternalPaymentMethodId;
 use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
-use Source\Monetization\Account\Domain\ValueObject\PaymentMethodId;
+use Source\Monetization\Account\Domain\ValueObject\PaymentMethodIdentifier;
 use Source\Monetization\Account\Domain\ValueObject\PaymentMethodMeta;
 use Source\Monetization\Account\Domain\ValueObject\PaymentMethodStatus;
 use Source\Monetization\Account\Domain\ValueObject\PaymentMethodType;
-use Source\Monetization\Account\Domain\ValueObject\RegisteredPaymentMethodIdentifier;
 use Tests\Helper\CreateAccount;
 use Tests\Helper\CreateMonetizationAccount;
-use Tests\Helper\CreateRegisteredPaymentMethod;
+use Tests\Helper\CreatePaymentMethod;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
-class RegisteredPaymentMethodRepositoryTest extends TestCase
+class PaymentMethodRepositoryTest extends TestCase
 {
     private string $accountId = '';
     private string $monetizationAccountId = '';
@@ -38,12 +40,91 @@ class RegisteredPaymentMethodRepositoryTest extends TestCase
         ]);
     }
 
+    #[Group('useDb')]
+    public function testRejectsMissingExternalPaymentMethodId(): void
+    {
+        $id = StrTestHelper::generateUuid();
+        CreatePaymentMethod::create($id, ['monetization_account_id' => $this->monetizationAccountId]);
+
+        $this->expectException(QueryException::class);
+        DB::table('monetization_payment_methods')->where('id', $id)->update(['external_payment_method_id' => null]);
+    }
+
+    #[Group('useDb')]
+    public function testScopesExternalPaymentMethodIdsToEachAccount(): void
+    {
+        $otherAccountId = StrTestHelper::generateUuid();
+        CreateMonetizationAccount::create($otherAccountId);
+        $externalId = new ExternalPaymentMethodId('pm_shared123');
+        $firstId = StrTestHelper::generateUuid();
+        $secondId = StrTestHelper::generateUuid();
+        CreatePaymentMethod::create($firstId, ['monetization_account_id' => $this->monetizationAccountId, 'external_payment_method_id' => (string) $externalId]);
+        $repository = $this->app()->make(PaymentMethodRepositoryInterface::class);
+        CreatePaymentMethod::create($secondId, ['monetization_account_id' => $otherAccountId, 'external_payment_method_id' => (string) $externalId]);
+        $first = $repository->findByExternalPaymentMethodId($externalId, new MonetizationAccountIdentifier($this->monetizationAccountId));
+        $second = $repository->findByExternalPaymentMethodId($externalId, new MonetizationAccountIdentifier($otherAccountId));
+        $this->assertNotNull($first);
+        $this->assertNotNull($second);
+        $this->assertSame($firstId, (string) $first->paymentMethodIdentifier());
+        $this->assertSame($secondId, (string) $second->paymentMethodIdentifier());
+    }
+
+    #[Group('useDb')]
+    public function testDoesNotFindExternalPaymentMethodFromAnotherAccount(): void
+    {
+        CreatePaymentMethod::create(StrTestHelper::generateUuid(), [
+            'monetization_account_id' => $this->monetizationAccountId,
+            'external_payment_method_id' => 'pm_other_account123',
+        ]);
+        $otherAccountId = StrTestHelper::generateUuid();
+        CreateMonetizationAccount::create($otherAccountId);
+        $repository = $this->app()->make(PaymentMethodRepositoryInterface::class);
+
+        $this->assertNull($repository->findByExternalPaymentMethodId(
+            new ExternalPaymentMethodId('pm_other_account123'),
+            new MonetizationAccountIdentifier($otherAccountId),
+        ));
+    }
+
+    #[Group('useDb')]
+    public function testRejectsDuplicateExternalPaymentMethodIdWithinAnAccount(): void
+    {
+        $attributes = ['monetization_account_id' => $this->monetizationAccountId, 'external_payment_method_id' => 'pm_duplicate123'];
+        CreatePaymentMethod::create(StrTestHelper::generateUuid(), $attributes);
+
+        $this->expectException(QueryException::class);
+        CreatePaymentMethod::create(StrTestHelper::generateUuid(), $attributes);
+    }
+
     // -------------------------------------------------------------------------
     // find 系テスト
     // -------------------------------------------------------------------------
 
+    #[Group('useDb')]
+    public function testPersistsEntityAttributesAndExternalReference(): void
+    {
+        $accountId = StrTestHelper::generateUuid();
+        CreateMonetizationAccount::create($accountId);
+        $method = new PaymentMethod(
+            new PaymentMethodIdentifier(StrTestHelper::generateUuid()),
+            new MonetizationAccountIdentifier($accountId),
+            new ExternalPaymentMethodId('pm_1234567890'),
+            PaymentMethodType::CARD,
+            meta: new PaymentMethodMeta('visa', '4242', 12, 2030),
+        );
+        $repository = $this->app()->make(PaymentMethodRepositoryInterface::class);
+        $repository->save($method);
+        $restored = $repository->findById($method->paymentMethodIdentifier());
+        $this->assertNotNull($restored);
+        $this->assertNotNull($restored->meta());
+        $this->assertSame('visa', $restored->meta()->brand());
+        $this->assertSame('4242', $restored->meta()->last4());
+        $this->assertSame('pm_1234567890', (string) $restored->externalPaymentMethodId());
+        $this->assertSame(PaymentMethodType::CARD, $restored->type());
+    }
+
     /**
-     * 正常系: 正しくIDに紐づくRegisteredPaymentMethodを取得できること.
+     * 正常系: 正しくIDに紐づくPaymentMethodを取得できること.
      *
      * @throws BindingResolutionException
      */
@@ -53,9 +134,9 @@ class RegisteredPaymentMethodRepositoryTest extends TestCase
         $paymentMethodIdentifierId = StrTestHelper::generateUuid();
         $stripePaymentMethodId = 'pm_' . StrTestHelper::generateStr(20);
 
-        CreateRegisteredPaymentMethod::create($paymentMethodIdentifierId, [
+        CreatePaymentMethod::create($paymentMethodIdentifierId, [
             'monetization_account_id' => $this->monetizationAccountId,
-            'stripe_payment_method_id' => $stripePaymentMethodId,
+            'external_payment_method_id' => $stripePaymentMethodId,
             'type' => 'card',
             'brand' => 'visa',
             'last4' => '4242',
@@ -65,13 +146,13 @@ class RegisteredPaymentMethodRepositoryTest extends TestCase
             'status' => 'active',
         ]);
 
-        $repository = $this->app()->make(RegisteredPaymentMethodRepositoryInterface::class);
-        $result = $repository->findById(new RegisteredPaymentMethodIdentifier($paymentMethodIdentifierId));
+        $repository = $this->app()->make(PaymentMethodRepositoryInterface::class);
+        $result = $repository->findById(new PaymentMethodIdentifier($paymentMethodIdentifierId));
 
         $this->assertNotNull($result);
         $this->assertSame($paymentMethodIdentifierId, (string) $result->paymentMethodIdentifier());
         $this->assertSame($this->monetizationAccountId, (string) $result->monetizationAccountIdentifier());
-        $this->assertSame($stripePaymentMethodId, (string) $result->paymentMethodId());
+        $this->assertSame($stripePaymentMethodId, (string) $result->externalPaymentMethodId());
         $this->assertSame(PaymentMethodType::CARD, $result->type());
         $this->assertNotNull($result->meta());
         $this->assertSame('visa', $result->meta()->brand());
@@ -83,7 +164,7 @@ class RegisteredPaymentMethodRepositoryTest extends TestCase
     }
 
     /**
-     * 正常系: メタ情報がnullのRegisteredPaymentMethodを取得できること.
+     * 正常系: メタ情報がnullのPaymentMethodを取得できること.
      *
      * @throws BindingResolutionException
      */
@@ -92,12 +173,12 @@ class RegisteredPaymentMethodRepositoryTest extends TestCase
     {
         $paymentMethodIdentifierId = StrTestHelper::generateUuid();
 
-        CreateRegisteredPaymentMethod::create($paymentMethodIdentifierId, [
+        CreatePaymentMethod::create($paymentMethodIdentifierId, [
             'monetization_account_id' => $this->monetizationAccountId,
         ]);
 
-        $repository = $this->app()->make(RegisteredPaymentMethodRepositoryInterface::class);
-        $result = $repository->findById(new RegisteredPaymentMethodIdentifier($paymentMethodIdentifierId));
+        $repository = $this->app()->make(PaymentMethodRepositoryInterface::class);
+        $result = $repository->findById(new PaymentMethodIdentifier($paymentMethodIdentifierId));
 
         $this->assertNotNull($result);
         $this->assertNull($result->meta());
@@ -106,59 +187,59 @@ class RegisteredPaymentMethodRepositoryTest extends TestCase
     }
 
     /**
-     * 正常系: 指定したIDを持つRegisteredPaymentMethodが存在しない場合、NULLが返却されること.
+     * 正常系: 指定したIDを持つPaymentMethodが存在しない場合、NULLが返却されること.
      *
      * @throws BindingResolutionException
      */
     #[Group('useDb')]
     public function testFindByIdWhenNotFound(): void
     {
-        $repository = $this->app()->make(RegisteredPaymentMethodRepositoryInterface::class);
-        $result = $repository->findById(new RegisteredPaymentMethodIdentifier(StrTestHelper::generateUuid()));
+        $repository = $this->app()->make(PaymentMethodRepositoryInterface::class);
+        $result = $repository->findById(new PaymentMethodIdentifier(StrTestHelper::generateUuid()));
 
         $this->assertNull($result);
     }
 
     /**
-     * 正常系: PaymentMethodIdに紐づくRegisteredPaymentMethodを取得できること.
+     * 正常系: PaymentMethodIdに紐づくPaymentMethodを取得できること.
      *
      * @throws BindingResolutionException
      */
     #[Group('useDb')]
-    public function testFindByPaymentMethodId(): void
+    public function testFindByExternalPaymentMethodId(): void
     {
         $paymentMethodIdentifierId = StrTestHelper::generateUuid();
         $stripePaymentMethodId = 'pm_' . StrTestHelper::generateStr(20);
 
-        CreateRegisteredPaymentMethod::create($paymentMethodIdentifierId, [
+        CreatePaymentMethod::create($paymentMethodIdentifierId, [
             'monetization_account_id' => $this->monetizationAccountId,
-            'stripe_payment_method_id' => $stripePaymentMethodId,
+            'external_payment_method_id' => $stripePaymentMethodId,
         ]);
 
-        $repository = $this->app()->make(RegisteredPaymentMethodRepositoryInterface::class);
-        $result = $repository->findByPaymentMethodId(new PaymentMethodId($stripePaymentMethodId));
+        $repository = $this->app()->make(PaymentMethodRepositoryInterface::class);
+        $result = $repository->findByExternalPaymentMethodId(new ExternalPaymentMethodId($stripePaymentMethodId), new MonetizationAccountIdentifier($this->monetizationAccountId));
 
         $this->assertNotNull($result);
         $this->assertSame($paymentMethodIdentifierId, (string) $result->paymentMethodIdentifier());
-        $this->assertSame($stripePaymentMethodId, (string) $result->paymentMethodId());
+        $this->assertSame($stripePaymentMethodId, (string) $result->externalPaymentMethodId());
     }
 
     /**
-     * 正常系: 指定したPaymentMethodIdを持つRegisteredPaymentMethodが存在しない場合、NULLが返却されること.
+     * 正常系: 指定したPaymentMethodIdを持つPaymentMethodが存在しない場合、NULLが返却されること.
      *
      * @throws BindingResolutionException
      */
     #[Group('useDb')]
     public function testFindByPaymentMethodIdWhenNotFound(): void
     {
-        $repository = $this->app()->make(RegisteredPaymentMethodRepositoryInterface::class);
-        $result = $repository->findByPaymentMethodId(new PaymentMethodId('pm_' . StrTestHelper::generateStr(20)));
+        $repository = $this->app()->make(PaymentMethodRepositoryInterface::class);
+        $result = $repository->findByExternalPaymentMethodId(new ExternalPaymentMethodId('pm_' . StrTestHelper::generateStr(20)), new MonetizationAccountIdentifier($this->monetizationAccountId));
 
         $this->assertNull($result);
     }
 
     /**
-     * 正常系: MonetizationAccountIdに紐づくデフォルトのRegisteredPaymentMethodを取得できること.
+     * 正常系: MonetizationAccountIdに紐づくデフォルトのPaymentMethodを取得できること.
      *
      * @throws BindingResolutionException
      */
@@ -168,16 +249,16 @@ class RegisteredPaymentMethodRepositoryTest extends TestCase
         $defaultId = StrTestHelper::generateUuid();
         $nonDefaultId = StrTestHelper::generateUuid();
 
-        CreateRegisteredPaymentMethod::create($defaultId, [
+        CreatePaymentMethod::create($defaultId, [
             'monetization_account_id' => $this->monetizationAccountId,
             'is_default' => true,
         ]);
-        CreateRegisteredPaymentMethod::create($nonDefaultId, [
+        CreatePaymentMethod::create($nonDefaultId, [
             'monetization_account_id' => $this->monetizationAccountId,
             'is_default' => false,
         ]);
 
-        $repository = $this->app()->make(RegisteredPaymentMethodRepositoryInterface::class);
+        $repository = $this->app()->make(PaymentMethodRepositoryInterface::class);
         $result = $repository->findDefaultByMonetizationAccountId(
             new MonetizationAccountIdentifier($this->monetizationAccountId)
         );
@@ -188,14 +269,14 @@ class RegisteredPaymentMethodRepositoryTest extends TestCase
     }
 
     /**
-     * 正常系: デフォルトのRegisteredPaymentMethodが存在しない場合、NULLが返却されること.
+     * 正常系: デフォルトのPaymentMethodが存在しない場合、NULLが返却されること.
      *
      * @throws BindingResolutionException
      */
     #[Group('useDb')]
     public function testFindDefaultByMonetizationAccountIdWhenNotFound(): void
     {
-        $repository = $this->app()->make(RegisteredPaymentMethodRepositoryInterface::class);
+        $repository = $this->app()->make(PaymentMethodRepositoryInterface::class);
         $result = $repository->findDefaultByMonetizationAccountId(
             new MonetizationAccountIdentifier(StrTestHelper::generateUuid())
         );
@@ -204,24 +285,24 @@ class RegisteredPaymentMethodRepositoryTest extends TestCase
     }
 
     /**
-     * 正常系: MonetizationAccountIdに紐づく全てのRegisteredPaymentMethodを取得できること.
+     * 正常系: MonetizationAccountIdに紐づく全てのPaymentMethodを取得できること.
      *
      * @throws BindingResolutionException
      */
     #[Group('useDb')]
     public function testFindByMonetizationAccountId(): void
     {
-        $paymentMethodId1 = StrTestHelper::generateUuid();
-        $paymentMethodId2 = StrTestHelper::generateUuid();
+        $externalPaymentMethodId1 = StrTestHelper::generateUuid();
+        $externalPaymentMethodId2 = StrTestHelper::generateUuid();
 
-        CreateRegisteredPaymentMethod::create($paymentMethodId1, [
+        CreatePaymentMethod::create($externalPaymentMethodId1, [
             'monetization_account_id' => $this->monetizationAccountId,
         ]);
-        CreateRegisteredPaymentMethod::create($paymentMethodId2, [
+        CreatePaymentMethod::create($externalPaymentMethodId2, [
             'monetization_account_id' => $this->monetizationAccountId,
         ]);
 
-        $repository = $this->app()->make(RegisteredPaymentMethodRepositoryInterface::class);
+        $repository = $this->app()->make(PaymentMethodRepositoryInterface::class);
         $results = $repository->findByMonetizationAccountId(
             new MonetizationAccountIdentifier($this->monetizationAccountId)
         );
@@ -229,22 +310,22 @@ class RegisteredPaymentMethodRepositoryTest extends TestCase
         $this->assertCount(2, $results);
 
         $resultIds = array_map(
-            static fn (RegisteredPaymentMethod $method) => (string) $method->paymentMethodIdentifier(),
+            static fn (PaymentMethod $method) => (string) $method->paymentMethodIdentifier(),
             $results
         );
-        $this->assertContains($paymentMethodId1, $resultIds);
-        $this->assertContains($paymentMethodId2, $resultIds);
+        $this->assertContains($externalPaymentMethodId1, $resultIds);
+        $this->assertContains($externalPaymentMethodId2, $resultIds);
     }
 
     /**
-     * 正常系: MonetizationAccountIdに紐づくRegisteredPaymentMethodが存在しない場合、空配列が返却されること.
+     * 正常系: MonetizationAccountIdに紐づくPaymentMethodが存在しない場合、空配列が返却されること.
      *
      * @throws BindingResolutionException
      */
     #[Group('useDb')]
     public function testFindByMonetizationAccountIdWhenEmpty(): void
     {
-        $repository = $this->app()->make(RegisteredPaymentMethodRepositoryInterface::class);
+        $repository = $this->app()->make(PaymentMethodRepositoryInterface::class);
         $results = $repository->findByMonetizationAccountId(
             new MonetizationAccountIdentifier(StrTestHelper::generateUuid())
         );
@@ -257,7 +338,7 @@ class RegisteredPaymentMethodRepositoryTest extends TestCase
     // -------------------------------------------------------------------------
 
     /**
-     * 正常系: 正しく新規のRegisteredPaymentMethodを保存できること.
+     * 正常系: 正しく新規のPaymentMethodを保存できること.
      *
      * @throws BindingResolutionException
      */
@@ -267,20 +348,20 @@ class RegisteredPaymentMethodRepositoryTest extends TestCase
         $paymentMethodIdentifierId = StrTestHelper::generateUuid();
         $stripePaymentMethodId = 'pm_' . StrTestHelper::generateStr(20);
 
-        $paymentMethod = new RegisteredPaymentMethod(
-            new RegisteredPaymentMethodIdentifier($paymentMethodIdentifierId),
+        $paymentMethod = new PaymentMethod(
+            new PaymentMethodIdentifier($paymentMethodIdentifierId),
             new MonetizationAccountIdentifier($this->monetizationAccountId),
-            new PaymentMethodId($stripePaymentMethodId),
+            new ExternalPaymentMethodId($stripePaymentMethodId),
             PaymentMethodType::CARD,
         );
 
-        $repository = $this->app()->make(RegisteredPaymentMethodRepositoryInterface::class);
+        $repository = $this->app()->make(PaymentMethodRepositoryInterface::class);
         $repository->save($paymentMethod);
 
-        $this->assertDatabaseHas('monetization_registered_payment_methods', [
+        $this->assertDatabaseHas('monetization_payment_methods', [
             'id' => $paymentMethodIdentifierId,
             'monetization_account_id' => $this->monetizationAccountId,
-            'stripe_payment_method_id' => $stripePaymentMethodId,
+            'external_payment_method_id' => $stripePaymentMethodId,
             'type' => 'card',
             'brand' => null,
             'last4' => null,
@@ -292,7 +373,7 @@ class RegisteredPaymentMethodRepositoryTest extends TestCase
     }
 
     /**
-     * 正常系: メタ情報を含むRegisteredPaymentMethodを保存できること.
+     * 正常系: メタ情報を含むPaymentMethodを保存できること.
      *
      * @throws BindingResolutionException
      */
@@ -309,21 +390,21 @@ class RegisteredPaymentMethodRepositoryTest extends TestCase
             2028,
         );
 
-        $paymentMethod = new RegisteredPaymentMethod(
-            new RegisteredPaymentMethodIdentifier($paymentMethodIdentifierId),
+        $paymentMethod = new PaymentMethod(
+            new PaymentMethodIdentifier($paymentMethodIdentifierId),
             new MonetizationAccountIdentifier($this->monetizationAccountId),
-            new PaymentMethodId($stripePaymentMethodId),
+            new ExternalPaymentMethodId($stripePaymentMethodId),
             PaymentMethodType::CARD,
             $meta,
             true,
         );
 
-        $repository = $this->app()->make(RegisteredPaymentMethodRepositoryInterface::class);
+        $repository = $this->app()->make(PaymentMethodRepositoryInterface::class);
         $repository->save($paymentMethod);
 
-        $this->assertDatabaseHas('monetization_registered_payment_methods', [
+        $this->assertDatabaseHas('monetization_payment_methods', [
             'id' => $paymentMethodIdentifierId,
-            'stripe_payment_method_id' => $stripePaymentMethodId,
+            'external_payment_method_id' => $stripePaymentMethodId,
             'type' => 'card',
             'brand' => 'mastercard',
             'last4' => '5555',
@@ -335,7 +416,7 @@ class RegisteredPaymentMethodRepositoryTest extends TestCase
     }
 
     /**
-     * 正常系: 既存のRegisteredPaymentMethodを更新できること.
+     * 正常系: 既存のPaymentMethodを更新できること.
      *
      * @throws BindingResolutionException
      */
@@ -345,14 +426,14 @@ class RegisteredPaymentMethodRepositoryTest extends TestCase
         $paymentMethodIdentifierId = StrTestHelper::generateUuid();
         $stripePaymentMethodId = 'pm_' . StrTestHelper::generateStr(20);
 
-        $paymentMethod = new RegisteredPaymentMethod(
-            new RegisteredPaymentMethodIdentifier($paymentMethodIdentifierId),
+        $paymentMethod = new PaymentMethod(
+            new PaymentMethodIdentifier($paymentMethodIdentifierId),
             new MonetizationAccountIdentifier($this->monetizationAccountId),
-            new PaymentMethodId($stripePaymentMethodId),
+            new ExternalPaymentMethodId($stripePaymentMethodId),
             PaymentMethodType::CARD,
         );
 
-        $repository = $this->app()->make(RegisteredPaymentMethodRepositoryInterface::class);
+        $repository = $this->app()->make(PaymentMethodRepositoryInterface::class);
         $repository->save($paymentMethod);
 
         // メタ情報を追加して更新
@@ -365,7 +446,7 @@ class RegisteredPaymentMethodRepositoryTest extends TestCase
         $paymentMethod->markAsDefault();
         $repository->save($paymentMethod);
 
-        $this->assertDatabaseHas('monetization_registered_payment_methods', [
+        $this->assertDatabaseHas('monetization_payment_methods', [
             'id' => $paymentMethodIdentifierId,
             'brand' => 'visa',
             'last4' => '4242',
@@ -375,7 +456,7 @@ class RegisteredPaymentMethodRepositoryTest extends TestCase
         ]);
 
         // 再取得して検証
-        $result = $repository->findById(new RegisteredPaymentMethodIdentifier($paymentMethodIdentifierId));
+        $result = $repository->findById(new PaymentMethodIdentifier($paymentMethodIdentifierId));
         $this->assertNotNull($result);
         $this->assertNotNull($result->meta());
         $this->assertSame('visa', $result->meta()->brand());
@@ -383,7 +464,7 @@ class RegisteredPaymentMethodRepositoryTest extends TestCase
     }
 
     /**
-     * 正常系: RegisteredPaymentMethodのステータスを変更して保存できること.
+     * 正常系: PaymentMethodのステータスを変更して保存できること.
      *
      * @throws BindingResolutionException
      */
@@ -393,27 +474,27 @@ class RegisteredPaymentMethodRepositoryTest extends TestCase
         $paymentMethodIdentifierId = StrTestHelper::generateUuid();
         $stripePaymentMethodId = 'pm_' . StrTestHelper::generateStr(20);
 
-        $paymentMethod = new RegisteredPaymentMethod(
-            new RegisteredPaymentMethodIdentifier($paymentMethodIdentifierId),
+        $paymentMethod = new PaymentMethod(
+            new PaymentMethodIdentifier($paymentMethodIdentifierId),
             new MonetizationAccountIdentifier($this->monetizationAccountId),
-            new PaymentMethodId($stripePaymentMethodId),
+            new ExternalPaymentMethodId($stripePaymentMethodId),
             PaymentMethodType::CARD,
         );
 
-        $repository = $this->app()->make(RegisteredPaymentMethodRepositoryInterface::class);
+        $repository = $this->app()->make(PaymentMethodRepositoryInterface::class);
         $repository->save($paymentMethod);
 
         // ステータスを無効化
         $paymentMethod->deactivate();
         $repository->save($paymentMethod);
 
-        $this->assertDatabaseHas('monetization_registered_payment_methods', [
+        $this->assertDatabaseHas('monetization_payment_methods', [
             'id' => $paymentMethodIdentifierId,
             'status' => 'inactive',
         ]);
 
         // 再取得して検証
-        $result = $repository->findById(new RegisteredPaymentMethodIdentifier($paymentMethodIdentifierId));
+        $result = $repository->findById(new PaymentMethodIdentifier($paymentMethodIdentifierId));
         $this->assertNotNull($result);
         $this->assertSame(PaymentMethodStatus::INACTIVE, $result->status());
     }

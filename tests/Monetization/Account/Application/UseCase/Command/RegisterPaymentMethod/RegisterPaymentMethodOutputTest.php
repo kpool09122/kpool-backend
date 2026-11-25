@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Tests\Monetization\Account\Application\UseCase\Command\RegisterPaymentMethod;
 
 use Source\Monetization\Account\Application\UseCase\Command\RegisterPaymentMethod\RegisterPaymentMethodOutput;
-use Source\Monetization\Account\Domain\Entity\RegisteredPaymentMethod;
+use Source\Monetization\Account\Domain\Entity\PaymentMethod;
+use Source\Monetization\Account\Domain\ValueObject\ExternalPaymentMethodId;
 use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
-use Source\Monetization\Account\Domain\ValueObject\PaymentMethodId;
+use Source\Monetization\Account\Domain\ValueObject\PaymentMethodIdentifier;
 use Source\Monetization\Account\Domain\ValueObject\PaymentMethodMeta;
 use Source\Monetization\Account\Domain\ValueObject\PaymentMethodType;
-use Source\Monetization\Account\Domain\ValueObject\RegisteredPaymentMethodIdentifier;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
@@ -22,9 +22,9 @@ class RegisterPaymentMethodOutputTest extends TestCase
     public function testToArrayWithPaymentMethod(): void
     {
         $identifierValue = StrTestHelper::generateUuid();
-        $identifier = new RegisteredPaymentMethodIdentifier($identifierValue);
+        $identifier = new PaymentMethodIdentifier($identifierValue);
         $accountIdentifier = new MonetizationAccountIdentifier(StrTestHelper::generateUuid());
-        $paymentMethodId = new PaymentMethodId('pm_1234567890');
+        $externalPaymentMethodId = new ExternalPaymentMethodId('pm_1234567890');
         $meta = new PaymentMethodMeta(
             brand: 'visa',
             last4: '4242',
@@ -32,29 +32,28 @@ class RegisterPaymentMethodOutputTest extends TestCase
             expYear: 2030,
         );
 
-        $paymentMethod = new RegisteredPaymentMethod(
+        $paymentMethod = new PaymentMethod(
             paymentMethodIdentifier: $identifier,
             monetizationAccountIdentifier: $accountIdentifier,
-            paymentMethodId: $paymentMethodId,
+            externalPaymentMethodId: $externalPaymentMethodId,
             type: PaymentMethodType::CARD,
             meta: $meta,
             isDefault: true,
         );
 
         $output = new RegisterPaymentMethodOutput();
-        $output->setRegisteredPaymentMethod($paymentMethod);
+        $output->setPaymentMethod($paymentMethod);
 
         $result = $output->toArray();
 
-        $this->assertSame($identifierValue, $result['registeredPaymentMethodIdentifier']);
-        $this->assertSame('pm_1234567890', $result['paymentMethodId']);
+        $this->assertSame($identifierValue, $result['paymentMethodIdentifier']);
+        $this->assertSame('pm_1234567890', $result['externalPaymentMethodId']);
         $this->assertSame('card', $result['type']);
         $this->assertSame('visa', $result['brand']);
         $this->assertSame('4242', $result['last4']);
         $this->assertSame(12, $result['expMonth']);
         $this->assertSame(2030, $result['expYear']);
         $this->assertTrue($result['isDefault']);
-        $this->assertFalse($result['skipped']);
     }
 
     /**
@@ -63,29 +62,28 @@ class RegisterPaymentMethodOutputTest extends TestCase
     public function testToArrayWithPaymentMethodWithoutMeta(): void
     {
         $identifierValue = StrTestHelper::generateUuid();
-        $identifier = new RegisteredPaymentMethodIdentifier($identifierValue);
+        $identifier = new PaymentMethodIdentifier($identifierValue);
         $accountIdentifier = new MonetizationAccountIdentifier(StrTestHelper::generateUuid());
-        $paymentMethodId = new PaymentMethodId('pm_1234567890');
+        $externalPaymentMethodId = new ExternalPaymentMethodId('pm_1234567890');
 
-        $paymentMethod = new RegisteredPaymentMethod(
+        $paymentMethod = new PaymentMethod(
             paymentMethodIdentifier: $identifier,
             monetizationAccountIdentifier: $accountIdentifier,
-            paymentMethodId: $paymentMethodId,
+            externalPaymentMethodId: $externalPaymentMethodId,
             type: PaymentMethodType::CARD,
         );
 
         $output = new RegisterPaymentMethodOutput();
-        $output->setRegisteredPaymentMethod($paymentMethod);
+        $output->setPaymentMethod($paymentMethod);
 
         $result = $output->toArray();
 
-        $this->assertSame($identifierValue, $result['registeredPaymentMethodIdentifier']);
+        $this->assertSame($identifierValue, $result['paymentMethodIdentifier']);
         $this->assertNull($result['brand']);
         $this->assertNull($result['last4']);
         $this->assertNull($result['expMonth']);
         $this->assertNull($result['expYear']);
         $this->assertFalse($result['isDefault']);
-        $this->assertFalse($result['skipped']);
     }
 
     /**
@@ -98,24 +96,7 @@ class RegisterPaymentMethodOutputTest extends TestCase
         $result = $output->toArray();
 
         $this->assertSame([
-            'registeredPaymentMethodIdentifier' => null,
-            'skipped' => false,
-        ], $result);
-    }
-
-    /**
-     * 正常系: skippedがtrueにセットされている場合、toArrayが正しい値を返すこと
-     */
-    public function testToArrayWithSkipped(): void
-    {
-        $output = new RegisterPaymentMethodOutput();
-        $output->setSkipped(true);
-
-        $result = $output->toArray();
-
-        $this->assertSame([
-            'registeredPaymentMethodIdentifier' => null,
-            'skipped' => true,
+            'paymentMethodIdentifier' => null,
         ], $result);
     }
 }

@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
+use Source\Monetization\Account\Domain\ValueObject\PaymentMethodIdentifier;
 use Source\Monetization\Payment\Application\UseCase\Command\RefundPayment\RefundPaymentInput;
 use Source\Monetization\Payment\Application\UseCase\Command\RefundPayment\RefundPaymentInterface;
 use Source\Monetization\Payment\Application\UseCase\Command\RefundPayment\RefundPaymentOutput;
@@ -16,10 +17,8 @@ use Source\Monetization\Payment\Domain\Exception\PaymentNotFoundException;
 use Source\Monetization\Payment\Domain\Repository\PaymentRepositoryInterface;
 use Source\Monetization\Payment\Domain\Service\PaymentGatewayInterface;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentIdentifier;
-use Source\Monetization\Payment\Domain\ValueObject\PaymentMethod;
-use Source\Monetization\Payment\Domain\ValueObject\PaymentMethodIdentifier;
-use Source\Monetization\Payment\Domain\ValueObject\PaymentMethodType;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentStatus;
+use Source\Monetization\Payment\Domain\ValueObject\StripePaymentIntentId;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
 use Source\Shared\Domain\ValueObject\OrderIdentifier;
@@ -155,12 +154,7 @@ class RefundPaymentTest extends TestCase
         $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUuid());
         $buyerMonetizationAccountIdentifier = new MonetizationAccountIdentifier(StrTestHelper::generateUuid());
         $money = new Money(1000, Currency::JPY);
-        $paymentMethod = new PaymentMethod(
-            new PaymentMethodIdentifier(StrTestHelper::generateUuid()),
-            PaymentMethodType::CARD,
-            'Visa **** 1234',
-            true,
-        );
+        $paymentMethodIdentifier = new PaymentMethodIdentifier(StrTestHelper::generateUuid());
         $now = new DateTimeImmutable();
 
         return new Payment(
@@ -168,7 +162,7 @@ class RefundPaymentTest extends TestCase
             $orderIdentifier,
             $buyerMonetizationAccountIdentifier,
             $money,
-            $paymentMethod,
+            $paymentMethodIdentifier,
             $now,
             PaymentStatus::CAPTURED,
             $now,
@@ -178,6 +172,7 @@ class RefundPaymentTest extends TestCase
             new Money(0, $money->currency()),
             null,
             null,
+            stripePaymentIntentId: new StripePaymentIntentId('pi_test123456'),
         );
     }
 }

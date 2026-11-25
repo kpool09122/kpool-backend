@@ -17,9 +17,6 @@ use Override;
  * @property string $currency
  * @property int $amount
  * @property string $payment_method_id
- * @property string $payment_method_type
- * @property string $payment_method_label
- * @property bool $payment_method_recurring_enabled
  * @property Carbon $created_at
  * @property string $status
  * @property ?Carbon $authorized_at
@@ -30,7 +27,6 @@ use Override;
  * @property ?Carbon $last_refunded_at
  * @property ?string $last_refund_reason
  * @property ?string $stripe_payment_intent_id
- * @property ?string $stripe_payment_method_id
  */
 #[Fillable([
     'id',
@@ -39,9 +35,6 @@ use Override;
     'currency',
     'amount',
     'payment_method_id',
-    'payment_method_type',
-    'payment_method_label',
-    'payment_method_recurring_enabled',
     'created_at',
     'status',
     'authorized_at',
@@ -52,7 +45,6 @@ use Override;
     'last_refunded_at',
     'last_refund_reason',
     'stripe_payment_intent_id',
-    'stripe_payment_method_id',
 ])]
 #[Table(name: 'payments', keyType: 'string')]
 class Payment extends Model
@@ -68,7 +60,6 @@ class Payment extends Model
     {
         return [
             'amount' => 'integer',
-            'payment_method_recurring_enabled' => 'boolean',
             'created_at' => 'datetime',
             'authorized_at' => 'datetime',
             'captured_at' => 'datetime',

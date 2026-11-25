@@ -7,13 +7,12 @@ namespace Source\Monetization\Payment\Infrastructure\Repository;
 use Application\Models\Monetization\Payment as PaymentEloquent;
 use DateTimeImmutable;
 use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
+use Source\Monetization\Account\Domain\ValueObject\PaymentMethodIdentifier;
 use Source\Monetization\Payment\Domain\Entity\Payment;
 use Source\Monetization\Payment\Domain\Repository\PaymentRepositoryInterface;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentIdentifier;
-use Source\Monetization\Payment\Domain\ValueObject\PaymentMethod;
-use Source\Monetization\Payment\Domain\ValueObject\PaymentMethodIdentifier;
-use Source\Monetization\Payment\Domain\ValueObject\PaymentMethodType;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentStatus;
+use Source\Monetization\Payment\Domain\ValueObject\StripePaymentIntentId;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
 use Source\Shared\Domain\ValueObject\OrderIdentifier;
@@ -42,10 +41,8 @@ class PaymentRepository implements PaymentRepositoryInterface
                 'buyer_monetization_account_id' => (string) $payment->buyerMonetizationAccountIdentifier(),
                 'currency' => $payment->money()->currency()->value,
                 'amount' => $payment->money()->amount(),
-                'payment_method_id' => (string) $payment->paymentMethod()->paymentMethodIdentifier(),
-                'payment_method_type' => $payment->paymentMethod()->type()->value,
-                'payment_method_label' => $payment->paymentMethod()->label(),
-                'payment_method_recurring_enabled' => $payment->paymentMethod()->isRecurringEnabled(),
+                'payment_method_id' => (string) $payment->paymentMethodIdentifier(),
+                'stripe_payment_intent_id' => $payment->stripePaymentIntentId() !== null ? (string) $payment->stripePaymentIntentId() : null,
                 'created_at' => $payment->createdAt(),
                 'status' => $payment->status()->value,
                 'authorized_at' => $payment->authorizedAt(),
@@ -63,19 +60,12 @@ class PaymentRepository implements PaymentRepositoryInterface
     {
         $currency = Currency::from($eloquent->currency);
 
-        $paymentMethod = new PaymentMethod(
-            new PaymentMethodIdentifier($eloquent->payment_method_id),
-            PaymentMethodType::from($eloquent->payment_method_type),
-            $eloquent->payment_method_label,
-            $eloquent->payment_method_recurring_enabled,
-        );
-
         return new Payment(
             new PaymentIdentifier($eloquent->id),
             new OrderIdentifier($eloquent->order_id),
             new MonetizationAccountIdentifier($eloquent->buyer_monetization_account_id),
             new Money($eloquent->amount, $currency),
-            $paymentMethod,
+            new PaymentMethodIdentifier($eloquent->payment_method_id),
             new DateTimeImmutable($eloquent->created_at->toDateTimeString()),
             PaymentStatus::from($eloquent->status),
             $eloquent->authorized_at !== null
@@ -93,6 +83,7 @@ class PaymentRepository implements PaymentRepositoryInterface
                 ? new DateTimeImmutable($eloquent->last_refunded_at->toDateTimeString())
                 : null,
             $eloquent->last_refund_reason,
+            $eloquent->stripe_payment_intent_id !== null ? new StripePaymentIntentId($eloquent->stripe_payment_intent_id) : null,
         );
     }
 }

@@ -8,16 +8,15 @@ use DateTimeImmutable;
 use DomainException;
 use Exception;
 use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
+use Source\Monetization\Account\Domain\ValueObject\PaymentMethodIdentifier;
 use Source\Monetization\Billing\Domain\Entity\Invoice;
 use Source\Monetization\Billing\Domain\ValueObject\InvoiceIdentifier;
 use Source\Monetization\Billing\Domain\ValueObject\InvoiceLine;
 use Source\Monetization\Billing\Domain\ValueObject\InvoiceStatus;
 use Source\Monetization\Payment\Domain\Entity\Payment;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentIdentifier;
-use Source\Monetization\Payment\Domain\ValueObject\PaymentMethod;
-use Source\Monetization\Payment\Domain\ValueObject\PaymentMethodIdentifier;
-use Source\Monetization\Payment\Domain\ValueObject\PaymentMethodType;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentStatus;
+use Source\Monetization\Payment\Domain\ValueObject\StripePaymentIntentId;
 use Source\Monetization\Shared\Service\PaymentMatcherServiceInterface;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
@@ -149,12 +148,7 @@ class PaymentMatcherServiceTest extends TestCase
             $orderIdentifier,
             new MonetizationAccountIdentifier(StrTestHelper::generateUuid()),
             $money,
-            new PaymentMethod(
-                new PaymentMethodIdentifier(StrTestHelper::generateUuid()),
-                PaymentMethodType::CARD,
-                'VISA',
-                true
-            ),
+            new PaymentMethodIdentifier(StrTestHelper::generateUuid()),
             new DateTimeImmutable('2023-12-24'),
             $status ?? PaymentStatus::CAPTURED,
             new DateTimeImmutable('2023-12-28'),
@@ -163,6 +157,7 @@ class PaymentMatcherServiceTest extends TestCase
             null,
             new Money(0, Currency::JPY),
             null,
+            stripePaymentIntentId: new StripePaymentIntentId('pi_test123456'),
         );
     }
 }

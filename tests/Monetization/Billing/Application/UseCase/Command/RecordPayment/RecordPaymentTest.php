@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
+use Source\Monetization\Account\Domain\ValueObject\PaymentMethodIdentifier;
 use Source\Monetization\Billing\Application\UseCase\Command\RecordPayment\RecordPaymentInput;
 use Source\Monetization\Billing\Application\UseCase\Command\RecordPayment\RecordPaymentInterface;
 use Source\Monetization\Billing\Application\UseCase\Command\RecordPayment\RecordPaymentOutput;
@@ -21,10 +22,8 @@ use Source\Monetization\Payment\Domain\Entity\Payment;
 use Source\Monetization\Payment\Domain\Exception\PaymentNotFoundException;
 use Source\Monetization\Payment\Domain\Repository\PaymentRepositoryInterface;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentIdentifier;
-use Source\Monetization\Payment\Domain\ValueObject\PaymentMethod;
-use Source\Monetization\Payment\Domain\ValueObject\PaymentMethodIdentifier;
-use Source\Monetization\Payment\Domain\ValueObject\PaymentMethodType;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentStatus;
+use Source\Monetization\Payment\Domain\ValueObject\StripePaymentIntentId;
 use Source\Monetization\Shared\Exception\PaymentAmountMismatchForMatchingException;
 use Source\Monetization\Shared\Service\PaymentMatcherServiceInterface;
 use Source\Shared\Domain\ValueObject\Currency;
@@ -239,19 +238,14 @@ class RecordPaymentTest extends TestCase
     private function createCapturedPayment(PaymentIdentifier $paymentIdentifier, Money $money): Payment
     {
         $now = new DateTimeImmutable();
-        $paymentMethod = new PaymentMethod(
-            new PaymentMethodIdentifier(StrTestHelper::generateUuid()),
-            PaymentMethodType::CARD,
-            'Visa **** 1234',
-            true,
-        );
+        $paymentMethodIdentifier = new PaymentMethodIdentifier(StrTestHelper::generateUuid());
 
         return new Payment(
             $paymentIdentifier,
             new OrderIdentifier(StrTestHelper::generateUuid()),
             new MonetizationAccountIdentifier(StrTestHelper::generateUuid()),
             $money,
-            $paymentMethod,
+            $paymentMethodIdentifier,
             $now,
             PaymentStatus::CAPTURED,
             $now,
@@ -260,6 +254,7 @@ class RecordPaymentTest extends TestCase
             null,
             new Money(0, $money->currency()),
             null,
+            stripePaymentIntentId: new StripePaymentIntentId('pi_test123456'),
         );
     }
 }

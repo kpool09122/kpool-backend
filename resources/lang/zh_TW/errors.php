@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 return [
+    'payment_method_already_exists' => '此付款方式已註冊。',
+    'invalid_payment_method' => '此付款無法使用指定的付款方式。',
     'account_snapshot_change_request_not_found' => '找不到快照變更申請。',
     'invalid_account_snapshot_change_request' => '已存在待審核的快照變更申請。',
     'invalid_account_snapshot_change_request_approval' => '無法核准此快照變更申請。',

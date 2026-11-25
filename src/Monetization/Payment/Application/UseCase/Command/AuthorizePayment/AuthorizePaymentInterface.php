@@ -7,6 +7,7 @@ namespace Source\Monetization\Payment\Application\UseCase\Command\AuthorizePayme
 use Source\Monetization\Payment\Application\Exception\ApiException;
 use Source\Monetization\Payment\Domain\Exception\InvalidPaymentStatusException;
 use Source\Monetization\Payment\Domain\Exception\PaymentGatewayException;
+use Source\Monetization\Shared\Exception\InvalidPaymentMethodException;
 
 interface AuthorizePaymentInterface
 {
@@ -14,6 +15,7 @@ interface AuthorizePaymentInterface
      * @param AuthorizePaymentInputPort $input
      * @param AuthorizePaymentOutputPort $output
      * @return void
+     * @throws InvalidPaymentMethodException
      * @throws PaymentGatewayException
      * @throws ApiException
      * @throws InvalidPaymentStatusException

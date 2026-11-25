@@ -8,4 +8,5 @@ enum Action: string
 {
     case PRINCIPAL_GROUP_READ = 'principal_group_read';
     case PRINCIPAL_GROUP_MANAGE = 'principal_group_manage';
+    case PAYMENT_METHOD_REGISTER = 'payment_method_register';
 }

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Source\Monetization\Payment\Domain\ValueObject;
+namespace Source\Monetization\Account\Domain\ValueObject;
 
 use InvalidArgumentException;
 use Source\Shared\Application\Service\Uuid\UuidValidator;
@@ -13,7 +13,7 @@ class PaymentMethodIdentifier extends StringBaseValue
     protected function validate(string $value): void
     {
         if (! UuidValidator::isValid($value)) {
-            throw new InvalidArgumentException('Payment method id must be ULID format.');
+            throw new InvalidArgumentException('Invalid PaymentMethodIdentifier.');
         }
     }
 }

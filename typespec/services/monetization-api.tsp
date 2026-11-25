@@ -24,8 +24,8 @@ model PrincipalConditionClause {
 
 model PrincipalPolicyStatement {
   effect: "allow" | "deny";
-  actions: ("principal_group_read" | "principal_group_manage")[];
-  resourceTypes: "principal_group"[];
+  actions: ("principal_group_read" | "principal_group_manage" | "payment_method_register")[];
+  resourceTypes: ("principal_group" | "payment_method")[];
   condition: { clauses: PrincipalConditionClause[] } | null;
 }
 
@@ -162,13 +162,6 @@ enum MonetizationCapability {
 @doc("Supported payment method types.")
 enum PaymentMethodType {
   card,
-  bank_transfer,
-  wallet,
-}
-
-@doc("Account payment method type accepted by registration.")
-enum AccountPaymentMethodType {
-  card,
 }
 
 @doc("Account holder classification for payout accounts.")
@@ -227,14 +220,14 @@ model SellerOnboardingSummary {
   onboardingUrl?: string | null;
 }
 
-@doc("Registered payment method snapshot.")
-model RegisteredPaymentMethodSummary {
-  @doc("Registered payment method identifier.")
-  registeredPaymentMethodIdentifier: Uuid;
+@doc("Current payment method managed by the monetization account.")
+model PaymentMethodSummary {
+  @doc("Internal payment method identifier.")
+  paymentMethodIdentifier: Uuid;
   @doc("Gateway payment method identifier.")
-  paymentMethodId: string;
-  @doc("Registered payment method type.")
-  type: AccountPaymentMethodType;
+  externalPaymentMethodId: string;
+  @doc("Payment method type.")
+  type: PaymentMethodType;
   @doc("Card brand returned from metadata.")
   brand?: string | null;
   @doc("Last four digits returned from metadata.")
@@ -245,8 +238,6 @@ model RegisteredPaymentMethodSummary {
   expYear?: int32 | null;
   @doc("Whether the method is the default one.")
   isDefault: boolean;
-  @doc("Whether registration was skipped because the method already existed.")
-  skipped: boolean;
 }
 
 @doc("Payment snapshot returned by authorize/capture/refund commands.")
@@ -263,12 +254,6 @@ model PaymentSummary {
   currency: CurrencyCode;
   @doc("Payment method identifier.")
   paymentMethodIdentifier: Uuid;
-  @doc("Payment method type.")
-  paymentMethodType: PaymentMethodType;
-  @doc("Human-readable payment method label.")
-  paymentMethodLabel: string;
-  @doc("Whether recurring usage is enabled.")
-  paymentMethodRecurringEnabled: boolean;
   @doc("Current payment status.")
   status: PaymentStatus;
   @doc("Creation timestamp.")
@@ -289,6 +274,16 @@ model PaymentSummary {
   lastRefundedAt?: Timestamp | null;
   @doc("Reason for the latest refund.")
   lastRefundReason?: string | null;
+}
+
+@doc("Authorized payment with payment method display information.")
+model AuthorizedPaymentSummary extends PaymentSummary {
+  @doc("Payment method type.")
+  paymentMethodType: PaymentMethodType;
+  @doc("Card brand loaded from the payment method metadata.")
+  paymentMethodBrand: string | null;
+  @doc("Last four digits for masked payment method display.")
+  paymentMethodLast4: string | null;
 }
 
 @doc("Invoice snapshot returned by create/record-payment commands.")
@@ -394,9 +389,9 @@ model OnboardSellerRequestBody {
 @doc("Request body for registering a payment method.")
 model RegisterPaymentMethodRequestBody {
   @doc("Gateway payment method identifier.")
-  paymentMethodId: string;
+  externalPaymentMethodId: string;
   @doc("Payment method type.")
-  type: AccountPaymentMethodType;
+  type: PaymentMethodType;
 }
 
 @doc("Request body for syncing a payout account webhook payload.")
@@ -433,12 +428,7 @@ model AuthorizePaymentRequestBody {
   currency: CurrencyCode;
   @doc("Payment method identifier.")
   paymentMethodId: Uuid;
-  @doc("Payment method type.")
-  paymentMethodType: PaymentMethodType;
-  @doc("Human-readable payment method label.")
-  paymentMethodLabel: string;
-  @doc("Whether recurring usage is enabled.")
-  paymentMethodRecurringEnabled: boolean;
+
 }
 
 @doc("Request body for refunding a payment.")
@@ -526,7 +516,7 @@ model OnboardSellerResponse {
 @doc("Response returned when a payment method is registered.")
 model RegisterPaymentMethodResponse {
   @statusCode statusCode: 201;
-  @body body: RegisteredPaymentMethodSummary;
+  @body body: PaymentMethodSummary;
 }
 
 @doc("Response returned when a command succeeds without a payload.")
@@ -538,7 +528,7 @@ model OkEmptyArrayResponse {
 @doc("Response returned when a payment command creates a payment.")
 model CreatedPaymentResponse {
   @statusCode statusCode: 201;
-  @body body: PaymentSummary;
+  @body body: AuthorizedPaymentSummary;
 }
 
 @doc("Response returned when a payment command succeeds.")
@@ -587,7 +577,7 @@ interface MonetizationAccountOperations {
   registerPaymentMethod(
     @path monetizationAccountId: Uuid,
     @body body: RegisterPaymentMethodRequestBody,
-  ): RegisterPaymentMethodResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+  ): RegisterPaymentMethodResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
 
   @post
   @route("/sync-payout-account")
