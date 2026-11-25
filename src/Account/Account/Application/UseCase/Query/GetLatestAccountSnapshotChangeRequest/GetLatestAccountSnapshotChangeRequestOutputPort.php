@@ -8,5 +8,5 @@ use Source\Account\Account\Application\UseCase\Query\AccountSnapshotChangeReques
 
 interface GetLatestAccountSnapshotChangeRequestOutputPort
 {
-    public function output(?AccountSnapshotChangeRequestReadModel $request, bool $changeRequiresApproval): void;
+    public function output(?AccountSnapshotChangeRequestReadModel $request, bool $changeRequiresApproval, bool $hasChanges): void;
 }

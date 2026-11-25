@@ -20,6 +20,7 @@ use Source\Account\Account\Application\Exception\AccountSnapshotNotFoundExceptio
 use Source\Account\Account\Application\Exception\IncompleteAccountContactForCategoryChangeException;
 use Source\Account\Account\Application\Exception\InvalidAccountSnapshotChangeRequestException;
 use Source\Account\Account\Application\Exception\InvalidDocumentsForVerificationException;
+use Source\Account\Account\Application\Exception\NoAccountSnapshotChangesException;
 use Source\Account\Account\Application\UseCase\Command\RequestAccountSnapshotChange\RequestAccountSnapshotChangeInput;
 use Source\Account\Account\Application\UseCase\Command\RequestAccountSnapshotChange\RequestAccountSnapshotChangeInterface;
 use Source\Account\Account\Application\UseCase\Command\RequestAccountSnapshotChange\RequestAccountSnapshotChangeOutput;
@@ -52,6 +53,8 @@ readonly class RequestAccountSnapshotChangeAction
 
                 return response()->json($output->toArray(), 201);
 
+            } catch (NoAccountSnapshotChangesException $e) {
+                throw new UnprocessableEntityHttpException(detail: error_message('no_account_snapshot_changes', $language), previous: $e);
             } catch (InvalidAccountSnapshotChangeRequestException $e) {
                 throw new ConflictHttpException(detail: error_message('invalid_account_snapshot_change_request', $language), previous: $e);
             } catch (AccountSnapshotChangeRequestForbiddenException $e) {

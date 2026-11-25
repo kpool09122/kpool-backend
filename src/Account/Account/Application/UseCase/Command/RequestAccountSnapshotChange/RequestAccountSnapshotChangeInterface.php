@@ -10,11 +10,13 @@ use Source\Account\Account\Application\Exception\AccountSnapshotNotFoundExceptio
 use Source\Account\Account\Application\Exception\IncompleteAccountContactForCategoryChangeException;
 use Source\Account\Account\Application\Exception\InvalidAccountSnapshotChangeRequestException;
 use Source\Account\Account\Application\Exception\InvalidDocumentsForVerificationException;
+use Source\Account\Account\Application\Exception\NoAccountSnapshotChangesException;
 use Source\Account\Account\Domain\Exception\AccountSetupUnavailableException;
 
 interface RequestAccountSnapshotChangeInterface
 {
     /**
+     * @throws NoAccountSnapshotChangesException
      * @throws InvalidAccountSnapshotChangeRequestException
      * @throws AccountSnapshotChangeRequestForbiddenException
      * @throws AccountSnapshotNotFoundException
