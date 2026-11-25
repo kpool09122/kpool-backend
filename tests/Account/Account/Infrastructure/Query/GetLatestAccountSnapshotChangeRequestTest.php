@@ -47,6 +47,25 @@ class GetLatestAccountSnapshotChangeRequestTest extends TestCase
         self::assertFalse($output->toArray()['hasChanges']);
     }
 
+    public function testCategoryPendingLockEndsAfterReviewOrWithdrawal(): void
+    {
+        $id = CreateAccountSnapshotChangeRequest::prepare();
+        $requestId = StrTestHelper::generateUuid();
+        DB::table('account_category_change_requests')->insert(['id' => $requestId, 'account_id' => (string) $id, 'current_account_category' => 'general', 'requested_account_category' => 'talent', 'status' => 'pending', 'requested_at' => now(), 'snapshot_id' => DB::table('account_snapshots')->where('account_id', (string) $id)->value('id')]);
+        $query = $this->app()->make(GetLatestAccountSnapshotChangeRequestInterface::class);
+        $input = new GetLatestAccountSnapshotChangeRequestInput($id, CreateAccountSnapshot::principal($id));
+        $output = new GetLatestAccountSnapshotChangeRequestOutput();
+        $query->process($input, $output);
+        self::assertTrue($output->toArray()['categoryChangePending']);
+        self::assertFalse($output->toArray()['changeRequiresApproval']);
+        foreach (['withdrawn', 'rejected', 'approved'] as $status) {
+            DB::table('account_category_change_requests')->where('id', $requestId)->update(['status' => $status]);
+            $query->process($input, $output);
+            self::assertFalse($output->toArray()['categoryChangePending']);
+            self::assertSame($status === 'approved', $output->toArray()['changeRequiresApproval']);
+        }
+    }
+
     public function testLatestStateAndNeedForApprovalComeFromSeparateHistories(): void
     {
         $id = CreateAccountSnapshotChangeRequest::prepare();
@@ -54,7 +73,7 @@ class GetLatestAccountSnapshotChangeRequestTest extends TestCase
         $input = new GetLatestAccountSnapshotChangeRequestInput($id, CreateAccountSnapshot::principal($id));
         $output = new GetLatestAccountSnapshotChangeRequestOutput();
         $query->process($input, $output);
-        self::assertSame(['request' => null, 'changeRequiresApproval' => false, 'hasChanges' => false], $output->toArray());
+        self::assertSame(['request' => null, 'changeRequiresApproval' => false, 'hasChanges' => false, 'categoryChangePending' => false], $output->toArray());
         $requestId = CreateAccountSnapshotChangeRequest::create($id);
         DB::table('account_category_change_requests')->insert(['id' => StrTestHelper::generateUuid(), 'account_id' => (string) $id, 'current_account_category' => 'general', 'requested_account_category' => 'talent', 'status' => 'approved', 'requested_at' => now(), 'snapshot_id' => DB::table('account_snapshots')->where('account_id', (string) $id)->value('id')]);
         $query->process($input, $output);

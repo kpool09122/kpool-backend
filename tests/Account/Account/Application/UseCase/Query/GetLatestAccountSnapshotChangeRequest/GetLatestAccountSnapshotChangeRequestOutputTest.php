@@ -14,8 +14,8 @@ class GetLatestAccountSnapshotChangeRequestOutputTest extends TestCase
     {
         $output = new GetLatestAccountSnapshotChangeRequestOutput();
         $model = CreateAccountSnapshotChangeRequest::readModel();
-        self::assertSame(['request' => null, 'changeRequiresApproval' => false, 'hasChanges' => false], $output->toArray());
-        $output->output($model, true, true);
-        self::assertSame(['request' => $model->summary(), 'changeRequiresApproval' => true, 'hasChanges' => true], $output->toArray());
+        self::assertSame(['request' => null, 'changeRequiresApproval' => false, 'hasChanges' => false, 'categoryChangePending' => false], $output->toArray());
+        $output->output($model, true, true, true);
+        self::assertSame(['request' => $model->summary(), 'changeRequiresApproval' => true, 'hasChanges' => true, 'categoryChangePending' => true], $output->toArray());
     }
 }

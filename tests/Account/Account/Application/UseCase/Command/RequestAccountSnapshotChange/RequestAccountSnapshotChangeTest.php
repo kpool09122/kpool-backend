@@ -36,6 +36,7 @@ use Source\Account\Account\Domain\ValueObject\AccountSnapshotChangeRequestStatus
 use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Tests\Helper\CreateAccountSnapshot;
+use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
 
 #[Group('useDb')]
@@ -74,6 +75,36 @@ class RequestAccountSnapshotChangeTest extends TestCase
         $request = $this->app()->make(AccountSnapshotChangeRequestRepositoryInterface::class)->findByAccountIdAndStatuses($id, [AccountSnapshotChangeRequestStatus::PENDING])[0];
         self::assertSame($data['requestIdentifier'], (string) $request->requestIdentifier());
         self::assertSame($files, Storage::disk('verification-documents')->allFiles());
+    }
+
+    #[DataProvider('categoryStates')]
+    public function testCategoryReviewControlsChangeSubmission(string $status): void
+    {
+        $id = $this->prepare();
+        DB::table('account_category_change_requests')->insert(['id' => StrTestHelper::generateUuid(), 'account_id' => (string) $id, 'current_account_category' => 'general', 'requested_account_category' => 'talent', 'status' => $status, 'requested_at' => now(), 'snapshot_id' => DB::table('account_snapshots')->where('account_id', (string) $id)->value('id')]);
+        DB::table('accounts')->where('id', (string) $id)->update(['name' => 'Changed draft']);
+        $output = new RequestAccountSnapshotChangeOutput();
+        if ($status === 'pending') {
+            $this->expectException(AccountSnapshotChangeRequestForbiddenException::class);
+        }
+
+        try {
+            $this->app()->make(RequestAccountSnapshotChangeInterface::class)->process(
+                new RequestAccountSnapshotChangeInput($id, CreateAccountSnapshot::principal($id), new AccountSnapshotChangeReason('変更')),
+                $output,
+            );
+            self::assertSame('pending', $output->toArray()['status'] ?? null);
+        } finally {
+            self::assertDatabaseCount('account_snapshot_change_requests', $status === 'pending' ? 0 : 1);
+        }
+    }
+
+    /** @return iterable<string, array{string}> */
+    public static function categoryStates(): iterable
+    {
+        foreach (['pending', 'withdrawn', 'rejected', 'approved'] as $status) {
+            yield $status => [$status];
+        }
     }
 
     public function testUnchangedContentsCannotSubmit(): void

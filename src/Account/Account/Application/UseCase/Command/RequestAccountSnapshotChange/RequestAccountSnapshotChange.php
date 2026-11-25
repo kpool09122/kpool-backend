@@ -14,10 +14,12 @@ use Source\Account\Account\Application\Exception\NoAccountSnapshotChangesExcepti
 use Source\Account\Account\Application\Service\AccountSnapshotDocumentServiceInterface;
 use Source\Account\Account\Domain\Exception\AccountSetupUnavailableException;
 use Source\Account\Account\Domain\Factory\AccountSnapshotChangeRequestFactoryInterface;
+use Source\Account\Account\Domain\Repository\AccountCategoryChangeRequestRepositoryInterface;
 use Source\Account\Account\Domain\Repository\AccountRepositoryInterface;
 use Source\Account\Account\Domain\Repository\AccountSnapshotChangeRequestRepositoryInterface;
 use Source\Account\Account\Domain\Repository\AccountSnapshotRepositoryInterface;
 use Source\Account\Account\Domain\Service\AccountDocumentRequirementValidatorInterface;
+use Source\Account\Account\Domain\ValueObject\AccountCategoryChangeRequestStatus;
 use Source\Account\Account\Domain\ValueObject\AccountSnapshotChangeRequestStatus;
 use Source\Account\Account\Domain\ValueObject\AccountSnapshotProfile;
 use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
@@ -26,7 +28,7 @@ use Source\Account\Principal\Domain\ValueObject\Resource;
 
 readonly class RequestAccountSnapshotChange implements RequestAccountSnapshotChangeInterface
 {
-    public function __construct(private AccountRepositoryInterface $accountRepository, private AccountSnapshotRepositoryInterface $accountSnapshotRepository, private AccountDocumentRequirementValidatorInterface $accountDocumentRequirementValidator, private AccountSnapshotChangeRequestFactoryInterface $accountSnapshotChangeRequestFactory, private PolicyEvaluatorInterface $policyEvaluator, private AccountSnapshotChangeRequestRepositoryInterface $accountSnapshotChangeRequestRepository, private AccountSnapshotDocumentServiceInterface $accountSnapshotDocumentService)
+    public function __construct(private AccountRepositoryInterface $accountRepository, private AccountSnapshotRepositoryInterface $accountSnapshotRepository, private AccountDocumentRequirementValidatorInterface $accountDocumentRequirementValidator, private AccountSnapshotChangeRequestFactoryInterface $accountSnapshotChangeRequestFactory, private PolicyEvaluatorInterface $policyEvaluator, private AccountSnapshotChangeRequestRepositoryInterface $accountSnapshotChangeRequestRepository, private AccountSnapshotDocumentServiceInterface $accountSnapshotDocumentService, private AccountCategoryChangeRequestRepositoryInterface $accountCategoryChangeRequestRepository)
     {
     }
 
@@ -37,6 +39,9 @@ readonly class RequestAccountSnapshotChange implements RequestAccountSnapshotCha
         }
         $account = $this->accountRepository->findById($input->accountIdentifier()) ?? throw new AccountNotFoundException();
         if (! $this->policyEvaluator->evaluate($input->principal(), Action::UPDATE, Resource::account($account->accountIdentifier(), $account->type()))) {
+            throw new AccountSnapshotChangeRequestForbiddenException();
+        }
+        if ($this->accountCategoryChangeRequestRepository->findByAccountIdAndStatuses($account->accountIdentifier(), [AccountCategoryChangeRequestStatus::PENDING]) !== []) {
             throw new AccountSnapshotChangeRequestForbiddenException();
         }
         if (! $account->hasRequiredContactForCategoryChange()) {

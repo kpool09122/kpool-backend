@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Storage;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use Source\Account\Account\Application\Exception\AccountSnapshotChangeRequiresApprovalException;
+use Source\Account\Account\Application\Exception\AccountSnapshotForbiddenException;
 use Source\Account\Account\Application\UseCase\Command\ApproveAccountCategoryChangeRequest\ApproveAccountCategoryChangeRequestInput;
 use Source\Account\Account\Application\UseCase\Command\ApproveAccountCategoryChangeRequest\ApproveAccountCategoryChangeRequestInterface;
 use Source\Account\Account\Application\UseCase\Command\ApproveAccountCategoryChangeRequest\ApproveAccountCategoryChangeRequestOutput;
@@ -51,7 +52,7 @@ class SavedSnapshotCategoryChangeTest extends TestCase
         CreateAccountSnapshot::save($id);
     }
 
-    public function testNewCurrentVersionDoesNotChangeApplicationReviewOrCopiedDocuments(): void
+    public function testNewCurrentVersionAfterWithdrawalDoesNotChangeApplicationReviewOrCopiedDocuments(): void
     {
         $disk = Storage::fake('verification-documents');
         $allow = $this->createStub(PolicyEvaluatorInterface::class);
@@ -65,6 +66,7 @@ class SavedSnapshotCategoryChangeTest extends TestCase
         self::assertTrue(array_key_exists('requestIdentifier', $payload));
         DB::table('accounts')->where('id', (string) $id)->update(['name' => 'New current name']);
         $disk->put($id.'/passport.pdf', 'new passport bytes');
+        DB::table('account_category_change_requests')->where('id', $payload['requestIdentifier'])->update(['status' => 'withdrawn']);
         $second = CreateAccountSnapshot::save($id);
         self::assertSame(AccountSnapshotStatus::APPROVED, $second->status());
         $detail = new GetAccountCategoryChangeRequestOutput();
@@ -80,10 +82,42 @@ class SavedSnapshotCategoryChangeTest extends TestCase
         self::assertNotSame($first->snapshotIdentifier(), $second->snapshotIdentifier());
     }
 
+    #[DataProvider('pendingContents')]
+    public function testPendingCategoryRequestPreventsSnapshotSave(bool $changed): void
+    {
+        Storage::fake('verification-documents');
+        $allow = $this->createStub(PolicyEvaluatorInterface::class);
+        $allow->method('evaluate')->willReturn(true);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $allow);
+        $id = CreateAccountSnapshot::account();
+        $first = CreateAccountSnapshot::save($id);
+        $output = new RequestAccountCategoryChangeOutput();
+        $this->app()->make(RequestAccountCategoryChangeInterface::class)->process(new RequestAccountCategoryChangeInput($id, CreateAccountSnapshot::principal($id), AccountCategory::AGENCY), $output);
+        if ($changed) {
+            DB::table('accounts')->where('id', (string) $id)->update(['name' => 'New draft']);
+        }
+        $files = Storage::disk('verification-documents')->allFiles();
+
+        try {
+            $this->expectException(AccountSnapshotForbiddenException::class);
+            CreateAccountSnapshot::save($id);
+        } finally {
+            self::assertDatabaseCount('account_snapshots', 1);
+            self::assertDatabaseHas('account_snapshots', ['id' => (string) $first->snapshotIdentifier()]);
+            self::assertSame($files, Storage::disk('verification-documents')->allFiles());
+        }
+    }
+
+    /** @return iterable<string, array{bool}> */
+    public static function pendingContents(): iterable
+    {
+        yield 'unchanged' => [false];
+        yield 'changed' => [true];
+    }
+
     /** @return iterable<string, array{string}> */
     public static function unusedStates(): iterable
     {
-        yield 'pending' => ['pending'];
         yield 'rejected' => ['rejected'];
         yield 'withdrawn' => ['withdrawn'];
     }
