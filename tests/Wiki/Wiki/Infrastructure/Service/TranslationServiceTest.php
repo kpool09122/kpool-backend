@@ -71,6 +71,20 @@ class TranslationServiceTest extends TestCase
         $this->app()->instance(WikiRepositoryInterface::class, $wikiRepository);
     }
 
+    #[TestWith([Language::JAPANESE, 'トゥワイス', 'とぅわいす'])]
+    #[TestWith([Language::ENGLISH, 'TWICE', 'twice'])]
+    #[TestWith([Language::KOREAN, '트와이스', 'ㅌㅇㅇㅅ'])]
+    public function testNormalizesTranslatedNameInTargetLanguage(Language $language, string $name, string $normalizedName): void
+    {
+        $wiki = $this->createGroupWiki(['name' => 'Original Name', 'normalized_name' => 'stale-source-value']);
+        $this->app()->instance(GoogleTranslateClient::class, $this->createGoogleTranslateClientMock([$name]));
+
+        $result = $this->app()->make(TranslationServiceInterface::class)->translateWiki($wiki, $language);
+
+        self::assertSame($name, (string) $result->translatedBasic()->name());
+        self::assertSame($normalizedName, $result->translatedBasic()->normalizedName());
+    }
+
     public function testGoogleTrendsPreservesKeysAndOrder(): void
     {
         $wiki = $this->createTalentWiki(new SectionContentCollection([
@@ -179,6 +193,8 @@ class TranslationServiceTest extends TestCase
         $result = $this->app()->make(TranslationServiceInterface::class)->translateWiki($wiki, Language::JAPANESE);
         self::assertSame('既存の名前', (string) $result->translatedBasic()->name());
         self::assertSame('既存の本名', $result->translatedBasic()->toArray()['real_name']);
+        self::assertSame('きそんのなまえ', $result->translatedBasic()->normalizedName());
+        self::assertSame('きそんのほんみょう', $result->translatedBasic()->toArray()['normalized_real_name']);
     }
 
     public function testReusesColorLabelsByCodeWhileApplyingCurrentStructuredData(): void
@@ -208,7 +224,7 @@ class TranslationServiceTest extends TestCase
 
         $result = $this->app()->make(TranslationServiceInterface::class)->translateWiki($wiki, Language::JAPANESE);
         self::assertSame('保持した名前', (string) $result->translatedBasic()->name());
-        self::assertSame('new-normalized-value', $result->translatedBasic()->normalizedName());
+        self::assertSame('ほじしたなまえ', $result->translatedBasic()->normalizedName());
         self::assertSame([['color_code' => '#0000ff', 'label' => '既存の青'], ['color_code' => '#ff0000', 'label' => '新しい赤']], $result->translatedBasic()->toArray()['official_colors']);
     }
 
@@ -229,7 +245,7 @@ class TranslationServiceTest extends TestCase
         $result = $this->app()->make(TranslationServiceInterface::class)->translateWiki($wiki, Language::JAPANESE);
         self::assertSame('新しい名前', (string) $result->translatedBasic()->name());
         self::assertSame('保持した本名', $result->translatedBasic()->toArray()['real_name']);
-        self::assertSame('new-search-key', $result->translatedBasic()->normalizedName());
+        self::assertSame('あたらしいなまえ', $result->translatedBasic()->normalizedName());
         self::assertSame('新しいタイトル', (string) $result->translatedTitle());
         self::assertSame('保持した説明', (string) $result->translatedMetaDescription());
         self::assertSame(['保持したキーワード'], $result->translatedKeywords()?->values());
@@ -256,6 +272,7 @@ class TranslationServiceTest extends TestCase
         self::assertSame('', (string) $result->translatedMetaDescription());
         self::assertSame([], $result->translatedKeywords()?->values());
         self::assertSame('', $result->translatedBasic()->toArray()['real_name']);
+        self::assertSame('', $result->translatedBasic()->toArray()['normalized_real_name']);
         self::assertSame('', $result->translatedBasic()->toArray()['position']);
         self::assertSame('保持した名前', (string) $result->translatedBasic()->name());
     }
@@ -696,6 +713,8 @@ class TranslationServiceTest extends TestCase
         $this->assertInstanceOf(TalentBasic::class, $translatedBasic);
         /** @var TalentBasic $translatedBasic */
         $this->assertSame('ソン・チェヨン', (string) $translatedBasic->realName());
+        self::assertSame('ちぇよん', $translatedBasic->normalizedName());
+        self::assertSame('そん・ちぇよん', $translatedBasic->normalizedRealName());
     }
 
     /**
@@ -786,6 +805,8 @@ class TranslationServiceTest extends TestCase
         $this->assertInstanceOf(AgencyBasic::class, $translatedBasic);
         /** @var AgencyBasic $translatedBasic */
         $this->assertSame('パク・ジニョン', (string) $translatedBasic->ceo());
+        self::assertSame('jypえんたーていんめんと', $translatedBasic->normalizedName());
+        self::assertSame('ぱく・じにょん', $translatedBasic->normalizedCeo());
     }
 
     /**
@@ -809,6 +830,7 @@ class TranslationServiceTest extends TestCase
 
         $translatedBasic = $result->translatedBasic();
         $this->assertSame('トゥワイス', (string) $translatedBasic->name());
+        self::assertSame('とぅわいす', $translatedBasic->normalizedName());
         $this->assertInstanceOf(GroupBasic::class, $translatedBasic);
     }
 
@@ -841,6 +863,10 @@ class TranslationServiceTest extends TestCase
         $this->assertSame('ブラック', (string) $translatedBasic->lyricist());
         $this->assertSame('ブラック', (string) $translatedBasic->composer());
         $this->assertSame('ブラック', (string) $translatedBasic->arranger());
+        self::assertSame('tt', $translatedBasic->normalizedName());
+        self::assertSame('ぶらっく', $translatedBasic->normalizedLyricist());
+        self::assertSame('ぶらっく', $translatedBasic->normalizedComposer());
+        self::assertSame('ぶらっく', $translatedBasic->normalizedArranger());
     }
 
     /**
