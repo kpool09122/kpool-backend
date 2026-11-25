@@ -5,7 +5,7 @@
     "require": {
         "php": "^8.5.13",
         "symfony/uid": "^8.0",
-        "laravel/framework": "^13.0",
+        "laravel/framework": "^13.43.0",
         "psr/log": "^3.0",
         "ext-mbstring": "*",
         "stripe/stripe-php": "^23.0",
@@ -13,7 +13,7 @@
         "google/cloud-translate": "^2.1",
         "sentry/sentry-laravel": "^4.25",
         "ext-fileinfo": "*",
-        "web-auth/webauthn-lib": "^5.3",
+        "web-auth/webauthn-lib": "^5.3.13",
         "google/auth": "^1.50",
         "symfony/cache": "^8.0",
         "phpseclib/phpseclib": "^4.0",
