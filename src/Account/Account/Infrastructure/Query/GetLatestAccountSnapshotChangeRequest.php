@@ -31,8 +31,13 @@ readonly class GetLatestAccountSnapshotChangeRequest implements GetLatestAccount
             throw new AccountSnapshotChangeRequestForbiddenException();
         }
         $request = AccountSnapshotChangeRequest::query()->with(['snapshot.documents', 'account.documents', 'reviewedSnapshot.documents'])->withCurrentSnapshotIdentifier()->where('account_id', (string) $input->accountIdentifier())->orderByDesc('requested_at')->orderByDesc('id')->first();
-        $requiresApproval = AccountCategoryChangeRequest::query()->where('account_id', (string) $input->accountIdentifier())->where('status', 'approved')->exists();
-        $categoryChangePending = AccountCategoryChangeRequest::query()->where('account_id', (string) $input->accountIdentifier())->where('status', 'pending')->exists();
+        $categoryChangeStatuses = AccountCategoryChangeRequest::query()
+            ->where('account_id', (string) $input->accountIdentifier())
+            ->whereIn('status', ['approved', 'pending'])
+            ->distinct()
+            ->pluck('status');
+        $requiresApproval = $categoryChangeStatuses->containsStrict('approved');
+        $categoryChangePending = $categoryChangeStatuses->containsStrict('pending');
         $account = $this->accountRepository->findById($input->accountIdentifier());
         $current = $this->accountSnapshotRepository->findCurrent($input->accountIdentifier());
         $hasChanges = $account !== null && $current !== null && (! $account->hasRequiredContactForCategoryChange() || ! $current->hasSameContents(
