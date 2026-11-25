@@ -6,21 +6,26 @@ namespace Tests\Account\Account\Application\UseCase\Command\WithdrawFromService;
 
 use Application\Http\Action\Identity\Query\GetWithdrawalEligibility\GetWithdrawalEligibilityAction;
 use Application\Http\Context\ActorContext;
+use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Mockery;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
 use Psr\Log\NullLogger;
+use RuntimeException;
 use Source\Account\Account\Application\Service\AccountSnapshotDocumentServiceInterface;
 use Source\Account\Account\Application\Service\WithdrawalEligibilityServiceInterface;
 use Source\Account\Account\Application\UseCase\Command\WithdrawFromService\WithdrawFromServiceInput;
 use Source\Account\Account\Application\UseCase\Command\WithdrawFromService\WithdrawFromServiceInterface;
 use Source\Account\Account\Application\UseCase\Command\WithdrawFromService\WithdrawFromServiceOutput;
 use Source\Account\Account\Domain\Exception\IdentityWithdrawalNotAllowedException;
+use Source\Account\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\IdentityIdentifier;
 use Source\Shared\Domain\ValueObject\Language;
 use Tests\Helper\CreateAccount;
+use Tests\Helper\CreateAccountSnapshot;
 use Tests\Helper\CreateIdentity;
 use Tests\Helper\StrTestHelper;
 use Tests\TestCase;
@@ -28,6 +33,183 @@ use Tests\TestCase;
 #[Group('useDb')]
 class WithdrawFromServiceTest extends TestCase
 {
+    /** @return array<string, array{bool}> */
+    public static function storageFailures(): array
+    {
+        return ['available' => [false], 'unavailable' => [true]];
+    }
+
+    #[DataProvider('storageFailures')]
+    public function testAllHistoryIsDeletedWhileCorporateHistoryIsRetained(bool $failStorage): void
+    {
+        $disk = Storage::fake('verification-documents');
+        $allow = $this->createStub(PolicyEvaluatorInterface::class);
+        $allow->method('evaluate')->willReturn(true);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $allow);
+        $identity = $this->createIdentityArchive();
+        [$individual] = $this->createMembership($identity, 'individual');
+        [$corporation] = $this->createMembership($identity, 'corporation');
+        $individualPaths = $this->createDocumentHistory($individual);
+        $corporatePaths = $this->createDocumentHistory($corporation);
+        if ($failStorage) {
+            $unavailable = $this->createMock(Filesystem::class);
+            $unavailable->expects(self::exactly(count($individualPaths)))->method('delete')->willThrowException(new RuntimeException('Storage unavailable'));
+            Storage::shouldReceive('disk')->with('verification-documents')->andReturn(...[...array_fill(0, count($individualPaths), $unavailable), $disk]);
+        }
+
+        try {
+            $this->app()->make(WithdrawFromServiceInterface::class)->process(new WithdrawFromServiceInput($identity), new WithdrawFromServiceOutput());
+            foreach (['account_snapshots', 'account_documents', 'account_category_change_requests', 'account_snapshot_change_requests'] as $table) {
+                $this->assertDatabaseMissing($table, ['account_id' => $individual]);
+                $this->assertDatabaseHas($table, ['account_id' => $corporation]);
+            }
+            $this->assertDatabaseCount('account_snapshot_documents', 8);
+            foreach ($individualPaths as $path) {
+                $disk->assertExists($path);
+            }
+            DB::commit();
+            foreach ($individualPaths as $path) {
+                if ($failStorage) {
+                    $disk->assertExists($path);
+                } else {
+                    $disk->assertMissing($path);
+                }
+            }
+            foreach ($corporatePaths as $path) {
+                $disk->assertExists($path);
+            }
+        } finally {
+            if (DB::transactionLevel() === 0) {
+                DB::table('accounts')->where('id', $corporation)->delete();
+                DB::table('archived_accounts')->where('account_id', $individual)->delete();
+                DB::table('archived_principals')->where('identity_id', (string) $identity)->delete();
+                DB::table('archived_identities')->where('identity_id', (string) $identity)->delete();
+                DB::table('identities')->where('id', (string) $identity)->delete();
+                DB::beginTransaction();
+            }
+        }
+    }
+
+    /** @return list<string> */
+    private function createDocumentHistory(string $account): array
+    {
+        DB::table('accounts')->where('id', $account)->update(['phone' => '+819012345678', 'address_country_code' => 'FR', 'address_postal_code' => '75001', 'address_line1' => 'Paris']);
+        $types = DB::table('accounts')->where('id', $account)->value('type') === 'individual' ? ['passport', 'selfie'] : ['business_registration', 'representative_id'];
+        $paths = [];
+        foreach ($types as $type) {
+            $path = $account . '/' . $type . '.pdf';
+            Storage::disk('verification-documents')->put($path, 'private document');
+            DB::table('account_documents')->insert(['account_id' => $account, 'document_type' => $type, 'document_path' => $path, 'uploaded_at' => now()]);
+            $paths[] = $path;
+        }
+        $snapshots = [];
+        foreach (range(1, 4) as $number) {
+            DB::table('accounts')->where('id', $account)->update(['name' => 'Historical name ' . $number]);
+            $snapshot = CreateAccountSnapshot::save(new AccountIdentifier($account));
+            $snapshots[] = (string) $snapshot->snapshotIdentifier();
+            foreach ($snapshot->documents() as $document) {
+                $paths[] = (string) $document->documentPath();
+            }
+        }
+        DB::table('account_snapshots')->whereIn('id', [$snapshots[2], $snapshots[3]])->update(['status' => 'rejected']);
+        foreach (['pending', 'approved', 'rejected'] as $index => $status) {
+            DB::table('account_snapshot_change_requests')->insert([
+                'id' => StrTestHelper::generateUuid(), 'account_id' => $account,
+                'snapshot_id' => $snapshots[0], 'reviewed_snapshot_id' => $status === 'pending' ? null : $snapshots[$index],
+                'change_reason' => 'Private change reason', 'status' => $status, 'requested_at' => now(),
+                'reviewed_by' => $status === 'pending' ? null : StrTestHelper::generateUuid(),
+                'reviewed_at' => $status === 'pending' ? null : now(),
+                'rejection_reason' => $status === 'rejected' ? json_encode(['code' => 'other', 'detail' => 'Private review']) : null,
+            ]);
+            DB::table('account_category_change_requests')->insert([
+                'id' => StrTestHelper::generateUuid(), 'account_id' => $account,
+                'snapshot_id' => $snapshots[0], 'approved_snapshot_id' => $status === 'approved' ? $snapshots[1] : null,
+                'current_account_category' => 'general', 'requested_account_category' => 'talent',
+                'status' => $status, 'requested_at' => now(),
+            ]);
+        }
+
+        return $paths;
+    }
+
+    public function testRollbackRestoresDeletedHistoryAndCancelsFileDeletion(): void
+    {
+        $disk = Storage::fake('verification-documents');
+        $allow = $this->createStub(PolicyEvaluatorInterface::class);
+        $allow->method('evaluate')->willReturn(true);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $allow);
+        $identity = $this->createIdentityArchive();
+        [$account] = $this->createMembership($identity, 'individual');
+        $paths = $this->createDocumentHistory($account);
+        $failure = new RuntimeException('Failure after account deletion');
+
+        try {
+            DB::transaction(function () use ($identity, $account, $failure): void {
+                $this->app()->make(WithdrawFromServiceInterface::class)->process(new WithdrawFromServiceInput($identity), new WithdrawFromServiceOutput());
+                $this->assertDatabaseMissing('accounts', ['id' => $account]);
+                $this->assertDatabaseCount('account_snapshot_change_requests', 0);
+
+                throw $failure;
+            });
+        } catch (RuntimeException $exception) {
+            self::assertSame($failure, $exception);
+        }
+        $this->assertDatabaseHas('accounts', ['id' => $account]);
+        $this->assertDatabaseCount('account_snapshots', 4);
+        $this->assertDatabaseCount('account_snapshot_documents', 8);
+        $this->assertDatabaseCount('account_category_change_requests', 3);
+        $this->assertDatabaseCount('account_snapshot_change_requests', 3);
+        foreach ($paths as $path) {
+            $disk->assertExists($path);
+        }
+    }
+
+    public function testIneligibleWithdrawalRetainsAllHistoryAndFiles(): void
+    {
+        $disk = Storage::fake('verification-documents');
+        $allow = $this->createStub(PolicyEvaluatorInterface::class);
+        $allow->method('evaluate')->willReturn(true);
+        $this->app()->instance(PolicyEvaluatorInterface::class, $allow);
+        $identity = $this->createIdentityArchive();
+        [$account] = $this->createMembership($identity, 'individual');
+        $paths = $this->createDocumentHistory($account);
+        $this->createMembership($identity, 'corporation', 'agency');
+
+        try {
+            $this->app()->make(WithdrawFromServiceInterface::class)->process(new WithdrawFromServiceInput($identity), new WithdrawFromServiceOutput());
+            self::fail('Ineligible withdrawal must fail before deletion.');
+        } catch (IdentityWithdrawalNotAllowedException) {
+            $this->assertDatabaseCount('account_snapshots', 4);
+            $this->assertDatabaseCount('account_snapshot_documents', 8);
+            $this->assertDatabaseCount('account_category_change_requests', 3);
+            $this->assertDatabaseCount('account_snapshot_change_requests', 3);
+            $this->assertDatabaseCount('account_documents', 2);
+            foreach ($paths as $path) {
+                $disk->assertExists($path);
+            }
+        }
+    }
+
+    public function testDeletesSnapshotChangeRequestsWhenWithdrawing(): void
+    {
+        $identity = $this->createIdentityArchive();
+        [$account] = $this->createMembership($identity, 'individual');
+        foreach (['pending', 'approved', 'rejected'] as $status) {
+            DB::table('account_snapshot_change_requests')->insert([
+                'id' => StrTestHelper::generateUuid(),
+                'account_id' => $account,
+                'snapshot_id' => StrTestHelper::generateUuid(),
+                'change_reason' => 'Private reason',
+                'status' => $status,
+                'requested_at' => now(),
+            ]);
+        }
+
+        $this->app()->make(WithdrawFromServiceInterface::class)->process(new WithdrawFromServiceInput($identity), new WithdrawFromServiceOutput());
+
+        $this->assertDatabaseMissing('account_snapshot_change_requests', ['account_id' => $account]);
+    }
+
     public function testArchivesAllPrincipalsAndOnlyDeletesIndividualAccounts(): void
     {
         $identityIdentifier = $this->createIdentityArchive();
