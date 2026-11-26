@@ -6391,8 +6391,10 @@ paths:
         - name: keyword
           in: query
           required: false
+          description: Partial-match search across Wiki names, talent real names, and agency CEO names, including their language-normalized values.
           schema:
             type: string
+            nullable: true
           explode: false
         - name: sort
           in: query
