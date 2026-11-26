@@ -23,4 +23,6 @@ interface PaymentMethodRepositoryInterface
     public function findByMonetizationAccountId(MonetizationAccountIdentifier $monetizationAccountIdentifier): array;
 
     public function save(PaymentMethod $paymentMethod): void;
+
+    public function delete(PaymentMethodIdentifier $identifier): void;
 }

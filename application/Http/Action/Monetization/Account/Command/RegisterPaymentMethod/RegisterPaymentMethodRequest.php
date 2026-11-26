@@ -12,30 +12,14 @@ class RegisterPaymentMethodRequest extends FormRequest
 {
     use ResolvesLanguage;
 
-    /**
-     * @return array<string, mixed>
-     */
+    /** @return array<string, mixed> */
     public function rules(): array
     {
-        return [
-            'monetizationAccountId' => ['required', 'uuid'],
-            'externalPaymentMethodId' => ['required', 'string'],
-            'type' => ['required', 'string', 'in:card'],
-        ];
+        return ['setupIntentIdentifier' => ['required', 'string', 'max:255', 'regex:/^seti_[A-Za-z0-9]+$/D'], 'number' => ['prohibited'], 'cardNumber' => ['prohibited'], 'cvc' => ['prohibited']];
     }
 
-    public function monetizationAccountId(): string
+    public function setupIntentIdentifier(): string
     {
-        return RequestValue::string($this->input('monetizationAccountId'));
-    }
-
-    public function externalPaymentMethodId(): string
-    {
-        return RequestValue::string($this->input('externalPaymentMethodId'));
-    }
-
-    public function type(): string
-    {
-        return RequestValue::string($this->input('type'));
+        return RequestValue::string($this->input('setupIntentIdentifier'));
     }
 }

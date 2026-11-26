@@ -214,83 +214,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/OnboardSellerRequestBody'
-  /accounts/{monetizationAccountId}/register-payment-method:
-    post:
-      operationId: MonetizationAccountOperations_registerPaymentMethod
-      description: Register a payment method on the specified monetization account.
-      parameters:
-        - name: monetizationAccountId
-          in: path
-          required: true
-          schema:
-            $ref: '#/components/schemas/KPool.Common.Uuid'
-      responses:
-        '201':
-          description: Response returned when a payment method is registered.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PaymentMethodSummary'
-        '401':
-          description: Access is unauthorized.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '403':
-          description: Access is forbidden.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '409':
-          description: The request conflicts with the current state of the server.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '419':
-          description: Client error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '422':
-          description: Client error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '429':
-          description: Client error
-          headers:
-            Retry-After:
-              required: true
-              schema:
-                type: integer
-                format: int32
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '500':
-          description: Server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-        '503':
-          description: Service unavailable.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RegisterPaymentMethodRequestBody'
   /invoices:
     post:
       operationId: MonetizationBillingOperations_createInvoice
@@ -461,6 +384,343 @@ paths:
                 $ref: '#/components/schemas/KPool.Common.ProblemDetails'
         '404':
           description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      security:
+        - SessionCookieAuth: []
+  /payment-methods:
+    post:
+      operationId: PaymentMethodOperations_registerPaymentMethod
+      description: Complete a successful Stripe setup. Requires payment_method_register permission and recent authentication. Stripe success, off-session usage, Customer and attached card are rechecked server-side. Non-success/foreign/detached methods return 409 code card_registration_rejected. Repeating completion for the same active card returns the same internal ID (200). First card becomes default. On 503 retry this completion; never submit PAN/CVC or clientSecret. Refresh recent authentication and retry on 401 recent_authentication_required.
+      parameters: []
+      responses:
+        '200':
+          description: Response returned when a payment method is registered.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentMethodSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '419':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterPaymentMethodRequestBody'
+      security:
+        - SessionCookieAuth: []
+    get:
+      operationId: PaymentMethodOperations_listPaymentMethods
+      description: 'List only current cards for the effective Account, ordered by internal ID. Requires an active reachable Principal with payment_method_read permission. Empty registration is paymentMethods: []. Archive rows are excluded. No recent authentication is required to list.'
+      parameters: []
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  paymentMethods:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PaymentMethodSummary'
+                required:
+                  - paymentMethods
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      security:
+        - SessionCookieAuth: []
+  /payment-methods/setup-intents:
+    post:
+      operationId: PaymentMethodOperations_prepareCardRegistration
+      description: Prepare card registration in the effective Account using a card-only off-session Stripe SetupIntent. Requires an active reachable Principal with card_registration_prepare permission and session-bound recent authentication (401 code recent_authentication_required). Customer is resolved or created by the server; no account/customer/type/card details are accepted. Use clientSecret only with Stripe.js confirmSetup, never in logs. Raw card number/CVC goes directly to Stripe. On 503 retry; Customer creation uses a stable account idempotency key.
+      parameters: []
+      responses:
+        '201':
+          description: The request has succeeded and a new resource has been created as a result.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  setupIntentIdentifier:
+                    type: string
+                  clientSecret:
+                    type: string
+                required:
+                  - setupIntentIdentifier
+                  - clientSecret
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '419':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      security:
+        - SessionCookieAuth: []
+  /payment-methods/{paymentMethodIdentifier}:
+    get:
+      operationId: PaymentMethodOperations_getPaymentMethod
+      description: Resolve a past payment's unchanged internal payment-method ID from current data or deletion archive in the effective Account. Requires payment_method_read permission. Foreign/missing IDs return 404. archivedAt records when card information was archived, not when a payment occurred. Archive records cannot be used for new payments.
+      parameters:
+        - name: paymentMethodIdentifier
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+      responses:
+        '200':
+          description: The request has succeeded.
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/PaymentMethodSummary'
+                  - $ref: '#/components/schemas/ArchivedPaymentMethodSummary'
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '429':
+          description: Client error
+          headers:
+            Retry-After:
+              required: true
+              schema:
+                type: integer
+                format: int32
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '503':
+          description: Service unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+      security:
+        - SessionCookieAuth: []
+    delete:
+      operationId: PaymentMethodOperations_deletePaymentMethod
+      description: 'Detach and archive one card, then delete current data atomically in an Action-owned DB transaction. Requires payment_method_delete permission and recent authentication. Last card may be deleted. Deleting the default promotes the lowest-ID remaining active card; no default remains when none is active. External detach is not atomic with DB: on 503/500 retry the same DELETE; already detached cards proceed to archive, and an already archived ID in this Account returns 204. Foreign/missing IDs return 404; a card attached to a different Customer returns 409. No primary-selection API is added.'
+      parameters:
+        - name: paymentMethodIdentifier
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/KPool.Common.Uuid'
+      responses:
+        '204':
+          description: 'There is no content to send for this request, but the headers may be useful. '
+        '401':
+          description: Access is unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '403':
+          description: Access is forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '404':
+          description: The server cannot find the requested resource.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '409':
+          description: The request conflicts with the current state of the server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '419':
+          description: Client error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KPool.Common.ProblemDetails'
+        '422':
+          description: Client error
           content:
             application/json:
               schema:
@@ -1118,6 +1378,29 @@ components:
         - individual
         - company
       description: Account holder classification for payout accounts.
+    ArchivedPaymentMethodSummary:
+      type: object
+      required:
+        - paymentMethodIdentifier
+        - type
+        - brand
+        - last4
+        - archivedAt
+      properties:
+        paymentMethodIdentifier:
+          $ref: '#/components/schemas/KPool.Common.Uuid'
+        type:
+          $ref: '#/components/schemas/PaymentMethodType'
+        brand:
+          type: string
+          nullable: true
+        last4:
+          type: string
+          nullable: true
+        archivedAt:
+          type: string
+          format: date-time
+      description: Deleted payment method information retained for history display.
     AuthorizePaymentRequestBody:
       type: object
       required:
@@ -1481,17 +1764,15 @@ components:
       type: object
       required:
         - paymentMethodIdentifier
-        - externalPaymentMethodId
         - type
         - isDefault
+        - status
+        - archivedAt
       properties:
         paymentMethodIdentifier:
           allOf:
             - $ref: '#/components/schemas/KPool.Common.Uuid'
           description: Internal payment method identifier.
-        externalPaymentMethodId:
-          type: string
-          description: Gateway payment method identifier.
         type:
           allOf:
             - $ref: '#/components/schemas/PaymentMethodType'
@@ -1516,7 +1797,17 @@ components:
           description: Expiration year returned from metadata.
         isDefault:
           type: boolean
-          description: Whether the method is the default one.
+          description: Whether the current payment method is the default one.
+        status:
+          type: string
+          enum:
+            - active
+            - inactive
+        archivedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: Null for current cards.
       description: Current payment method managed by the monetization account.
     PaymentMethodType:
       type: string
@@ -1858,16 +2149,12 @@ components:
     RegisterPaymentMethodRequestBody:
       type: object
       required:
-        - externalPaymentMethodId
-        - type
+        - setupIntentIdentifier
       properties:
-        externalPaymentMethodId:
+        setupIntentIdentifier:
           type: string
-          description: Gateway payment method identifier.
-        type:
-          allOf:
-            - $ref: '#/components/schemas/PaymentMethodType'
-          description: Payment method type.
+          maxLength: 255
+          pattern: ^seti_[A-Za-z0-9]+$
       description: Request body for registering a payment method.
     SellerOnboardingCountryCode:
       type: string

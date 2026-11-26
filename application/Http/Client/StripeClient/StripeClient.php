@@ -21,6 +21,8 @@ use Application\Http\Client\StripeClient\RetrieveAccount\RetrieveAccountResponse
 use Application\Http\Client\StripeClient\RetrievePaymentMethod\RetrievePaymentMethodRequest;
 use Application\Http\Client\StripeClient\RetrievePaymentMethod\RetrievePaymentMethodResponse;
 use Stripe\Exception\ApiErrorException;
+use Stripe\PaymentMethod;
+use Stripe\SetupIntent;
 use Stripe\StripeClient as BaseStripeClient;
 
 class StripeClient
@@ -176,6 +178,42 @@ class StripeClient
             expMonth: $paymentMethod->card?->exp_month,
             expYear: $paymentMethod->card?->exp_year,
         );
+    }
+
+    /** @throws ApiErrorException */
+    public function createPaymentCustomer(string $monetizationAccountId): string
+    {
+        return $this->client()->customers->create([
+            'metadata' => ['monetization_account_id' => $monetizationAccountId],
+        ], ['idempotency_key' => 'account-customer-' . $monetizationAccountId])->id;
+    }
+
+    /** @throws ApiErrorException */
+    public function createCardSetupIntent(string $customerId): SetupIntent
+    {
+        return $this->client()->setupIntents->create([
+            'customer' => $customerId,
+            'allowed_payment_method_types' => ['card'],
+            'usage' => 'off_session',
+        ]);
+    }
+
+    /** @throws ApiErrorException */
+    public function retrieveCardSetupIntent(string $setupIntentId): SetupIntent
+    {
+        return $this->client()->setupIntents->retrieve($setupIntentId);
+    }
+
+    /** @throws ApiErrorException */
+    public function retrieveAttachedPaymentMethod(string $paymentMethodId): PaymentMethod
+    {
+        return $this->client()->paymentMethods->retrieve($paymentMethodId);
+    }
+
+    /** @throws ApiErrorException */
+    public function detachPaymentMethod(string $paymentMethodId): PaymentMethod
+    {
+        return $this->client()->paymentMethods->detach($paymentMethodId);
     }
 
     private function client(): BaseStripeClient

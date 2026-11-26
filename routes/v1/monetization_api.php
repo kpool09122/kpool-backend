@@ -2,6 +2,11 @@
 
 declare(strict_types=1);
 
+use Application\Http\Action\Monetization\Account\Command\DeletePaymentMethod\DeletePaymentMethodAction;
+use Application\Http\Action\Monetization\Account\Command\PrepareCardRegistration\PrepareCardRegistrationAction;
+use Application\Http\Action\Monetization\Account\Command\RegisterPaymentMethod\RegisterPaymentMethodAction;
+use Application\Http\Action\Monetization\Account\Query\GetPaymentMethod\GetPaymentMethodAction;
+use Application\Http\Action\Monetization\Account\Query\ListPaymentMethods\ListPaymentMethodsAction;
 use Application\Http\Action\Monetization\Principal\Command\CreatePrincipal\CreatePrincipalAction;
 use Application\Http\Action\Monetization\Principal\Command\UpdatePrincipalGroupMembers\UpdatePrincipalGroupMembersAction;
 use Application\Http\Action\Monetization\Principal\Query\GetCurrentPrincipal\GetCurrentPrincipalAction;
@@ -19,10 +24,15 @@ Route::middleware(['auth.api', 'resolve.actor', 'resolve.account', 'rate-limit:s
 Route::middleware(['auth.api', 'account.active', 'principal.active', 'resolve.actor', 'resolve.account', 'resolve.monetization', 'rate-limit:screen,query'])->group(function () {
     Route::get('/principal-groups', ListPrincipalGroupsAction::class);
     Route::get('/members', ListMembersAction::class);
+    Route::get('/payment-methods', ListPaymentMethodsAction::class);
+    Route::get('/payment-methods/{paymentMethodIdentifier}', GetPaymentMethodAction::class);
 });
 
 Route::middleware(['auth.api', 'account.active', 'principal.active', 'resolve.actor', 'resolve.account', 'resolve.monetization', 'rate-limit:screen,command'])->group(function () {
     Route::patch('/principal-groups/members', UpdatePrincipalGroupMembersAction::class);
+    Route::post('/payment-methods/setup-intents', PrepareCardRegistrationAction::class);
+    Route::post('/payment-methods', RegisterPaymentMethodAction::class);
+    Route::delete('/payment-methods/{paymentMethodIdentifier}', DeletePaymentMethodAction::class);
 });
 
 // Account

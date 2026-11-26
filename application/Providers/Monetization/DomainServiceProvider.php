@@ -5,22 +5,28 @@ declare(strict_types=1);
 namespace Application\Providers\Monetization;
 
 use Illuminate\Support\ServiceProvider;
+use Source\Monetization\Account\Application\Service\CardGatewayInterface;
 use Source\Monetization\Account\Application\UseCase\Command\OnboardSeller\OnboardSeller;
 use Source\Monetization\Account\Application\UseCase\Command\OnboardSeller\OnboardSellerInterface;
 use Source\Monetization\Account\Domain\Factory\MonetizationAccountFactoryInterface;
+use Source\Monetization\Account\Domain\Factory\PaymentMethodArchiveFactoryInterface;
 use Source\Monetization\Account\Domain\Factory\PaymentMethodFactoryInterface;
 use Source\Monetization\Account\Domain\Factory\PayoutAccountFactoryInterface;
 use Source\Monetization\Account\Domain\Repository\MonetizationAccountRepositoryInterface;
+use Source\Monetization\Account\Domain\Repository\PaymentMethodArchiveRepositoryInterface;
 use Source\Monetization\Account\Domain\Repository\PaymentMethodRepositoryInterface;
 use Source\Monetization\Account\Domain\Repository\PayoutAccountRepositoryInterface;
 use Source\Monetization\Account\Domain\Service\ConnectGatewayInterface;
 use Source\Monetization\Account\Domain\Service\PaymentMethodMetaResolverInterface;
 use Source\Monetization\Account\Infrastructure\Factory\MonetizationAccountFactory;
+use Source\Monetization\Account\Infrastructure\Factory\PaymentMethodArchiveFactory;
 use Source\Monetization\Account\Infrastructure\Factory\PaymentMethodFactory;
 use Source\Monetization\Account\Infrastructure\Factory\PayoutAccountFactory;
 use Source\Monetization\Account\Infrastructure\Repository\MonetizationAccountRepository;
+use Source\Monetization\Account\Infrastructure\Repository\PaymentMethodArchiveRepository;
 use Source\Monetization\Account\Infrastructure\Repository\PaymentMethodRepository;
 use Source\Monetization\Account\Infrastructure\Repository\PayoutAccountRepository;
+use Source\Monetization\Account\Infrastructure\Service\CardGateway;
 use Source\Monetization\Account\Infrastructure\Service\ConnectGateway;
 use Source\Monetization\Account\Infrastructure\Service\PaymentMethodMetaResolver;
 use Source\Monetization\Billing\Domain\Factory\InvoiceFactoryInterface;
@@ -84,6 +90,10 @@ class DomainServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        $this->app->singleton(CardGatewayInterface::class, CardGateway::class);
+        $this->app->singleton(PaymentMethodArchiveFactoryInterface::class, PaymentMethodArchiveFactory::class);
+        $this->app->singleton(PaymentMethodArchiveRepositoryInterface::class, PaymentMethodArchiveRepository::class);
+
         $this->app->singleton(MonetizationContextServiceInterface::class, MonetizationContextService::class);
         $this->app->singleton(AccountMembershipServiceInterface::class, AccountMembershipService::class);
         $this->app->singleton(PrincipalFactoryInterface::class, PrincipalFactory::class);

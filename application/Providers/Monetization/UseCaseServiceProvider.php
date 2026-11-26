@@ -5,12 +5,20 @@ declare(strict_types=1);
 namespace Application\Providers\Monetization;
 
 use Illuminate\Support\ServiceProvider;
+use Source\Monetization\Account\Application\UseCase\Command\DeletePaymentMethod\DeletePaymentMethod;
+use Source\Monetization\Account\Application\UseCase\Command\DeletePaymentMethod\DeletePaymentMethodInterface;
+use Source\Monetization\Account\Application\UseCase\Command\PrepareCardRegistration\PrepareCardRegistration;
+use Source\Monetization\Account\Application\UseCase\Command\PrepareCardRegistration\PrepareCardRegistrationInterface;
 use Source\Monetization\Account\Application\UseCase\Command\ProvisionMonetizationAccount\ProvisionMonetizationAccount;
 use Source\Monetization\Account\Application\UseCase\Command\ProvisionMonetizationAccount\ProvisionMonetizationAccountInterface;
 use Source\Monetization\Account\Application\UseCase\Command\RegisterPaymentMethod\RegisterPaymentMethod;
 use Source\Monetization\Account\Application\UseCase\Command\RegisterPaymentMethod\RegisterPaymentMethodInterface;
 use Source\Monetization\Account\Application\UseCase\Command\SyncPayoutAccount\SyncPayoutAccount;
 use Source\Monetization\Account\Application\UseCase\Command\SyncPayoutAccount\SyncPayoutAccountInterface;
+use Source\Monetization\Account\Application\UseCase\Query\GetPaymentMethod\GetPaymentMethodInterface;
+use Source\Monetization\Account\Application\UseCase\Query\ListPaymentMethods\ListPaymentMethodsInterface;
+use Source\Monetization\Account\Infrastructure\Query\GetPaymentMethod;
+use Source\Monetization\Account\Infrastructure\Query\ListPaymentMethods;
 use Source\Monetization\Billing\Application\UseCase\Command\CreateInvoice\CreateInvoice;
 use Source\Monetization\Billing\Application\UseCase\Command\CreateInvoice\CreateInvoiceInterface;
 use Source\Monetization\Billing\Application\UseCase\Command\RecordPayment\RecordPayment;
@@ -38,6 +46,11 @@ class UseCaseServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
+        $this->app->singleton(PrepareCardRegistrationInterface::class, PrepareCardRegistration::class);
+        $this->app->singleton(DeletePaymentMethodInterface::class, DeletePaymentMethod::class);
+        $this->app->singleton(ListPaymentMethodsInterface::class, ListPaymentMethods::class);
+        $this->app->singleton(GetPaymentMethodInterface::class, GetPaymentMethod::class);
+
         $this->app->singleton(CreatePrincipalInterface::class, CreatePrincipal::class);
 
         $this->app->singleton(GetCurrentPrincipalInterface::class, GetCurrentPrincipal::class);
