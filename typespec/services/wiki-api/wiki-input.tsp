@@ -7,12 +7,8 @@ namespace KPool.WikiApi;
 model AgencyWikiBasicInput {
   @doc("Display name of the agency.")
   name: string;
-  @doc("Normalized name of the agency.")
-  normalizedName?: string;
   @doc("Chief executive officer of the agency.")
   ceo?: string;
-  @doc("Normalized chief executive officer name.")
-  normalizedCeo?: string;
   @doc("Date when the agency was founded.")
   foundedIn?: plainDate | null;
   @doc("Parent agency identifier.")
@@ -29,8 +25,6 @@ model AgencyWikiBasicInput {
 model GroupWikiBasicInput {
   @doc("Display name of the group.")
   name: string;
-  @doc("Normalized name of the group.")
-  normalizedName?: string;
   @doc("Associated agency identifier.")
   agencyIdentifier?: Uuid | null;
   @doc("Group type.")
@@ -57,12 +51,8 @@ model GroupWikiBasicInput {
 model TalentWikiBasicInput {
   @doc("Display name of the talent.")
   name: string;
-  @doc("Normalized name of the talent.")
-  normalizedName?: string;
   @doc("Real name of the talent.")
   realName?: string;
-  @doc("Normalized real name of the talent.")
-  normalizedRealName?: string;
   @doc("Birthday of the talent.")
   birthday?: plainDate | null;
   @doc("Associated agency identifier.")
@@ -94,8 +84,6 @@ model TalentWikiBasicInput {
 model SongWikiBasicInput {
   @doc("Display name of the song.")
   name: string;
-  @doc("Normalized name of the song.")
-  normalizedName?: string;
   @doc("Song type.")
   songType?: "title_track" | "b_side" | "ost" | "solo" | "collaboration" | "pre_release" | null;
   @doc("Genres associated with the song.")
@@ -108,16 +96,10 @@ model SongWikiBasicInput {
   albumName?: string | null;
   @doc("Lyricist name.")
   lyricist?: string;
-  @doc("Normalized lyricist name.")
-  normalizedLyricist?: string;
   @doc("Composer name.")
   composer?: string;
-  @doc("Normalized composer name.")
-  normalizedComposer?: string;
   @doc("Arranger name.")
   arranger?: string;
-  @doc("Normalized arranger name.")
-  normalizedArranger?: string;
 
   @doc("Published group wiki identifiers; map groups[].wikiIdentifier from detail responses.")
   groupIdentifiers?: Uuid[];

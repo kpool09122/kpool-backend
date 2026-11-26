@@ -6728,15 +6728,9 @@ components:
         name:
           type: string
           description: Display name of the agency.
-        normalizedName:
-          type: string
-          description: Normalized name of the agency.
         ceo:
           type: string
           description: Chief executive officer of the agency.
-        normalizedCeo:
-          type: string
-          description: Normalized chief executive officer name.
         foundedIn:
           type: string
           format: date
@@ -7785,9 +7779,6 @@ components:
         name:
           type: string
           description: Display name of the group.
-        normalizedName:
-          type: string
-          description: Normalized name of the group.
         agencyIdentifier:
           type: string
           allOf:
@@ -9723,9 +9714,6 @@ components:
         name:
           type: string
           description: Display name of the song.
-        normalizedName:
-          type: string
-          description: Normalized name of the song.
         songType:
           type: string
           enum:
@@ -9760,21 +9748,12 @@ components:
         lyricist:
           type: string
           description: Lyricist name.
-        normalizedLyricist:
-          type: string
-          description: Normalized lyricist name.
         composer:
           type: string
           description: Composer name.
-        normalizedComposer:
-          type: string
-          description: Normalized composer name.
         arranger:
           type: string
           description: Arranger name.
-        normalizedArranger:
-          type: string
-          description: Normalized arranger name.
         groupIdentifiers:
           type: array
           items:
@@ -10213,15 +10192,9 @@ components:
         name:
           type: string
           description: Display name of the talent.
-        normalizedName:
-          type: string
-          description: Normalized name of the talent.
         realName:
           type: string
           description: Real name of the talent.
-        normalizedRealName:
-          type: string
-          description: Normalized real name of the talent.
         birthday:
           type: string
           format: date

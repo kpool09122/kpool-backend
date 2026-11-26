@@ -280,7 +280,7 @@ class OpenApiToolRegistryTest extends TestCase
     {
         $tool = app(OpenApiToolRegistry::class)->find('edit_wiki_draft');
         self::assertNotNull($tool);
-        $basic = (object) ['name' => 'Agency', 'normalizedName' => 'agency', 'ceo' => 'CEO', 'normalizedCeo' => 'ceo',
+        $basic = (object) ['name' => 'Agency', 'ceo' => 'CEO',
             'foundedIn' => null, 'parentAgencyIdentifier' => null, 'status' => null, 'officialWebsite' => null, 'socialLinks' => ['https://example.test']];
         $args = (object) ['wikiId' => '019a8fa0-3f20-7000-8000-000000000001', 'resourceType' => 'agency', 'basic' => $basic,
             'sections' => [(object) ['type' => 'section', 'title' => 'History', 'displayOrder' => 0, 'contents' => [(object) ['type' => 'text', 'content' => 'Keep me']]]],

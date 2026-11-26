@@ -15,6 +15,7 @@ use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\ApprovalStatus;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Wiki\Application\Exception\WikiNotFoundException;
+use Source\Wiki\Wiki\Application\Service\WikiBasicNormalizationService;
 use Source\Wiki\Wiki\Application\Service\WikiContentKeyService;
 use Source\Wiki\Wiki\Domain\Exception\NgWordDetectedException;
 use Source\Wiki\Wiki\Domain\Repository\DraftWikiRepositoryInterface;
@@ -24,6 +25,7 @@ readonly class EditWiki implements EditWikiInterface
 {
     public function __construct(
         private WikiContentKeyService $wikiContentKeyService,
+        private WikiBasicNormalizationService $wikiBasicNormalizationService,
         private DraftWikiRepositoryInterface         $draftWikiRepository,
         private PrincipalRepositoryInterface         $principalRepository,
         private PolicyEvaluatorInterface             $policyEvaluator,
@@ -76,15 +78,17 @@ readonly class EditWiki implements EditWikiInterface
             throw new InvalidStatusException();
         }
 
+        $basic = $this->wikiBasicNormalizationService->normalize($input->basic(), $wiki->language());
+
         $this->wikiNgWordValidationService->validate(
-            basic: $input->basic(),
+            basic: $basic,
             sections: $input->sections(),
             title: $input->title(),
             metaDescription: $input->metaDescription(),
             keywords: $input->keywords(),
         );
 
-        $wiki->setBasic($input->basic());
+        $wiki->setBasic($basic);
         $wiki->setSections($input->sections());
         $wiki->setThemeColor($input->themeColor());
         $wiki->setFontStyle($input->fontStyle());
