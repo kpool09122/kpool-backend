@@ -69,7 +69,6 @@ final class WikiCommandPayloadMapper
     {
         return [
             'name' => $basic['name'],
-            'normalized_name' => $basic['normalizedName'] ?? '',
             'agency_identifier' => $basic['agencyIdentifier'] ?? null,
             'group_type' => $basic['groupType'] ?? null,
             'status' => $basic['status'] ?? null,
@@ -114,9 +113,7 @@ final class WikiCommandPayloadMapper
     {
         return [
             'name' => $basic['name'],
-            'normalized_name' => $basic['normalizedName'] ?? '',
             'real_name' => $basic['realName'] ?? '',
-            'normalized_real_name' => $basic['normalizedRealName'] ?? '',
             'birthday' => $basic['birthday'] ?? null,
             'agency_identifier' => $basic['agencyIdentifier'] ?? null,
             'group_identifiers' => self::relatedWikiIdentifiers($basic, 'groupIdentifiers', 'groups'),
@@ -140,9 +137,7 @@ final class WikiCommandPayloadMapper
     {
         return [
             'name' => $basic['name'],
-            'normalized_name' => $basic['normalizedName'] ?? '',
             'ceo' => $basic['ceo'] ?? '',
-            'normalized_ceo' => $basic['normalizedCeo'] ?? '',
             'founded_in' => $basic['foundedIn'] ?? null,
             'parent_agency_identifier' => $basic['parentAgencyIdentifier'] ?? null,
             'status' => $basic['status'] ?? null,
@@ -159,7 +154,6 @@ final class WikiCommandPayloadMapper
     {
         return [
             'name' => $basic['name'],
-            'normalized_name' => $basic['normalizedName'] ?? '',
             'song_type' => $basic['songType'] ?? null,
             'genres' => $basic['genres'] ?? [],
             'agency_identifier' => $basic['agencyIdentifier'] ?? null,
@@ -168,11 +162,8 @@ final class WikiCommandPayloadMapper
             'release_date' => $basic['releaseDate'] ?? null,
             'album_name' => $basic['albumName'] ?? null,
             'lyricist' => $basic['lyricist'] ?? '',
-            'normalized_lyricist' => $basic['normalizedLyricist'] ?? '',
             'composer' => $basic['composer'] ?? '',
-            'normalized_composer' => $basic['normalizedComposer'] ?? '',
             'arranger' => $basic['arranger'] ?? '',
-            'normalized_arranger' => $basic['normalizedArranger'] ?? '',
         ];
     }
 

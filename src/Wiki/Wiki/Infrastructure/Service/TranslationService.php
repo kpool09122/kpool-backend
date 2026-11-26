@@ -9,9 +9,9 @@ use Application\Http\Client\GoogleTranslateClient\TranslateTexts\TranslateTextsR
 use InvalidArgumentException;
 use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Domain\ValueObject\Language;
-use Source\Wiki\Shared\Domain\Service\NormalizationServiceInterface;
 use Source\Wiki\Wiki\Application\Service\TranslatedWikiData;
 use Source\Wiki\Wiki\Application\Service\TranslationServiceInterface;
+use Source\Wiki\Wiki\Application\Service\WikiBasicNormalizationService;
 use Source\Wiki\Wiki\Domain\Entity\Wiki;
 use Source\Wiki\Wiki\Domain\Entity\WikiSnapshot;
 use Source\Wiki\Wiki\Domain\Repository\WikiRepositoryInterface;
@@ -55,7 +55,7 @@ readonly class TranslationService implements TranslationServiceInterface
 
     public function __construct(
         private GoogleTranslateClient $googleTranslateClient,
-        private NormalizationServiceInterface $normalizationService,
+        private WikiBasicNormalizationService $wikiBasicNormalizationService,
         private WikiRepositoryInterface $wikiRepository,
         private WikiSnapshotRepositoryInterface $wikiSnapshotRepository,
     ) {
@@ -99,17 +99,8 @@ readonly class TranslationService implements TranslationServiceInterface
             return $maxLength === null ? $translated : mb_substr(trim($translated), 0, $maxLength);
         }, $baseline, $existing);
 
-        $basic = $translated['basic'];
-        $data = $basic->toArray();
-        foreach ($basic->normalizableKeys() as $sourceKey => $normalizedKey) {
-            $data[$normalizedKey] = $this->normalizationService->normalize(
-                TypedValue::string($data[$sourceKey] ?? ''),
-                $targetLanguage,
-            );
-        }
-
         return new TranslatedWikiData(
-            translatedBasic: $basic::fromArray($data),
+            translatedBasic: $this->wikiBasicNormalizationService->normalize($translated['basic'], $targetLanguage),
             translatedSections: $translated['sections'],
             translatedTitle: $translated['title'],
             translatedMetaDescription: $translated['metaDescription'],

@@ -4,17 +4,16 @@ declare(strict_types=1);
 
 namespace Source\Wiki\Wiki\Application\UseCase\Command\AutoCreateWiki;
 
-use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Domain\ValueObject\WikiIdentifier;
 use Source\Wiki\Principal\Domain\Repository\PrincipalRepositoryInterface;
 use Source\Wiki\Principal\Domain\Service\PolicyEvaluatorInterface;
 use Source\Wiki\Shared\Application\Exception\DuplicateSlugException;
 use Source\Wiki\Shared\Domain\Exception\DisallowedException;
 use Source\Wiki\Shared\Domain\Exception\PrincipalNotFoundException;
-use Source\Wiki\Shared\Domain\Service\NormalizationServiceInterface;
 use Source\Wiki\Shared\Domain\ValueObject\Action;
 use Source\Wiki\Shared\Domain\ValueObject\Resource;
 use Source\Wiki\Shared\Domain\ValueObject\ResourceType;
+use Source\Wiki\Wiki\Application\Service\WikiBasicNormalizationService;
 use Source\Wiki\Wiki\Application\Service\WikiContentKeyService;
 use Source\Wiki\Wiki\Domain\Exception\NgWordDetectedException;
 use Source\Wiki\Wiki\Domain\Factory\DraftWikiFactoryInterface;
@@ -31,7 +30,7 @@ readonly class AutoCreateWiki implements AutoCreateWikiInterface
         private DraftWikiFactoryInterface            $draftWikiFactory,
         private DraftWikiRepositoryInterface         $draftWikiRepository,
         private WikiRepositoryInterface              $wikiRepository,
-        private NormalizationServiceInterface        $normalizationService,
+        private WikiBasicNormalizationService $wikiBasicNormalizationService,
         private PrincipalRepositoryInterface         $principalRepository,
         private PolicyEvaluatorInterface             $policyEvaluator,
         private WikiNgWordValidationServiceInterface $wikiNgWordValidationService,
@@ -79,15 +78,7 @@ readonly class AutoCreateWiki implements AutoCreateWikiInterface
 
         $generatedData = $this->autoWikiCreationService->generate($payload);
 
-        $generatedBasic = $generatedData->basic();
-        $basicArray = $generatedBasic->toArray();
-        foreach ($generatedBasic->normalizableKeys() as $sourceKey => $normalizedKey) {
-            $basicArray[$normalizedKey] = $this->normalizationService->normalize(
-                TypedValue::string($basicArray[$sourceKey] ?? ''),
-                $payload->language(),
-            );
-        }
-        $basic = $generatedBasic::fromArray($basicArray);
+        $basic = $this->wikiBasicNormalizationService->normalize($generatedData->basic(), $payload->language());
 
         $this->wikiNgWordValidationService->validate(
             basic: $basic,

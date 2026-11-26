@@ -297,7 +297,7 @@ class CreateWikiTest extends TestCase
             ->with(
                 $principalIdentifier,
                 $testData->language,
-                $testData->basic,
+                Mockery::on(static fn (GroupBasic $basic): bool => $basic->toArray() === $testData->basic->toArray()),
                 $testData->slug,
                 $testData->translationSetIdentifier,
             )
