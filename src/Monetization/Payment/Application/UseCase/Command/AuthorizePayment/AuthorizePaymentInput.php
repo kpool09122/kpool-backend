@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Source\Monetization\Payment\Application\UseCase\Command\AuthorizePayment;
 
 use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
-use Source\Monetization\Payment\Domain\ValueObject\PaymentMethod;
+use Source\Monetization\Account\Domain\ValueObject\PaymentMethodIdentifier;
 use Source\Shared\Domain\ValueObject\Money;
 use Source\Shared\Domain\ValueObject\OrderIdentifier;
 
@@ -15,7 +15,7 @@ readonly class AuthorizePaymentInput implements AuthorizePaymentInputPort
         private OrderIdentifier $orderIdentifier,
         private MonetizationAccountIdentifier $buyerMonetizationAccountIdentifier,
         private Money $money,
-        private PaymentMethod $paymentMethod,
+        private PaymentMethodIdentifier $paymentMethodIdentifier,
     ) {
     }
 
@@ -34,8 +34,8 @@ readonly class AuthorizePaymentInput implements AuthorizePaymentInputPort
         return $this->money;
     }
 
-    public function paymentMethod(): PaymentMethod
+    public function paymentMethodIdentifier(): PaymentMethodIdentifier
     {
-        return $this->paymentMethod;
+        return $this->paymentMethodIdentifier;
     }
 }

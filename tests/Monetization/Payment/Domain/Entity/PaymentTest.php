@@ -6,14 +6,15 @@ namespace Tests\Monetization\Payment\Domain\Entity;
 
 use DateTimeImmutable;
 use DomainException;
+use InvalidArgumentException;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
+use Source\Monetization\Account\Domain\ValueObject\PaymentMethodIdentifier;
 use Source\Monetization\Payment\Domain\Entity\Payment;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentIdentifier;
-use Source\Monetization\Payment\Domain\ValueObject\PaymentMethod;
-use Source\Monetization\Payment\Domain\ValueObject\PaymentMethodIdentifier;
-use Source\Monetization\Payment\Domain\ValueObject\PaymentMethodType;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentStatus;
+use Source\Monetization\Payment\Domain\ValueObject\StripePaymentIntentId;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
 use Source\Shared\Domain\ValueObject\OrderIdentifier;
@@ -21,6 +22,58 @@ use Tests\Helper\StrTestHelper;
 
 class PaymentTest extends TestCase
 {
+    /** @return iterable<string, array{PaymentStatus}> */
+    public static function statesAllowingMissingPaymentIntentId(): iterable
+    {
+        yield 'pending' => [PaymentStatus::PENDING];
+        yield 'failed' => [PaymentStatus::FAILED];
+    }
+
+    /** @return iterable<string, array{PaymentStatus}> */
+    public static function statesRequiringPaymentIntentId(): iterable
+    {
+        yield 'authorized' => [PaymentStatus::AUTHORIZED];
+        yield 'captured' => [PaymentStatus::CAPTURED];
+        yield 'partially refunded' => [PaymentStatus::PARTIALLY_REFUNDED];
+        yield 'refunded' => [PaymentStatus::REFUNDED];
+    }
+
+    /** @return iterable<string, array{PaymentStatus}> */
+    public static function allPaymentStatuses(): iterable
+    {
+        foreach (PaymentStatus::cases() as $status) {
+            yield $status->value => [$status];
+        }
+    }
+
+    #[DataProvider('statesAllowingMissingPaymentIntentId')]
+    public function testConstructAllowsMissingPaymentIntentIdBeforeAuthorizationOrAfterFailure(PaymentStatus $status): void
+    {
+        $payment = $this->createDummyPaymentTestData(status: $status)->payment;
+
+        $this->assertSame($status, $payment->status());
+        $this->assertNull($payment->stripePaymentIntentId());
+    }
+
+    #[DataProvider('statesRequiringPaymentIntentId')]
+    public function testConstructRejectsMissingPaymentIntentIdForAuthorizedStates(PaymentStatus $status): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('PaymentIntent ID is required unless the payment is pending or failed.');
+
+        $this->createDummyPaymentTestData(status: $status);
+    }
+
+    #[DataProvider('allPaymentStatuses')]
+    public function testConstructPreservesPaymentIntentIdForEveryStatus(PaymentStatus $status): void
+    {
+        $intentId = new StripePaymentIntentId('pi_test123456');
+        $payment = $this->createDummyPaymentTestData(status: $status, stripePaymentIntentId: $intentId)->payment;
+
+        $this->assertSame($status, $payment->status());
+        $this->assertSame($intentId, $payment->stripePaymentIntentId());
+    }
+
     /**
      * 正常系: インスタンスが正しく作成されること.
      *
@@ -35,7 +88,7 @@ class PaymentTest extends TestCase
         $this->assertSame($dummyPayment->orderIdentifier, $payment->orderIdentifier());
         $this->assertSame($dummyPayment->buyerMonetizationAccountIdentifier, $payment->buyerMonetizationAccountIdentifier());
         $this->assertSame($dummyPayment->money, $payment->money());
-        $this->assertSame($dummyPayment->method, $payment->paymentMethod());
+        $this->assertSame($dummyPayment->method, $payment->paymentMethodIdentifier());
         $this->assertSame($dummyPayment->createdAt, $payment->createdAt());
         $this->assertSame($dummyPayment->status, $payment->status());
         $this->assertSame($dummyPayment->refundedMoney->amount(), $payment->refundedMoney()->amount());
@@ -57,10 +110,11 @@ class PaymentTest extends TestCase
         $payment = $this->createDummyPaymentTestData()->payment;
         $authorizedAt = new DateTimeImmutable('+1 minute');
 
-        $payment->authorize($authorizedAt);
+        $payment->authorize($authorizedAt, new StripePaymentIntentId('pi_test123456'));
 
         $this->assertSame(PaymentStatus::AUTHORIZED, $payment->status());
         $this->assertSame($authorizedAt, $payment->authorizedAt());
+        $this->assertSame('pi_test123456', (string) $payment->stripePaymentIntentId());
     }
 
     /**
@@ -71,11 +125,11 @@ class PaymentTest extends TestCase
     public function testAuthorizeTwiceThrows(): void
     {
         $payment = $this->createDummyPaymentTestData()->payment;
-        $payment->authorize(new DateTimeImmutable());
+        $payment->authorize(new DateTimeImmutable(), new StripePaymentIntentId('pi_test123456'));
 
         $this->expectException(DomainException::class);
 
-        $payment->authorize(new DateTimeImmutable('+1 minute'));
+        $payment->authorize(new DateTimeImmutable('+1 minute'), new StripePaymentIntentId('pi_test123456'));
     }
 
     /**
@@ -86,7 +140,7 @@ class PaymentTest extends TestCase
     public function testCaptureAfterAuthorize(): void
     {
         $payment = $this->createDummyPaymentTestData()->payment;
-        $payment->authorize(new DateTimeImmutable());
+        $payment->authorize(new DateTimeImmutable(), new StripePaymentIntentId('pi_test123456'));
         $capturedAt = new DateTimeImmutable('+2 minutes');
 
         $payment->capture($capturedAt);
@@ -122,6 +176,19 @@ class PaymentTest extends TestCase
 
         $this->assertSame(PaymentStatus::FAILED, $payment->status());
         $this->assertSame('card_declined', $payment->failureReason());
+        $this->assertNull($payment->stripePaymentIntentId());
+    }
+
+    public function testFailAfterAuthorizationPreservesPaymentIntentId(): void
+    {
+        $payment = $this->createDummyPaymentTestData()->payment;
+        $intentId = new StripePaymentIntentId('pi_test123456');
+        $payment->authorize(new DateTimeImmutable(), $intentId);
+
+        $payment->fail('card_declined', new DateTimeImmutable());
+
+        $this->assertSame(PaymentStatus::FAILED, $payment->status());
+        $this->assertSame($intentId, $payment->stripePaymentIntentId());
     }
 
     /**
@@ -132,7 +199,7 @@ class PaymentTest extends TestCase
     public function testFailWhenInvalidStatus(): void
     {
         $payment = $this->createDummyPaymentTestData()->payment;
-        $payment->authorize(new DateTimeImmutable());
+        $payment->authorize(new DateTimeImmutable(), new StripePaymentIntentId('pi_test123456'));
         $payment->capture(new DateTimeImmutable());
 
         $this->expectException(DomainException::class);
@@ -145,7 +212,7 @@ class PaymentTest extends TestCase
     public function testRefund(): void
     {
         $payment = $this->createDummyPaymentTestData(money: new Money(1000, Currency::JPY))->payment;
-        $payment->authorize(new DateTimeImmutable());
+        $payment->authorize(new DateTimeImmutable(), new StripePaymentIntentId('pi_test123456'));
         $payment->capture(new DateTimeImmutable('+1 minute'));
 
         $payment->refund(new Money(400, Currency::JPY), new DateTimeImmutable('+2 minutes'), 'customer_request');
@@ -212,7 +279,7 @@ class PaymentTest extends TestCase
     private function createCapturedPayment(): Payment
     {
         $payment = $this->createDummyPaymentTestData(money: new Money(1000, Currency::JPY))->payment;
-        $payment->authorize(new DateTimeImmutable());
+        $payment->authorize(new DateTimeImmutable(), new StripePaymentIntentId('pi_test123456'));
         $payment->capture(new DateTimeImmutable('+1 minute'));
 
         return $payment;
@@ -223,23 +290,19 @@ class PaymentTest extends TestCase
      */
     private function createDummyPaymentTestData(
         ?Money $money = null,
+        PaymentStatus $status = PaymentStatus::PENDING,
+        ?StripePaymentIntentId $stripePaymentIntentId = null,
     ): PaymentTestData {
         $paymentId = new PaymentIdentifier(StrTestHelper::generateUuid());
         $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUuid());
         $buyerMonetizationAccountIdentifier = new MonetizationAccountIdentifier(StrTestHelper::generateUuid());
         $money ??= new Money(1000, Currency::JPY);
-        $method = new PaymentMethod(
-            new PaymentMethodIdentifier(StrTestHelper::generateUuid()),
-            PaymentMethodType::CARD,
-            'VISA **** 4242',
-            true
-        );
+        $method = new PaymentMethodIdentifier(StrTestHelper::generateUuid());
         $createdAt = new DateTimeImmutable();
         $authorizedAt = new DateTimeImmutable('+1 minute');
         $capturedAt = new DateTimeImmutable('+2 minutes');
         $failedAt = new DateTimeImmutable('+3 minutes');
         $failureReason = 'card_declined';
-        $status = PaymentStatus::PENDING;
         $refundedMoney = new Money(0, $money->currency());
         $refundedAt = new DateTimeImmutable('+2 minutes');
 
@@ -256,7 +319,8 @@ class PaymentTest extends TestCase
             $failedAt,
             $failureReason,
             $refundedMoney,
-            $refundedAt
+            $refundedAt,
+            stripePaymentIntentId: $stripePaymentIntentId,
         );
 
         return new PaymentTestData(
@@ -288,7 +352,7 @@ readonly class PaymentTestData
         public OrderIdentifier $orderIdentifier,
         public MonetizationAccountIdentifier $buyerMonetizationAccountIdentifier,
         public Money $money,
-        public PaymentMethod $method,
+        public PaymentMethodIdentifier $method,
         public DateTimeImmutable $createdAt,
         public PaymentStatus $status,
         public ?DateTimeImmutable $authorizedAt,

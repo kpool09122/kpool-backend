@@ -4,21 +4,21 @@ declare(strict_types=1);
 
 namespace Source\Monetization\Account\Infrastructure\Repository;
 
-use Application\Models\Monetization\MonetizationPaymentMethod;
-use Source\Monetization\Account\Domain\Entity\RegisteredPaymentMethod;
-use Source\Monetization\Account\Domain\Repository\RegisteredPaymentMethodRepositoryInterface;
+use Application\Models\Monetization\PaymentMethod as PaymentMethodEloquent;
+use Source\Monetization\Account\Domain\Entity\PaymentMethod;
+use Source\Monetization\Account\Domain\Repository\PaymentMethodRepositoryInterface;
+use Source\Monetization\Account\Domain\ValueObject\ExternalPaymentMethodId;
 use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
-use Source\Monetization\Account\Domain\ValueObject\PaymentMethodId;
+use Source\Monetization\Account\Domain\ValueObject\PaymentMethodIdentifier;
 use Source\Monetization\Account\Domain\ValueObject\PaymentMethodMeta;
 use Source\Monetization\Account\Domain\ValueObject\PaymentMethodStatus;
 use Source\Monetization\Account\Domain\ValueObject\PaymentMethodType;
-use Source\Monetization\Account\Domain\ValueObject\RegisteredPaymentMethodIdentifier;
 
-class RegisteredPaymentMethodRepository implements RegisteredPaymentMethodRepositoryInterface
+class PaymentMethodRepository implements PaymentMethodRepositoryInterface
 {
-    public function findById(RegisteredPaymentMethodIdentifier $identifier): ?RegisteredPaymentMethod
+    public function findById(PaymentMethodIdentifier $identifier): ?PaymentMethod
     {
-        $eloquent = MonetizationPaymentMethod::query()
+        $eloquent = PaymentMethodEloquent::query()
             ->where('id', (string) $identifier)
             ->first();
 
@@ -29,10 +29,11 @@ class RegisteredPaymentMethodRepository implements RegisteredPaymentMethodReposi
         return $this->toDomainEntity($eloquent);
     }
 
-    public function findByPaymentMethodId(PaymentMethodId $paymentMethodId): ?RegisteredPaymentMethod
+    public function findByExternalPaymentMethodId(ExternalPaymentMethodId $externalPaymentMethodId, MonetizationAccountIdentifier $monetizationAccountIdentifier): ?PaymentMethod
     {
-        $eloquent = MonetizationPaymentMethod::query()
-            ->where('stripe_payment_method_id', (string) $paymentMethodId)
+        $eloquent = PaymentMethodEloquent::query()
+            ->where('external_payment_method_id', (string) $externalPaymentMethodId)
+            ->where('monetization_account_id', (string) $monetizationAccountIdentifier)
             ->first();
 
         if ($eloquent === null) {
@@ -42,11 +43,12 @@ class RegisteredPaymentMethodRepository implements RegisteredPaymentMethodReposi
         return $this->toDomainEntity($eloquent);
     }
 
-    public function findDefaultByMonetizationAccountId(MonetizationAccountIdentifier $monetizationAccountIdentifier): ?RegisteredPaymentMethod
+    public function findDefaultByMonetizationAccountId(MonetizationAccountIdentifier $monetizationAccountIdentifier): ?PaymentMethod
     {
-        $eloquent = MonetizationPaymentMethod::query()
+        $eloquent = PaymentMethodEloquent::query()
             ->where('monetization_account_id', (string) $monetizationAccountIdentifier)
             ->where('is_default', true)
+            ->orderBy('id')
             ->first();
 
         if ($eloquent === null) {
@@ -57,26 +59,27 @@ class RegisteredPaymentMethodRepository implements RegisteredPaymentMethodReposi
     }
 
     /**
-     * @return RegisteredPaymentMethod[]
+     * @return PaymentMethod[]
      */
     public function findByMonetizationAccountId(MonetizationAccountIdentifier $monetizationAccountIdentifier): array
     {
-        $eloquents = MonetizationPaymentMethod::query()
+        $eloquents = PaymentMethodEloquent::query()
             ->where('monetization_account_id', (string) $monetizationAccountIdentifier)
+            ->orderBy('id')
             ->get();
 
-        return $eloquents->map(fn (MonetizationPaymentMethod $eloquent) => $this->toDomainEntity($eloquent))->all();
+        return $eloquents->map(fn (PaymentMethodEloquent $eloquent) => $this->toDomainEntity($eloquent))->all();
     }
 
-    public function save(RegisteredPaymentMethod $paymentMethod): void
+    public function save(PaymentMethod $paymentMethod): void
     {
         $meta = $paymentMethod->meta();
 
-        MonetizationPaymentMethod::query()->updateOrCreate(
+        PaymentMethodEloquent::query()->updateOrCreate(
             ['id' => (string) $paymentMethod->paymentMethodIdentifier()],
             [
                 'monetization_account_id' => (string) $paymentMethod->monetizationAccountIdentifier(),
-                'stripe_payment_method_id' => (string) $paymentMethod->paymentMethodId(),
+                'external_payment_method_id' => (string) $paymentMethod->externalPaymentMethodId(),
                 'type' => $paymentMethod->type()->value,
                 'brand' => $meta?->brand(),
                 'last4' => $meta?->last4(),
@@ -88,17 +91,17 @@ class RegisteredPaymentMethodRepository implements RegisteredPaymentMethodReposi
         );
     }
 
-    private function toDomainEntity(MonetizationPaymentMethod $eloquent): RegisteredPaymentMethod
+    private function toDomainEntity(PaymentMethodEloquent $eloquent): PaymentMethod
     {
         $hasMeta = $eloquent->brand !== null
             || $eloquent->last4 !== null
             || $eloquent->exp_month !== null
             || $eloquent->exp_year !== null;
 
-        return new RegisteredPaymentMethod(
-            new RegisteredPaymentMethodIdentifier($eloquent->id),
+        return new PaymentMethod(
+            new PaymentMethodIdentifier($eloquent->id),
             new MonetizationAccountIdentifier($eloquent->monetization_account_id),
-            new PaymentMethodId($eloquent->stripe_payment_method_id),
+            new ExternalPaymentMethodId($eloquent->external_payment_method_id),
             PaymentMethodType::from($eloquent->type),
             $hasMeta ? new PaymentMethodMeta(
                 $eloquent->brand,

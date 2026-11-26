@@ -6,12 +6,12 @@ namespace Tests\Helper;
 
 use Illuminate\Support\Facades\DB;
 
-class CreateRegisteredPaymentMethod
+class CreatePaymentMethod
 {
     /**
      * @param array{
      *     monetization_account_id?: string,
-     *     stripe_payment_method_id?: string,
+     *     external_payment_method_id?: string,
      *     type?: string,
      *     brand?: ?string,
      *     last4?: ?string,
@@ -21,7 +21,7 @@ class CreateRegisteredPaymentMethod
      *     status?: string,
      * } $overrides
      */
-    public static function create(string $registeredPaymentMethodId, array $overrides = []): void
+    public static function create(string $paymentMethodId, array $overrides = []): void
     {
         $monetizationAccountId = $overrides['monetization_account_id'] ?? StrTestHelper::generateUuid();
 
@@ -30,10 +30,10 @@ class CreateRegisteredPaymentMethod
             CreateMonetizationAccount::create($monetizationAccountId);
         }
 
-        DB::table('monetization_registered_payment_methods')->insert([
-            'id' => $registeredPaymentMethodId,
+        DB::table('monetization_payment_methods')->insert([
+            'id' => $paymentMethodId,
             'monetization_account_id' => $monetizationAccountId,
-            'stripe_payment_method_id' => $overrides['stripe_payment_method_id'] ?? 'pm_' . StrTestHelper::generateStr(20),
+            'external_payment_method_id' => $overrides['external_payment_method_id'] ?? 'pm_' . StrTestHelper::generateStr(20),
             'type' => $overrides['type'] ?? 'card',
             'brand' => $overrides['brand'] ?? null,
             'last4' => $overrides['last4'] ?? null,

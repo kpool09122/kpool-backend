@@ -6,9 +6,9 @@ namespace Tests\Monetization\Account\Domain\ValueObject;
 
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
-use Source\Monetization\Account\Domain\ValueObject\PaymentMethodId;
+use Source\Monetization\Account\Domain\ValueObject\ExternalPaymentMethodId;
 
-class PaymentMethodIdTest extends TestCase
+class ExternalPaymentMethodIdTest extends TestCase
 {
     /**
      * 正常系: 有効なPayment Method IDでインスタンスが生成されること
@@ -16,8 +16,8 @@ class PaymentMethodIdTest extends TestCase
     public function test__construct(): void
     {
         $id = 'pm_1234567890abcdef';
-        $paymentMethodId = new PaymentMethodId($id);
-        $this->assertSame($id, (string) $paymentMethodId);
+        $externalPaymentMethodId = new ExternalPaymentMethodId($id);
+        $this->assertSame($id, (string) $externalPaymentMethodId);
     }
 
     /**
@@ -26,7 +26,7 @@ class PaymentMethodIdTest extends TestCase
     public function testValidateInvalidPrefix(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        new PaymentMethodId('invalid_1234567890');
+        new ExternalPaymentMethodId('invalid_1234567890');
     }
 
     /**
@@ -35,6 +35,6 @@ class PaymentMethodIdTest extends TestCase
     public function testValidateTooShort(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        new PaymentMethodId('pm_123');
+        new ExternalPaymentMethodId('pm_123');
     }
 }

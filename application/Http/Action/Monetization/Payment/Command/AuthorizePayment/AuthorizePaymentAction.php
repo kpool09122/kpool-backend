@@ -12,15 +12,14 @@ use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
+use Source\Monetization\Account\Domain\ValueObject\PaymentMethodIdentifier;
 use Source\Monetization\Payment\Application\Exception\ApiException;
 use Source\Monetization\Payment\Application\UseCase\Command\AuthorizePayment\AuthorizePaymentInput;
 use Source\Monetization\Payment\Application\UseCase\Command\AuthorizePayment\AuthorizePaymentInterface;
 use Source\Monetization\Payment\Application\UseCase\Command\AuthorizePayment\AuthorizePaymentOutput;
 use Source\Monetization\Payment\Domain\Exception\InvalidPaymentStatusException;
 use Source\Monetization\Payment\Domain\Exception\PaymentGatewayException;
-use Source\Monetization\Payment\Domain\ValueObject\PaymentMethod;
-use Source\Monetization\Payment\Domain\ValueObject\PaymentMethodIdentifier;
-use Source\Monetization\Payment\Domain\ValueObject\PaymentMethodType;
+use Source\Monetization\Shared\Exception\InvalidPaymentMethodException;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
 use Source\Shared\Domain\ValueObject\OrderIdentifier;
@@ -48,12 +47,7 @@ readonly class AuthorizePaymentAction
                     new OrderIdentifier($request->orderId()),
                     new MonetizationAccountIdentifier($request->buyerMonetizationAccountId()),
                     new Money($request->amount(), Currency::from($request->currency())),
-                    new PaymentMethod(
-                        new PaymentMethodIdentifier($request->paymentMethodId()),
-                        PaymentMethodType::from($request->paymentMethodType()),
-                        $request->paymentMethodLabel(),
-                        $request->paymentMethodRecurringEnabled(),
-                    ),
+                    new PaymentMethodIdentifier($request->paymentMethodId()),
                 );
                 $output = new AuthorizePaymentOutput();
             } catch (InvalidArgumentException $e) {
@@ -72,6 +66,10 @@ readonly class AuthorizePaymentAction
                 DB::rollBack();
 
                 throw new ConflictHttpException(detail: error_message('invalid_payment_status', $language), previous: $e);
+            } catch (InvalidPaymentMethodException $e) {
+                DB::rollBack();
+
+                throw new UnprocessableEntityHttpException(detail: error_message('invalid_payment_method', $language), previous: $e);
             } catch (PaymentGatewayException $e) {
                 DB::rollBack();
 

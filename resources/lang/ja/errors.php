@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 return [
+    'payment_method_already_exists' => 'この支払い手段は既に登録されています。',
+    'invalid_payment_method' => 'この決済では指定された支払い手段を利用できません。',
     'account_snapshot_change_request_not_found' => 'スナップショット変更申請が見つかりません。',
     'invalid_account_snapshot_change_request' => '審査待ちのスナップショット変更申請が既に存在します。',
     'invalid_account_snapshot_change_request_approval' => 'このスナップショット変更申請は承認できません。',

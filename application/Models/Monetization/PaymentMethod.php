@@ -14,7 +14,7 @@ use Override;
 /**
  * @property string $id
  * @property string $monetization_account_id
- * @property string $stripe_payment_method_id
+ * @property string $external_payment_method_id
  * @property string $type
  * @property ?string $brand
  * @property ?string $last4
@@ -28,7 +28,7 @@ use Override;
 #[Fillable([
     'id',
     'monetization_account_id',
-    'stripe_payment_method_id',
+    'external_payment_method_id',
     'type',
     'brand',
     'last4',
@@ -37,8 +37,8 @@ use Override;
     'is_default',
     'status',
 ])]
-#[Table(name: 'monetization_registered_payment_methods', keyType: 'string')]
-class MonetizationPaymentMethod extends Model
+#[Table(name: 'monetization_payment_methods', keyType: 'string')]
+class PaymentMethod extends Model
 {
     #[Override]
     public $incrementing = false;

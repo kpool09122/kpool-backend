@@ -10,7 +10,7 @@ use Application\Http\Client\StripeClient\StripeClient;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Mockery;
 use Source\Monetization\Account\Domain\Service\PaymentMethodMetaResolverInterface;
-use Source\Monetization\Account\Domain\ValueObject\PaymentMethodId;
+use Source\Monetization\Account\Domain\ValueObject\ExternalPaymentMethodId;
 use Stripe\Exception\InvalidRequestException;
 use Tests\TestCase;
 
@@ -41,8 +41,8 @@ class PaymentMethodMetaResolverTest extends TestCase
 
         $resolver = $this->app()->make(PaymentMethodMetaResolverInterface::class);
 
-        $paymentMethodId = new PaymentMethodId('pm_test1234567890');
-        $meta = $resolver->resolve($paymentMethodId);
+        $externalPaymentMethodId = new ExternalPaymentMethodId('pm_test1234567890');
+        $meta = $resolver->resolve($externalPaymentMethodId);
 
         $this->assertNotNull($meta);
         $this->assertSame('visa', $meta->brand());
@@ -75,7 +75,7 @@ class PaymentMethodMetaResolverTest extends TestCase
 
         $resolver = $this->app()->make(PaymentMethodMetaResolverInterface::class);
 
-        $meta = $resolver->resolve(new PaymentMethodId('pm_test1234567890'));
+        $meta = $resolver->resolve(new ExternalPaymentMethodId('pm_test1234567890'));
 
         $this->assertNotNull($meta);
         $this->assertNull($meta->brand());
@@ -101,7 +101,7 @@ class PaymentMethodMetaResolverTest extends TestCase
 
         $resolver = $this->app()->make(PaymentMethodMetaResolverInterface::class);
 
-        $meta = $resolver->resolve(new PaymentMethodId('pm_test1234567890'));
+        $meta = $resolver->resolve(new ExternalPaymentMethodId('pm_test1234567890'));
 
         $this->assertNull($meta);
     }

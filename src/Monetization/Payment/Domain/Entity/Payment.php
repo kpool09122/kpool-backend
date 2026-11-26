@@ -5,13 +5,15 @@ declare(strict_types=1);
 namespace Source\Monetization\Payment\Domain\Entity;
 
 use DateTimeImmutable;
+use InvalidArgumentException;
 use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
+use Source\Monetization\Account\Domain\ValueObject\PaymentMethodIdentifier;
 use Source\Monetization\Payment\Domain\Exception\InvalidPaymentStatusException;
 use Source\Monetization\Payment\Domain\Exception\RefundCurrencyMismatchException;
 use Source\Monetization\Payment\Domain\Exception\RefundExceedsCapturedAmountException;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentIdentifier;
-use Source\Monetization\Payment\Domain\ValueObject\PaymentMethod;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentStatus;
+use Source\Monetization\Payment\Domain\ValueObject\StripePaymentIntentId;
 use Source\Shared\Domain\ValueObject\Money;
 use Source\Shared\Domain\ValueObject\OrderIdentifier;
 
@@ -22,7 +24,7 @@ class Payment
         private readonly OrderIdentifier   $orderIdentifier,
         private readonly MonetizationAccountIdentifier $buyerMonetizationAccountIdentifier,
         private readonly Money             $money,
-        private readonly PaymentMethod     $paymentMethod,
+        private readonly PaymentMethodIdentifier     $paymentMethodIdentifier,
         private readonly DateTimeImmutable $createdAt,
         private PaymentStatus              $status,
         private ?DateTimeImmutable         $authorizedAt,
@@ -32,7 +34,11 @@ class Payment
         private Money                      $refundedMoney,
         private ?DateTimeImmutable         $lastRefundedAt,
         private ?string                    $lastRefundReason = null,
+        private ?StripePaymentIntentId $stripePaymentIntentId = null,
     ) {
+        if ($stripePaymentIntentId === null && ! in_array($status, [PaymentStatus::PENDING, PaymentStatus::FAILED], true)) {
+            throw new InvalidArgumentException('PaymentIntent ID is required unless the payment is pending or failed.');
+        }
     }
 
     public function paymentId(): PaymentIdentifier
@@ -55,9 +61,14 @@ class Payment
         return $this->money;
     }
 
-    public function paymentMethod(): PaymentMethod
+    public function paymentMethodIdentifier(): PaymentMethodIdentifier
     {
-        return $this->paymentMethod;
+        return $this->paymentMethodIdentifier;
+    }
+
+    public function stripePaymentIntentId(): ?StripePaymentIntentId
+    {
+        return $this->stripePaymentIntentId;
     }
 
     public function createdAt(): DateTimeImmutable
@@ -108,12 +119,13 @@ class Payment
     /**
      * @throws InvalidPaymentStatusException
      */
-    public function authorize(DateTimeImmutable $authorizedAt): void
+    public function authorize(DateTimeImmutable $authorizedAt, StripePaymentIntentId $stripePaymentIntentId): void
     {
         if ($this->status !== PaymentStatus::PENDING) {
             throw new InvalidPaymentStatusException('Payment is not pending.');
         }
 
+        $this->stripePaymentIntentId = $stripePaymentIntentId;
         $this->authorizedAt = $authorizedAt;
         $this->status = PaymentStatus::AUTHORIZED;
     }

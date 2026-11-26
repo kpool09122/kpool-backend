@@ -60,11 +60,11 @@ class MonetizationAccount extends Model
     }
 
     /**
-     * @return HasMany<MonetizationPaymentMethod, $this>
+     * @return HasMany<PaymentMethod, $this>
      */
     public function paymentMethods(): HasMany
     {
-        return $this->hasMany(MonetizationPaymentMethod::class, 'monetization_account_id');
+        return $this->hasMany(PaymentMethod::class, 'monetization_account_id');
     }
 
     /**

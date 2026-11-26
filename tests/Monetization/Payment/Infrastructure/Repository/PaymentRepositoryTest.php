@@ -19,13 +19,12 @@ use Source\Monetization\Account\Domain\Entity\MonetizationAccount;
 use Source\Monetization\Account\Domain\Repository\MonetizationAccountRepositoryInterface;
 use Source\Monetization\Account\Domain\ValueObject\Capability;
 use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
+use Source\Monetization\Account\Domain\ValueObject\PaymentMethodIdentifier;
 use Source\Monetization\Payment\Domain\Entity\Payment;
 use Source\Monetization\Payment\Domain\Repository\PaymentRepositoryInterface;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentIdentifier;
-use Source\Monetization\Payment\Domain\ValueObject\PaymentMethod;
-use Source\Monetization\Payment\Domain\ValueObject\PaymentMethodIdentifier;
-use Source\Monetization\Payment\Domain\ValueObject\PaymentMethodType;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentStatus;
+use Source\Monetization\Payment\Domain\ValueObject\StripePaymentIntentId;
 use Source\Shared\Domain\ValueObject\AccountCategory;
 use Source\Shared\Domain\ValueObject\AccountIdentifier;
 use Source\Shared\Domain\ValueObject\Currency;
@@ -70,14 +69,9 @@ class PaymentRepositoryTest extends TestCase
         $this->app()->make(MonetizationAccountRepositoryInterface::class)->save($monetizationAccount);
     }
 
-    private function createPaymentMethod(): PaymentMethod
+    private function createPaymentMethod(): PaymentMethodIdentifier
     {
-        return new PaymentMethod(
-            new PaymentMethodIdentifier(StrTestHelper::generateUuid()),
-            PaymentMethodType::CARD,
-            'Visa **** 1234',
-            true,
-        );
+        return new PaymentMethodIdentifier(StrTestHelper::generateUuid());
     }
 
     /**
@@ -93,7 +87,7 @@ class PaymentRepositoryTest extends TestCase
 
         $paymentId = StrTestHelper::generateUuid();
         $orderId = StrTestHelper::generateUuid();
-        $paymentMethod = $this->createPaymentMethod();
+        $paymentMethodIdentifier = $this->createPaymentMethod();
         $createdAt = new DateTimeImmutable('2024-01-15 10:00:00');
 
         $payment = new Payment(
@@ -101,7 +95,7 @@ class PaymentRepositoryTest extends TestCase
             new OrderIdentifier($orderId),
             new MonetizationAccountIdentifier($monetizationAccountId),
             new Money(10000, Currency::JPY),
-            $paymentMethod,
+            $paymentMethodIdentifier,
             $createdAt,
             PaymentStatus::PENDING,
             null,
@@ -125,10 +119,7 @@ class PaymentRepositoryTest extends TestCase
         $this->assertSame(10000, $result->money()->amount());
         $this->assertSame(Currency::JPY, $result->money()->currency());
         $this->assertSame(PaymentStatus::PENDING, $result->status());
-        $this->assertSame((string) $paymentMethod->paymentMethodIdentifier(), (string) $result->paymentMethod()->paymentMethodIdentifier());
-        $this->assertSame(PaymentMethodType::CARD, $result->paymentMethod()->type());
-        $this->assertSame('Visa **** 1234', $result->paymentMethod()->label());
-        $this->assertTrue($result->paymentMethod()->isRecurringEnabled());
+        $this->assertSame((string) $paymentMethodIdentifier, (string) $result->paymentMethodIdentifier());
         $this->assertNull($result->authorizedAt());
         $this->assertNull($result->capturedAt());
         $this->assertNull($result->failedAt());
@@ -165,7 +156,7 @@ class PaymentRepositoryTest extends TestCase
 
         $paymentId = StrTestHelper::generateUuid();
         $orderId = StrTestHelper::generateUuid();
-        $paymentMethod = $this->createPaymentMethod();
+        $paymentMethodIdentifier = $this->createPaymentMethod();
         $createdAt = new DateTimeImmutable('2024-01-15 10:00:00');
 
         $payment = new Payment(
@@ -173,7 +164,7 @@ class PaymentRepositoryTest extends TestCase
             new OrderIdentifier($orderId),
             new MonetizationAccountIdentifier($monetizationAccountId),
             new Money(5000, Currency::JPY),
-            $paymentMethod,
+            $paymentMethodIdentifier,
             $createdAt,
             PaymentStatus::PENDING,
             null,
@@ -194,7 +185,6 @@ class PaymentRepositoryTest extends TestCase
             'buyer_monetization_account_id' => $monetizationAccountId,
             'currency' => 'JPY',
             'amount' => 5000,
-            'payment_method_type' => 'card',
             'status' => 'pending',
         ]);
     }
@@ -212,7 +202,7 @@ class PaymentRepositoryTest extends TestCase
 
         $paymentId = StrTestHelper::generateUuid();
         $orderId = StrTestHelper::generateUuid();
-        $paymentMethod = $this->createPaymentMethod();
+        $paymentMethodIdentifier = $this->createPaymentMethod();
         $createdAt = new DateTimeImmutable('2024-01-15 10:00:00');
 
         $payment = new Payment(
@@ -220,7 +210,7 @@ class PaymentRepositoryTest extends TestCase
             new OrderIdentifier($orderId),
             new MonetizationAccountIdentifier($monetizationAccountId),
             new Money(10000, Currency::JPY),
-            $paymentMethod,
+            $paymentMethodIdentifier,
             $createdAt,
             PaymentStatus::PENDING,
             null,
@@ -237,13 +227,16 @@ class PaymentRepositoryTest extends TestCase
 
         // オーソリ
         $authorizedAt = new DateTimeImmutable('2024-01-15 10:01:00');
-        $payment->authorize($authorizedAt);
+        $payment->authorize($authorizedAt, new StripePaymentIntentId('pi_test123456'));
         $repository->save($payment);
 
         $this->assertDatabaseHas('payments', [
             'id' => $paymentId,
             'status' => 'authorized',
         ]);
+
+        $payment = $repository->findById(new PaymentIdentifier($paymentId));
+        $this->assertNotNull($payment);
 
         // キャプチャ
         $capturedAt = new DateTimeImmutable('2024-01-15 10:02:00');
@@ -258,6 +251,7 @@ class PaymentRepositoryTest extends TestCase
         $result = $repository->findById(new PaymentIdentifier($paymentId));
         $this->assertNotNull($result);
         $this->assertSame(PaymentStatus::CAPTURED, $result->status());
+        $this->assertSame('pi_test123456', (string) $result->stripePaymentIntentId());
         $this->assertNotNull($result->authorizedAt());
         $this->assertNotNull($result->capturedAt());
     }
@@ -275,7 +269,7 @@ class PaymentRepositoryTest extends TestCase
 
         $paymentId = StrTestHelper::generateUuid();
         $orderId = StrTestHelper::generateUuid();
-        $paymentMethod = $this->createPaymentMethod();
+        $paymentMethodIdentifier = $this->createPaymentMethod();
         $createdAt = new DateTimeImmutable('2024-01-15 10:00:00');
 
         $payment = new Payment(
@@ -283,7 +277,7 @@ class PaymentRepositoryTest extends TestCase
             new OrderIdentifier($orderId),
             new MonetizationAccountIdentifier($monetizationAccountId),
             new Money(10000, Currency::JPY),
-            $paymentMethod,
+            $paymentMethodIdentifier,
             $createdAt,
             PaymentStatus::PENDING,
             null,
@@ -324,7 +318,7 @@ class PaymentRepositoryTest extends TestCase
 
         $paymentId = StrTestHelper::generateUuid();
         $orderId = StrTestHelper::generateUuid();
-        $paymentMethod = $this->createPaymentMethod();
+        $paymentMethodIdentifier = $this->createPaymentMethod();
         $createdAt = new DateTimeImmutable('2024-01-15 10:00:00');
 
         $payment = new Payment(
@@ -332,7 +326,7 @@ class PaymentRepositoryTest extends TestCase
             new OrderIdentifier($orderId),
             new MonetizationAccountIdentifier($monetizationAccountId),
             new Money(10000, Currency::JPY),
-            $paymentMethod,
+            $paymentMethodIdentifier,
             $createdAt,
             PaymentStatus::PENDING,
             null,
@@ -348,7 +342,7 @@ class PaymentRepositoryTest extends TestCase
         $repository->save($payment);
 
         // オーソリ→キャプチャ
-        $payment->authorize(new DateTimeImmutable('2024-01-15 10:01:00'));
+        $payment->authorize(new DateTimeImmutable('2024-01-15 10:01:00'), new StripePaymentIntentId('pi_test123456'));
         $payment->capture(new DateTimeImmutable('2024-01-15 10:02:00'));
         $repository->save($payment);
 
@@ -393,19 +387,14 @@ class PaymentRepositoryTest extends TestCase
         $orderId = StrTestHelper::generateUuid();
         $createdAt = new DateTimeImmutable('2024-01-15 10:00:00');
 
-        $paymentMethod = new PaymentMethod(
-            new PaymentMethodIdentifier(StrTestHelper::generateUuid()),
-            PaymentMethodType::BANK_TRANSFER,
-            'Bank Account ****5678',
-            false,
-        );
+        $paymentMethodIdentifier = new PaymentMethodIdentifier(StrTestHelper::generateUuid());
 
         $payment = new Payment(
             new PaymentIdentifier($paymentId),
             new OrderIdentifier($orderId),
             new MonetizationAccountIdentifier($monetizationAccountId),
             new Money(50000, Currency::JPY),
-            $paymentMethod,
+            $paymentMethodIdentifier,
             $createdAt,
             PaymentStatus::PENDING,
             null,
@@ -423,8 +412,5 @@ class PaymentRepositoryTest extends TestCase
         $result = $repository->findById(new PaymentIdentifier($paymentId));
 
         $this->assertNotNull($result);
-        $this->assertSame(PaymentMethodType::BANK_TRANSFER, $result->paymentMethod()->type());
-        $this->assertSame('Bank Account ****5678', $result->paymentMethod()->label());
-        $this->assertFalse($result->paymentMethod()->isRecurringEnabled());
     }
 }

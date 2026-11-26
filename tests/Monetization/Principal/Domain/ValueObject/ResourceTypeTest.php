@@ -11,6 +11,6 @@ class ResourceTypeTest extends TestCase
 {
     public function testContract(): void
     {
-        self::assertSame(['principal_group'], array_map(static fn (ResourceType $type): string => $type->value, ResourceType::cases()));
+        self::assertSame(['principal_group', 'payment_method'], array_map(static fn (ResourceType $type): string => $type->value, ResourceType::cases()));
     }
 }

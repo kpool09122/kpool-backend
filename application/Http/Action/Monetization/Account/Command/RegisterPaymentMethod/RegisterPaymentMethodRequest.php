@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace Application\Http\Action\Monetization\Account\Command\RegisterPaymentMethod;
 
+use Application\Http\Action\Concerns\ResolvesLanguage;
 use Application\Http\Action\Support\RequestValue;
 use Illuminate\Foundation\Http\FormRequest;
 
 class RegisterPaymentMethodRequest extends FormRequest
 {
+    use ResolvesLanguage;
+
     /**
      * @return array<string, mixed>
      */
@@ -16,7 +19,7 @@ class RegisterPaymentMethodRequest extends FormRequest
     {
         return [
             'monetizationAccountId' => ['required', 'uuid'],
-            'paymentMethodId' => ['required', 'string'],
+            'externalPaymentMethodId' => ['required', 'string'],
             'type' => ['required', 'string', 'in:card'],
         ];
     }
@@ -26,9 +29,9 @@ class RegisterPaymentMethodRequest extends FormRequest
         return RequestValue::string($this->input('monetizationAccountId'));
     }
 
-    public function paymentMethodId(): string
+    public function externalPaymentMethodId(): string
     {
-        return RequestValue::string($this->input('paymentMethodId'));
+        return RequestValue::string($this->input('externalPaymentMethodId'));
     }
 
     public function type(): string

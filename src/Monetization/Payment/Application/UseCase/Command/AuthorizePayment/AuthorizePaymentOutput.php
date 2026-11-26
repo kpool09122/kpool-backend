@@ -5,11 +5,20 @@ declare(strict_types=1);
 namespace Source\Monetization\Payment\Application\UseCase\Command\AuthorizePayment;
 
 use DateTimeInterface;
+use LogicException;
+use Source\Monetization\Account\Domain\Entity\PaymentMethod;
 use Source\Monetization\Payment\Domain\Entity\Payment;
 
 class AuthorizePaymentOutput implements AuthorizePaymentOutputPort
 {
     private ?Payment $payment = null;
+
+    private ?PaymentMethod $paymentMethod = null;
+
+    public function setPaymentMethod(PaymentMethod $paymentMethod): void
+    {
+        $this->paymentMethod = $paymentMethod;
+    }
 
     public function setPayment(Payment $payment): void
     {
@@ -30,8 +39,8 @@ class AuthorizePaymentOutput implements AuthorizePaymentOutputPort
                 'currency' => null,
                 'paymentMethodIdentifier' => null,
                 'paymentMethodType' => null,
-                'paymentMethodLabel' => null,
-                'paymentMethodRecurringEnabled' => null,
+                'paymentMethodBrand' => null,
+                'paymentMethodLast4' => null,
                 'status' => null,
                 'createdAt' => null,
                 'authorizedAt' => null,
@@ -45,16 +54,18 @@ class AuthorizePaymentOutput implements AuthorizePaymentOutputPort
             ];
         }
 
+        $paymentMethod = $this->paymentMethod ?? throw new LogicException('Payment method must be set before serializing a payment.');
+
         return [
             'paymentId' => (string) $this->payment->paymentId(),
             'orderIdentifier' => (string) $this->payment->orderIdentifier(),
             'buyerMonetizationAccountIdentifier' => (string) $this->payment->buyerMonetizationAccountIdentifier(),
             'amount' => $this->payment->money()->amount(),
             'currency' => $this->payment->money()->currency()->value,
-            'paymentMethodIdentifier' => (string) $this->payment->paymentMethod()->paymentMethodIdentifier(),
-            'paymentMethodType' => $this->payment->paymentMethod()->type()->value,
-            'paymentMethodLabel' => $this->payment->paymentMethod()->label(),
-            'paymentMethodRecurringEnabled' => $this->payment->paymentMethod()->isRecurringEnabled(),
+            'paymentMethodIdentifier' => (string) $this->payment->paymentMethodIdentifier(),
+            'paymentMethodType' => $paymentMethod->type()->value,
+            'paymentMethodBrand' => $paymentMethod->meta()?->brand(),
+            'paymentMethodLast4' => $paymentMethod->meta()?->last4(),
             'status' => $this->payment->status()->value,
             'createdAt' => $this->payment->createdAt()->format(DateTimeInterface::ATOM),
             'authorizedAt' => $this->payment->authorizedAt()?->format(DateTimeInterface::ATOM),

@@ -8,7 +8,7 @@ use Application\Http\Client\StripeClient\RetrievePaymentMethod\RetrievePaymentMe
 use Application\Http\Client\StripeClient\StripeClient;
 use Psr\Log\LoggerInterface;
 use Source\Monetization\Account\Domain\Service\PaymentMethodMetaResolverInterface;
-use Source\Monetization\Account\Domain\ValueObject\PaymentMethodId;
+use Source\Monetization\Account\Domain\ValueObject\ExternalPaymentMethodId;
 use Source\Monetization\Account\Domain\ValueObject\PaymentMethodMeta;
 use Stripe\Exception\ApiErrorException;
 
@@ -20,11 +20,11 @@ readonly class PaymentMethodMetaResolver implements PaymentMethodMetaResolverInt
     ) {
     }
 
-    public function resolve(PaymentMethodId $paymentMethodId): ?PaymentMethodMeta
+    public function resolve(ExternalPaymentMethodId $externalPaymentMethodId): ?PaymentMethodMeta
     {
         try {
             $request = new RetrievePaymentMethodRequest(
-                paymentMethodId: (string) $paymentMethodId,
+                paymentMethodId: (string) $externalPaymentMethodId,
             );
 
             $response = $this->stripeClient->retrievePaymentMethod($request);
@@ -37,7 +37,7 @@ readonly class PaymentMethodMetaResolver implements PaymentMethodMetaResolverInt
             );
         } catch (ApiErrorException $e) {
             $this->logger->warning('Failed to retrieve payment method meta from Stripe', [
-                'payment_method_id' => (string) $paymentMethodId,
+                'payment_method_id' => (string) $externalPaymentMethodId,
                 'error' => $e->getMessage(),
             ]);
 

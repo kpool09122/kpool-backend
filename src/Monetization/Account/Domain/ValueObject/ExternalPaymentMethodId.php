@@ -5,15 +5,16 @@ declare(strict_types=1);
 namespace Source\Monetization\Account\Domain\ValueObject;
 
 use InvalidArgumentException;
-use Source\Shared\Application\Service\Uuid\UuidValidator;
 use Source\Shared\Domain\ValueObject\Foundation\StringBaseValue;
 
-class RegisteredPaymentMethodIdentifier extends StringBaseValue
+class ExternalPaymentMethodId extends StringBaseValue
 {
+    private const int MAX_LENGTH = 10;
+
     protected function validate(string $value): void
     {
-        if (! UuidValidator::isValid($value)) {
-            throw new InvalidArgumentException('Invalid RegisteredPaymentMethodIdentifier.');
+        if (! str_starts_with($value, 'pm_') || strlen($value) < self::MAX_LENGTH) {
+            throw new InvalidArgumentException('Invalid Payment Method ID format.');
         }
     }
 }

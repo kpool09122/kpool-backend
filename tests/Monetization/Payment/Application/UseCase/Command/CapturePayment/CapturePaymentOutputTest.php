@@ -7,13 +7,12 @@ namespace Tests\Monetization\Payment\Application\UseCase\Command\CapturePayment;
 use DateTimeImmutable;
 use DateTimeInterface;
 use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
+use Source\Monetization\Account\Domain\ValueObject\PaymentMethodIdentifier;
 use Source\Monetization\Payment\Application\UseCase\Command\CapturePayment\CapturePaymentOutput;
 use Source\Monetization\Payment\Domain\Entity\Payment;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentIdentifier;
-use Source\Monetization\Payment\Domain\ValueObject\PaymentMethod;
-use Source\Monetization\Payment\Domain\ValueObject\PaymentMethodIdentifier;
-use Source\Monetization\Payment\Domain\ValueObject\PaymentMethodType;
 use Source\Monetization\Payment\Domain\ValueObject\PaymentStatus;
+use Source\Monetization\Payment\Domain\ValueObject\StripePaymentIntentId;
 use Source\Shared\Domain\ValueObject\Currency;
 use Source\Shared\Domain\ValueObject\Money;
 use Source\Shared\Domain\ValueObject\OrderIdentifier;
@@ -33,12 +32,7 @@ class CapturePaymentOutputTest extends TestCase
         $orderIdentifier = new OrderIdentifier(StrTestHelper::generateUuid());
         $buyerMonetizationAccountIdentifier = new MonetizationAccountIdentifier(StrTestHelper::generateUuid());
         $money = new Money(1000, Currency::JPY);
-        $paymentMethod = new PaymentMethod(
-            new PaymentMethodIdentifier(StrTestHelper::generateUuid()),
-            PaymentMethodType::CARD,
-            'Visa **** 1234',
-            true,
-        );
+        $paymentMethodIdentifier = new PaymentMethodIdentifier(StrTestHelper::generateUuid());
         $now = new DateTimeImmutable();
 
         $payment = new Payment(
@@ -46,7 +40,7 @@ class CapturePaymentOutputTest extends TestCase
             $orderIdentifier,
             $buyerMonetizationAccountIdentifier,
             $money,
-            $paymentMethod,
+            $paymentMethodIdentifier,
             $now,
             PaymentStatus::CAPTURED,
             $now,
@@ -55,6 +49,7 @@ class CapturePaymentOutputTest extends TestCase
             null,
             new Money(0, Currency::JPY),
             null,
+            stripePaymentIntentId: new StripePaymentIntentId('pi_test123456'),
         );
 
         $output = new CapturePaymentOutput();
@@ -62,15 +57,16 @@ class CapturePaymentOutputTest extends TestCase
 
         $result = $output->toArray();
 
+        $this->assertArrayNotHasKey('paymentMethodType', $result);
+        $this->assertArrayNotHasKey('paymentMethodBrand', $result);
+        $this->assertArrayNotHasKey('paymentMethodLast4', $result);
+
         $this->assertSame((string) $paymentId, $result['paymentId']);
         $this->assertSame((string) $orderIdentifier, $result['orderIdentifier']);
         $this->assertSame((string) $buyerMonetizationAccountIdentifier, $result['buyerMonetizationAccountIdentifier']);
         $this->assertSame(1000, $result['amount']);
         $this->assertSame('JPY', $result['currency']);
-        $this->assertSame((string) $paymentMethod->paymentMethodIdentifier(), $result['paymentMethodIdentifier']);
-        $this->assertSame('card', $result['paymentMethodType']);
-        $this->assertSame('Visa **** 1234', $result['paymentMethodLabel']);
-        $this->assertTrue($result['paymentMethodRecurringEnabled']);
+        $this->assertSame((string) $paymentMethodIdentifier, $result['paymentMethodIdentifier']);
         $this->assertSame('captured', $result['status']);
         $this->assertSame($now->format(DateTimeInterface::ATOM), $result['createdAt']);
         $this->assertSame($now->format(DateTimeInterface::ATOM), $result['authorizedAt']);
@@ -101,9 +97,6 @@ class CapturePaymentOutputTest extends TestCase
             'amount' => null,
             'currency' => null,
             'paymentMethodIdentifier' => null,
-            'paymentMethodType' => null,
-            'paymentMethodLabel' => null,
-            'paymentMethodRecurringEnabled' => null,
             'status' => null,
             'createdAt' => null,
             'authorizedAt' => null,

@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace Source\Monetization\Account\Domain\Entity;
 
+use Source\Monetization\Account\Domain\ValueObject\ExternalPaymentMethodId;
 use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
-use Source\Monetization\Account\Domain\ValueObject\PaymentMethodId;
+use Source\Monetization\Account\Domain\ValueObject\PaymentMethodIdentifier;
 use Source\Monetization\Account\Domain\ValueObject\PaymentMethodMeta;
 use Source\Monetization\Account\Domain\ValueObject\PaymentMethodStatus;
 use Source\Monetization\Account\Domain\ValueObject\PaymentMethodType;
-use Source\Monetization\Account\Domain\ValueObject\RegisteredPaymentMethodIdentifier;
 
-class RegisteredPaymentMethod
+class PaymentMethod
 {
     public function __construct(
-        private readonly RegisteredPaymentMethodIdentifier $paymentMethodIdentifier,
+        private readonly PaymentMethodIdentifier $paymentMethodIdentifier,
         private readonly MonetizationAccountIdentifier     $monetizationAccountIdentifier,
-        private readonly PaymentMethodId                   $paymentMethodId,
+        private readonly ExternalPaymentMethodId                   $externalPaymentMethodId,
         private readonly PaymentMethodType                          $type,
         private ?PaymentMethodMeta                         $meta = null,
         private bool                                       $isDefault = false,
@@ -24,7 +24,7 @@ class RegisteredPaymentMethod
     ) {
     }
 
-    public function paymentMethodIdentifier(): RegisteredPaymentMethodIdentifier
+    public function paymentMethodIdentifier(): PaymentMethodIdentifier
     {
         return $this->paymentMethodIdentifier;
     }
@@ -34,9 +34,9 @@ class RegisteredPaymentMethod
         return $this->monetizationAccountIdentifier;
     }
 
-    public function paymentMethodId(): PaymentMethodId
+    public function externalPaymentMethodId(): ExternalPaymentMethodId
     {
-        return $this->paymentMethodId;
+        return $this->externalPaymentMethodId;
     }
 
     public function type(): PaymentMethodType

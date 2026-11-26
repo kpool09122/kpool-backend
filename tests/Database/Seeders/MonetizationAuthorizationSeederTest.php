@@ -65,7 +65,7 @@ class MonetizationAuthorizationSeederTest extends TestCase
         $restored = $roleRepository->findSystemByName(Role::OWNER);
         self::assertNotNull($restored);
         self::assertSame((string) $role->roleIdentifier(), (string) $restored->roleIdentifier());
-        self::assertCount(2, $restored->policies());
+        self::assertCount(3, $restored->policies());
         $policies = $this->app()->make(PolicyRepositoryInterface::class)->findByIds($restored->policies());
         foreach ($policies as $policy) {
             self::assertCount(1, $policy->statements());
@@ -88,6 +88,7 @@ class MonetizationAuthorizationSeederTest extends TestCase
             $group = new PrincipalGroup(new PrincipalGroupIdentifier(StrTestHelper::generateUuid()), $name, [$role->roleIdentifier()], $account, $name === Role::GENERAL, null, [$principal->principalIdentifier()]);
             self::assertTrue($policyEvaluator->evaluate($principal, Action::PRINCIPAL_GROUP_READ, new Resource(ResourceType::PRINCIPAL_GROUP, $account), [$group]));
             self::assertSame($name === Role::OWNER, $policyEvaluator->evaluate($principal, Action::PRINCIPAL_GROUP_MANAGE, new Resource(ResourceType::PRINCIPAL_GROUP, $account), [$group]));
+            self::assertSame($name === Role::OWNER, $policyEvaluator->evaluate($principal, Action::PAYMENT_METHOD_REGISTER, new Resource(ResourceType::PAYMENT_METHOD, $account), [$group]));
             self::assertFalse($policyEvaluator->evaluate($principal, Action::PRINCIPAL_GROUP_READ, new Resource(ResourceType::PRINCIPAL_GROUP, new AccountIdentifier(StrTestHelper::generateUuid())), [$group]));
         }
     }

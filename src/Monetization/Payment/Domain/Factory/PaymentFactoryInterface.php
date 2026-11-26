@@ -6,8 +6,8 @@ namespace Source\Monetization\Payment\Domain\Factory;
 
 use DateTimeImmutable;
 use Source\Monetization\Account\Domain\ValueObject\MonetizationAccountIdentifier;
+use Source\Monetization\Account\Domain\ValueObject\PaymentMethodIdentifier;
 use Source\Monetization\Payment\Domain\Entity\Payment;
-use Source\Monetization\Payment\Domain\ValueObject\PaymentMethod;
 use Source\Shared\Domain\ValueObject\Money;
 use Source\Shared\Domain\ValueObject\OrderIdentifier;
 
@@ -17,7 +17,7 @@ interface PaymentFactoryInterface
         OrderIdentifier   $orderIdentifier,
         MonetizationAccountIdentifier $buyerMonetizationAccountIdentifier,
         Money             $money,
-        PaymentMethod     $paymentMethod,
+        PaymentMethodIdentifier     $paymentMethodIdentifier,
         DateTimeImmutable $createdAt,
     ): Payment;
 }

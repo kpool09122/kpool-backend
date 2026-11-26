@@ -4,22 +4,15 @@ declare(strict_types=1);
 
 namespace Source\Monetization\Account\Application\UseCase\Command\RegisterPaymentMethod;
 
-use Source\Monetization\Account\Domain\Entity\RegisteredPaymentMethod;
+use Source\Monetization\Account\Domain\Entity\PaymentMethod;
 
 class RegisterPaymentMethodOutput implements RegisterPaymentMethodOutputPort
 {
-    private ?RegisteredPaymentMethod $paymentMethod = null;
+    private ?PaymentMethod $paymentMethod = null;
 
-    private bool $skipped = false;
-
-    public function setRegisteredPaymentMethod(RegisteredPaymentMethod $paymentMethod): void
+    public function setPaymentMethod(PaymentMethod $paymentMethod): void
     {
         $this->paymentMethod = $paymentMethod;
-    }
-
-    public function setSkipped(bool $skipped): void
-    {
-        $this->skipped = $skipped;
     }
 
     /**
@@ -29,23 +22,21 @@ class RegisterPaymentMethodOutput implements RegisterPaymentMethodOutputPort
     {
         if ($this->paymentMethod === null) {
             return [
-                'registeredPaymentMethodIdentifier' => null,
-                'skipped' => $this->skipped,
+                'paymentMethodIdentifier' => null,
             ];
         }
 
         $meta = $this->paymentMethod->meta();
 
         return [
-            'registeredPaymentMethodIdentifier' => (string) $this->paymentMethod->paymentMethodIdentifier(),
-            'paymentMethodId' => (string) $this->paymentMethod->paymentMethodId(),
+            'paymentMethodIdentifier' => (string) $this->paymentMethod->paymentMethodIdentifier(),
+            'externalPaymentMethodId' => (string) $this->paymentMethod->externalPaymentMethodId(),
             'type' => $this->paymentMethod->type()->value,
             'brand' => $meta?->brand(),
             'last4' => $meta?->last4(),
             'expMonth' => $meta?->expMonth(),
             'expYear' => $meta?->expYear(),
             'isDefault' => $this->paymentMethod->isDefault(),
-            'skipped' => $this->skipped,
         ];
     }
 }

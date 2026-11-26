@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 return [
+    'payment_method_already_exists' => 'Este método de pago ya está registrado.',
+    'invalid_payment_method' => 'El método de pago no está disponible para este pago.',
     'account_snapshot_change_request_not_found' => 'No se encontró la solicitud de cambio de instantánea.',
     'invalid_account_snapshot_change_request' => 'Ya existe una solicitud de cambio de instantánea pendiente.',
     'invalid_account_snapshot_change_request_approval' => 'No se puede aprobar esta solicitud de cambio de instantánea.',
