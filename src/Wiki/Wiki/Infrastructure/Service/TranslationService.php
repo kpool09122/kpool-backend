@@ -9,6 +9,7 @@ use Application\Http\Client\GoogleTranslateClient\TranslateTexts\TranslateTextsR
 use InvalidArgumentException;
 use Source\Shared\Domain\Support\TypedValue;
 use Source\Shared\Domain\ValueObject\Language;
+use Source\Wiki\Shared\Domain\Service\NormalizationServiceInterface;
 use Source\Wiki\Wiki\Application\Service\TranslatedWikiData;
 use Source\Wiki\Wiki\Application\Service\TranslationServiceInterface;
 use Source\Wiki\Wiki\Domain\Entity\Wiki;
@@ -54,6 +55,7 @@ readonly class TranslationService implements TranslationServiceInterface
 
     public function __construct(
         private GoogleTranslateClient $googleTranslateClient,
+        private NormalizationServiceInterface $normalizationService,
         private WikiRepositoryInterface $wikiRepository,
         private WikiSnapshotRepositoryInterface $wikiSnapshotRepository,
     ) {
@@ -75,17 +77,13 @@ readonly class TranslationService implements TranslationServiceInterface
             return $text;
         }, $baseline, $existing);
 
-        if ($texts === []) {
-            return $this->mapWikiTexts($wiki, $targetLanguage, static fn (string $text, ?int $maxLength, ?string $reused = null): string => $reused ?? $text, $baseline, $existing);
-        }
-
-        $translations = $this->googleTranslateClient->translateTexts(new TranslateTextsRequest(
+        $translations = $texts === [] ? [] : $this->googleTranslateClient->translateTexts(new TranslateTextsRequest(
             texts: $texts,
             targetLanguage: $targetLanguage->value,
         ))->translatedTexts();
         $offset = 0;
 
-        return $this->mapWikiTexts($wiki, $targetLanguage, static function (string $text, ?int $maxLength, ?string $reused = null) use ($translations, &$offset): string {
+        $translated = $this->mapWikiTexts($wiki, $targetLanguage, static function (string $text, ?int $maxLength, ?string $reused = null) use ($translations, &$offset): string {
             if ($reused !== null) {
                 return $reused;
             }
@@ -100,6 +98,23 @@ readonly class TranslationService implements TranslationServiceInterface
 
             return $maxLength === null ? $translated : mb_substr(trim($translated), 0, $maxLength);
         }, $baseline, $existing);
+
+        $basic = $translated['basic'];
+        $data = $basic->toArray();
+        foreach ($basic->normalizableKeys() as $sourceKey => $normalizedKey) {
+            $data[$normalizedKey] = $this->normalizationService->normalize(
+                TypedValue::string($data[$sourceKey] ?? ''),
+                $targetLanguage,
+            );
+        }
+
+        return new TranslatedWikiData(
+            translatedBasic: $basic::fromArray($data),
+            translatedSections: $translated['sections'],
+            translatedTitle: $translated['title'],
+            translatedMetaDescription: $translated['metaDescription'],
+            translatedKeywords: $translated['keywords'],
+        );
     }
 
     /**
@@ -279,8 +294,9 @@ readonly class TranslationService implements TranslationServiceInterface
 
     /**
      * @param callable(string, ?int, ?string=): string $translate
+     * @return array{basic: BasicInterface, sections: SectionContentCollection, title: ?SeoTitle, metaDescription: ?MetaDescription, keywords: ?SeoKeywords}
      */
-    private function mapWikiTexts(Wiki $wiki, Language $targetLanguage, callable $translate, Wiki|WikiSnapshot|null $baseline = null, ?Wiki $existing = null): TranslatedWikiData
+    private function mapWikiTexts(Wiki $wiki, Language $targetLanguage, callable $translate, Wiki|WikiSnapshot|null $baseline = null, ?Wiki $existing = null): array
     {
         $basic = $this->mapBasic($wiki->basic(), $translate, $baseline?->basic(), $existing?->basic());
         $reuse = [];
@@ -301,18 +317,18 @@ readonly class TranslationService implements TranslationServiceInterface
         $description = $wiki->metaDescription();
         $keywords = $wiki->keywords();
 
-        return new TranslatedWikiData(
-            translatedBasic: $basic,
-            translatedSections: $sections,
-            translatedTitle: $title === null ? null : new SeoTitle($translate((string) $title, SeoTitle::MAX_LENGTH, $this->reusableText((string) $title, $baseline?->title() === null ? null : (string) $baseline->title(), $existing?->title() === null ? null : (string) $existing->title()))),
-            translatedMetaDescription: $description === null ? null : new MetaDescription($translate((string) $description, MetaDescription::MAX_LENGTH, $this->reusableText((string) $description, $baseline?->metaDescription() === null ? null : (string) $baseline->metaDescription(), $existing?->metaDescription() === null ? null : (string) $existing->metaDescription()))),
-            translatedKeywords: $keywords === null ? null : ($baseline?->keywords()?->values() === $keywords->values() && $existing?->keywords() !== null && count($existing->keywords()->values()) === count($keywords->values())
+        return [
+            'basic' => $basic,
+            'sections' => $sections,
+            'title' => $title === null ? null : new SeoTitle($translate((string) $title, SeoTitle::MAX_LENGTH, $this->reusableText((string) $title, $baseline?->title() === null ? null : (string) $baseline->title(), $existing?->title() === null ? null : (string) $existing->title()))),
+            'metaDescription' => $description === null ? null : new MetaDescription($translate((string) $description, MetaDescription::MAX_LENGTH, $this->reusableText((string) $description, $baseline?->metaDescription() === null ? null : (string) $baseline->metaDescription(), $existing?->metaDescription() === null ? null : (string) $existing->metaDescription()))),
+            'keywords' => $keywords === null ? null : ($baseline?->keywords()?->values() === $keywords->values() && $existing?->keywords() !== null && count($existing->keywords()->values()) === count($keywords->values())
                 ? $existing->keywords()
                 : new SeoKeywords(array_map(
                     static fn (string $keyword): string => $translate($keyword, SeoKeywords::MAX_KEYWORD_LENGTH),
                     $keywords->values(),
                 ))),
-        );
+        ];
     }
 
     /**
