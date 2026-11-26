@@ -578,7 +578,8 @@ interface WikiListOperations {
     @minValue(1) @query page?: int32 | null,
     @minValue(1) @maxValue(100) @query perPage?: int32 | null,
     @query resourceType?: string,
-    @query keyword?: string,
+    @doc("Partial-match search across Wiki names, talent real names, and agency CEO names, including their language-normalized values.")
+    @query keyword?: string | null,
     @doc("Sort field. Use createdAt for newly created wikis and version for most frequently updated wikis.")
     @query sort?: "updatedAt" | "name" | "createdAt" | "version" | null,
     @query order?: string,

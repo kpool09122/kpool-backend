@@ -146,6 +146,87 @@ class ListWikisTest extends TestCase
     }
 
     #[Group('useDb')]
+    #[DataProvider('personNameKeywordProvider')]
+    public function testProcessSearchesPersonNameOrNormalizedPersonName(
+        ResourceType $resourceType,
+        string $field,
+        string $normalizedField,
+        Language $language,
+        string $personName,
+        string $normalizedPersonName,
+        string $keyword,
+    ): void {
+        $id = '01965bb2-bcc9-7c6f-8b90-89f7f217f431';
+        $basic = ['name' => 'Display Name', 'normalized_name' => 'display name', $field => $personName, $normalizedField => $normalizedPersonName];
+        CreateWiki::create($id, $resourceType->value, ['language' => $language->value, 'slug' => $resourceType->slugPrefix() . '-matching'], $basic);
+        CreateWiki::create(
+            '01965bb2-bcc9-7c6f-8b90-89f7f217f432',
+            $resourceType->value,
+            ['language' => $language->value, 'slug' => $resourceType->slugPrefix() . '-unrelated'],
+            ['name' => 'Unrelated', 'normalized_name' => 'unrelated', $field => 'Someone Else', $normalizedField => 'someone else']
+        );
+
+        foreach ([null, $resourceType] as $filter) {
+            $payload = $this->process(new ListWikisInput(language: $language, resourceType: $filter, keyword: $keyword))->toArray();
+
+            self::assertSame(1, $payload['total']);
+            self::assertSame([$id], array_column($payload['wikis'], 'wikiIdentifier'));
+        }
+    }
+
+    /** @return iterable<string, array{ResourceType, string, string, Language, string, string, string}> */
+    public static function personNameKeywordProvider(): iterable
+    {
+        $cases = [
+            'Japanese original name' => [Language::JAPANESE, '日本太郎', 'different reading', '日本'],
+            'Japanese reading' => [Language::JAPANESE, '山田太郎', 'やまだたろう', 'ヤマダ'],
+            'Korean original name' => [Language::KOREAN, '박진영', '', '진영'],
+            'Korean initials' => [Language::KOREAN, '박진영', 'ㅂㅈㅇ', 'ㅈㅇ'],
+            'Korean normalized keyword' => [Language::KOREAN, '朴軫永', 'ㅂㅈㅇ', '진영'],
+            'English case insensitive' => [Language::ENGLISH, 'Real Person', 'real person', 'PERSON'],
+            'Literal percent' => [Language::ENGLISH, '100% Person', '100% person', '%'],
+            'Literal underscore' => [Language::ENGLISH, 'A_B Person', 'a_b person', '_'],
+        ];
+        foreach ([[ResourceType::AGENCY, 'ceo', 'normalized_ceo'], [ResourceType::TALENT, 'real_name', 'normalized_real_name']] as [$resourceType, $field, $normalizedField]) {
+            foreach ($cases as $name => $case) {
+                yield $resourceType->value . ' ' . $name => [$resourceType, $field, $normalizedField, ...$case];
+            }
+        }
+    }
+
+    #[Group('useDb')]
+    public function testPersonNameSearchPreservesLanguageAndResourceTypeFilters(): void
+    {
+        $agencyId = '01965bb2-bcc9-7c6f-8b90-89f7f217f441';
+        $talentId = '01965bb2-bcc9-7c6f-8b90-89f7f217f442';
+        $groupId = '01965bb2-bcc9-7c6f-8b90-89f7f217f443';
+        $agencyBasic = ['name' => 'Agency', 'normalized_name' => 'agency', 'ceo' => '박진영', 'normalized_ceo' => 'ㅂㅈㅇ'];
+        CreateWiki::create($agencyId, 'agency', ['language' => 'ko'], $agencyBasic);
+        CreateWiki::create($talentId, 'talent', ['language' => 'ko'], ['name' => 'Talent', 'normalized_name' => 'talent', 'real_name' => '박진영', 'normalized_real_name' => 'ㅂㅈㅇ']);
+        CreateWiki::create($groupId, 'group', ['language' => 'ko'], ['name' => '박진영', 'normalized_name' => 'ㅂㅈㅇ']);
+        CreateWiki::create('01965bb2-bcc9-7c6f-8b90-89f7f217f444', 'agency', ['language' => 'en'], $agencyBasic);
+        CreateWiki::create('01965bb2-bcc9-7c6f-8b90-89f7f217f445', 'song', ['language' => 'ko'], ['name' => 'Song', 'normalized_name' => 'song']);
+        CreateWiki::create('01965bb2-bcc9-7c6f-8b90-89f7f217f446', 'agency', ['language' => 'ko', 'slug' => 'ag-empty'], ['name' => 'Empty', 'normalized_name' => 'empty', 'ceo' => '', 'normalized_ceo' => '']);
+        CreateWiki::create('01965bb2-bcc9-7c6f-8b90-89f7f217f447', 'talent', ['language' => 'ko', 'slug' => 'tl-empty'], ['name' => 'Empty', 'normalized_name' => 'empty', 'real_name' => '', 'normalized_real_name' => '']);
+
+        foreach (['진영', 'ㅈㅇ'] as $keyword) {
+            foreach ([null, ResourceType::AGENCY, ResourceType::TALENT, ResourceType::GROUP, ResourceType::SONG] as $filter) {
+                $expected = match ($filter) {
+                    null => [$agencyId, $talentId, $groupId],
+                    ResourceType::AGENCY => [$agencyId],
+                    ResourceType::TALENT => [$talentId],
+                    ResourceType::GROUP => [$groupId],
+                    default => [],
+                };
+                $payload = $this->process(new ListWikisInput(language: Language::KOREAN, resourceType: $filter, keyword: $keyword))->toArray();
+
+                self::assertSame(count($expected), $payload['total']);
+                self::assertEqualsCanonicalizing($expected, array_column($payload['wikis'], 'wikiIdentifier'));
+            }
+        }
+    }
+
+    #[Group('useDb')]
     public function testProcessSortsByNameAndOrder(): void
     {
         $this->createWiki('01965bb2-bcc9-7c6f-8b90-89f7f217f501', 'talent', 'tl-charlie', 'Charlie', 'charlie', '2026-05-01 00:00:00');

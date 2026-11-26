@@ -28,12 +28,28 @@ readonly class ListWikis implements ListWikisInterface
 {
     use WhereLike;
 
-    /** @var array<string, array{relation: string, table: string}> */
+    /** @var array<string, array{relation: string, table: string, searchFields: array<string, string>}> */
     private const BASIC_TABLES = [
-        ResourceType::TALENT->value => ['relation' => 'talentBasic', 'table' => 'wiki_talent_basics'],
-        ResourceType::GROUP->value => ['relation' => 'groupBasic', 'table' => 'wiki_group_basics'],
-        ResourceType::AGENCY->value => ['relation' => 'agencyBasic', 'table' => 'wiki_agency_basics'],
-        ResourceType::SONG->value => ['relation' => 'songBasic', 'table' => 'wiki_song_basics'],
+        ResourceType::TALENT->value => [
+            'relation' => 'talentBasic',
+            'table' => 'wiki_talent_basics',
+            'searchFields' => ['name' => 'normalized_name', 'real_name' => 'normalized_real_name'],
+        ],
+        ResourceType::GROUP->value => [
+            'relation' => 'groupBasic',
+            'table' => 'wiki_group_basics',
+            'searchFields' => ['name' => 'normalized_name'],
+        ],
+        ResourceType::AGENCY->value => [
+            'relation' => 'agencyBasic',
+            'table' => 'wiki_agency_basics',
+            'searchFields' => ['name' => 'normalized_name', 'ceo' => 'normalized_ceo'],
+        ],
+        ResourceType::SONG->value => [
+            'relation' => 'songBasic',
+            'table' => 'wiki_song_basics',
+            'searchFields' => ['name' => 'normalized_name'],
+        ],
     ];
 
     public function __construct(
@@ -99,9 +115,11 @@ readonly class ListWikis implements ListWikisInterface
                 $query->orWhere(function (Builder $query) use ($type, $basic, $keyword, $normalizedKeyword): void {
                     $query->where('wikis.resource_type', $type)
                         ->where(function (Builder $query) use ($basic, $keyword, $normalizedKeyword): void {
-                            $query
-                                ->where(fn (Builder $query) => $this->whereLike($query, "{$basic['table']}.name", $keyword))
-                                ->orWhere(fn (Builder $query) => $this->whereLike($query, "{$basic['table']}.normalized_name", $normalizedKeyword));
+                            foreach ($basic['searchFields'] as $field => $normalizedField) {
+                                $query
+                                    ->orWhere(fn (Builder $query) => $this->whereLike($query, "{$basic['table']}.{$field}", $keyword))
+                                    ->orWhere(fn (Builder $query) => $this->whereLike($query, "{$basic['table']}.{$normalizedField}", $normalizedKeyword));
+                            }
                         });
                 });
             }
@@ -141,7 +159,7 @@ readonly class ListWikis implements ListWikisInterface
     }
 
     /**
-     * @return array<string, array{relation: string, table: string}>
+     * @return array<string, array{relation: string, table: string, searchFields: array<string, string>}>
      */
     private function targetBasicTables(?string $resourceType): array
     {
