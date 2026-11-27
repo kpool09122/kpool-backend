@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'payment_method_not_found' => 'Payment method not found.',
     'payment_method_already_exists' => 'This payment method is already registered.',
     'invalid_payment_method' => 'The payment method is unavailable for this payment.',
     'account_snapshot_change_request_not_found' => 'Snapshot change request not found.',

@@ -224,8 +224,6 @@ model SellerOnboardingSummary {
 model PaymentMethodSummary {
   @doc("Internal payment method identifier.")
   paymentMethodIdentifier: Uuid;
-  @doc("Gateway payment method identifier.")
-  externalPaymentMethodId: string;
   @doc("Payment method type.")
   type: PaymentMethodType;
   @doc("Card brand returned from metadata.")
@@ -236,8 +234,20 @@ model PaymentMethodSummary {
   expMonth?: int32 | null;
   @doc("Expiration year returned from metadata.")
   expYear?: int32 | null;
-  @doc("Whether the method is the default one.")
+  @doc("Whether the current payment method is the default one.")
   isDefault: boolean;
+  status: "active" | "inactive";
+  @doc("Null for current cards.")
+  archivedAt: utcDateTime | null;
+}
+
+@doc("Deleted payment method information retained for history display.")
+model ArchivedPaymentMethodSummary {
+  paymentMethodIdentifier: Uuid;
+  type: PaymentMethodType;
+  brand: string | null;
+  last4: string | null;
+  archivedAt: utcDateTime;
 }
 
 @doc("Payment snapshot returned by authorize/capture/refund commands.")
@@ -388,10 +398,9 @@ model OnboardSellerRequestBody {
 
 @doc("Request body for registering a payment method.")
 model RegisterPaymentMethodRequestBody {
-  @doc("Gateway payment method identifier.")
-  externalPaymentMethodId: string;
-  @doc("Payment method type.")
-  type: PaymentMethodType;
+  @maxLength(255)
+  @pattern("^seti_[A-Za-z0-9]+$")
+  setupIntentIdentifier: string;
 }
 
 @doc("Request body for syncing a payout account webhook payload.")
@@ -515,7 +524,7 @@ model OnboardSellerResponse {
 
 @doc("Response returned when a payment method is registered.")
 model RegisterPaymentMethodResponse {
-  @statusCode statusCode: 201;
+  @statusCode statusCode: 200;
   @body body: PaymentMethodSummary;
 }
 
@@ -572,19 +581,48 @@ interface MonetizationAccountOperations {
   ): OnboardSellerResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
 
   @post
-  @route("/{monetizationAccountId}/register-payment-method")
-  @doc("Register a payment method on the specified monetization account.")
-  registerPaymentMethod(
-    @path monetizationAccountId: Uuid,
-    @body body: RegisterPaymentMethodRequestBody,
-  ): RegisterPaymentMethodResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.ForbiddenProblemResponse | KPool.Common.ConflictProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
-
-  @post
   @route("/sync-payout-account")
   @doc("Synchronize payout account data from a gateway event payload.")
   syncPayoutAccount(
     @body body: SyncPayoutAccountRequestBody,
   ): OkEmptyArrayResponse | KPool.Common.UnauthorizedProblemResponse | KPool.Common.NotFoundProblemResponse | KPool.Common.UnprocessableEntityProblemResponse | KPool.Common.InternalServerErrorProblemResponse | KPool.Common.CsrfTokenMismatchProblemResponse | KPool.Common.TooManyRequestsProblemResponse | KPool.Common.ServiceUnavailableProblemResponse;
+}
+
+model PrepareCardRegistrationResponse {
+  @statusCode statusCode: 201;
+  @body body: { setupIntentIdentifier: string; clientSecret: string; };
+}
+model ListPaymentMethodsResponse {
+  @statusCode statusCode: 200;
+  @body body: { paymentMethods: PaymentMethodSummary[]; };
+}
+model GetPaymentMethodResponse {
+  @statusCode statusCode: 200;
+  @body body: PaymentMethodSummary | ArchivedPaymentMethodSummary;
+}
+model DeletePaymentMethodResponse { @statusCode statusCode: 204; }
+
+@useAuth(SessionCookieAuth)
+interface PaymentMethodOperations {
+  @post @route("/payment-methods/setup-intents")
+  @doc("Prepare card registration in the effective Account using a card-only off-session Stripe SetupIntent. Requires an active reachable Principal with card_registration_prepare permission and session-bound recent authentication (401 code recent_authentication_required). Customer is resolved or created by the server; no account/customer/type/card details are accepted. Use clientSecret only with Stripe.js confirmSetup, never in logs. Raw card number/CVC goes directly to Stripe. On 503 retry; Customer creation uses a stable account idempotency key.")
+  prepareCardRegistration(): PrepareCardRegistrationResponse | UnauthorizedProblemResponse | ForbiddenProblemResponse | CsrfTokenMismatchProblemResponse | TooManyRequestsProblemResponse | InternalServerErrorProblemResponse | ServiceUnavailableProblemResponse;
+
+  @post @route("/payment-methods")
+  @doc("Complete a successful Stripe setup. Requires payment_method_register permission and recent authentication. Stripe success, off-session usage, Customer and attached card are rechecked server-side. Non-success/foreign/detached methods return 409 code card_registration_rejected. Repeating completion for the same active card returns the same internal ID (200). First card becomes default. On 503 retry this completion; never submit PAN/CVC or clientSecret. Refresh recent authentication and retry on 401 recent_authentication_required.")
+  registerPaymentMethod(@body body: RegisterPaymentMethodRequestBody): RegisterPaymentMethodResponse | UnauthorizedProblemResponse | ForbiddenProblemResponse | ConflictProblemResponse | UnprocessableEntityProblemResponse | CsrfTokenMismatchProblemResponse | TooManyRequestsProblemResponse | InternalServerErrorProblemResponse | ServiceUnavailableProblemResponse;
+
+  @get @route("/payment-methods")
+  @doc("List only current cards for the effective Account, ordered by internal ID. Requires an active reachable Principal with payment_method_read permission. Empty registration is paymentMethods: []. Archive rows are excluded. No recent authentication is required to list.")
+  listPaymentMethods(): ListPaymentMethodsResponse | UnauthorizedProblemResponse | ForbiddenProblemResponse | TooManyRequestsProblemResponse | InternalServerErrorProblemResponse | ServiceUnavailableProblemResponse;
+
+  @get @route("/payment-methods/{paymentMethodIdentifier}")
+  @doc("Resolve a past payment's unchanged internal payment-method ID from current data or deletion archive in the effective Account. Requires payment_method_read permission. Foreign/missing IDs return 404. archivedAt records when card information was archived, not when a payment occurred. Archive records cannot be used for new payments.")
+  getPaymentMethod(@path paymentMethodIdentifier: Uuid): GetPaymentMethodResponse | UnauthorizedProblemResponse | ForbiddenProblemResponse | NotFoundProblemResponse | UnprocessableEntityProblemResponse | TooManyRequestsProblemResponse | InternalServerErrorProblemResponse | ServiceUnavailableProblemResponse;
+
+  @delete @route("/payment-methods/{paymentMethodIdentifier}")
+  @doc("Detach and archive one card, then delete current data atomically in an Action-owned DB transaction. Requires payment_method_delete permission and recent authentication. Last card may be deleted. Deleting the default promotes the lowest-ID remaining active card; no default remains when none is active. External detach is not atomic with DB: on 503/500 retry the same DELETE; already detached cards proceed to archive, and an already archived ID in this Account returns 204. Foreign/missing IDs return 404; a card attached to a different Customer returns 409. No primary-selection API is added.")
+  deletePaymentMethod(@path paymentMethodIdentifier: Uuid): DeletePaymentMethodResponse | UnauthorizedProblemResponse | ForbiddenProblemResponse | NotFoundProblemResponse | ConflictProblemResponse | UnprocessableEntityProblemResponse | CsrfTokenMismatchProblemResponse | TooManyRequestsProblemResponse | InternalServerErrorProblemResponse | ServiceUnavailableProblemResponse;
 }
 
 @route("/payments")

@@ -80,16 +80,16 @@ class AuthenticatedRouteProtectionTest extends TestCase
         }
     }
 
-    public function testMonetizationAuthorizationRoutesAreProtectedAndBusinessRoutesRemainDisabled(): void
+    public function testMonetizationAuthorizationAndCardRoutesAreProtectedAndOtherBusinessRoutesRemainDisabled(): void
     {
         $routes = array_values(array_filter(RouteFacade::getRoutes()->getRoutes(), static fn (Route $route): bool => str_starts_with($route->uri(), 'api/v1/monetization/')));
-        self::assertCount(5, $routes);
+        self::assertCount(10, $routes);
         foreach ($routes as $route) {
             foreach (['auth.api', 'resolve.actor', 'resolve.account'] as $middleware) {
                 self::assertContains($middleware, $route->gatherMiddleware());
             }
-            if (in_array($route->uri(), ['api/v1/monetization/principal-groups', 'api/v1/monetization/members', 'api/v1/monetization/principal-groups/members'], true)) {
-                foreach (['account.active', 'principal.active', 'resolve.monetization', in_array('PATCH', $route->methods(), true) ? 'rate-limit:screen,command' : 'rate-limit:screen,query'] as $middleware) {
+            if (str_starts_with($route->uri(), 'api/v1/monetization/payment-methods') || in_array($route->uri(), ['api/v1/monetization/principal-groups', 'api/v1/monetization/members', 'api/v1/monetization/principal-groups/members'], true)) {
+                foreach (['account.active', 'principal.active', 'resolve.monetization', in_array('GET', $route->methods(), true) ? 'rate-limit:screen,query' : 'rate-limit:screen,command'] as $middleware) {
                     self::assertContains($middleware, $route->gatherMiddleware());
                 }
             } else {

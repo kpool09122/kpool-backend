@@ -30,13 +30,14 @@ class RegisterPaymentMethodOutput implements RegisterPaymentMethodOutputPort
 
         return [
             'paymentMethodIdentifier' => (string) $this->paymentMethod->paymentMethodIdentifier(),
-            'externalPaymentMethodId' => (string) $this->paymentMethod->externalPaymentMethodId(),
             'type' => $this->paymentMethod->type()->value,
             'brand' => $meta?->brand(),
             'last4' => $meta?->last4(),
             'expMonth' => $meta?->expMonth(),
             'expYear' => $meta?->expYear(),
             'isDefault' => $this->paymentMethod->isDefault(),
+            'status' => $this->paymentMethod->status()->value,
+            'archivedAt' => null,
         ];
     }
 }

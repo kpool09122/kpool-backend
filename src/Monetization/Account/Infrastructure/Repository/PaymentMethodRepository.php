@@ -91,6 +91,11 @@ class PaymentMethodRepository implements PaymentMethodRepositoryInterface
         );
     }
 
+    public function delete(PaymentMethodIdentifier $identifier): void
+    {
+        PaymentMethodEloquent::query()->where('id', (string) $identifier)->delete();
+    }
+
     private function toDomainEntity(PaymentMethodEloquent $eloquent): PaymentMethod
     {
         $hasMeta = $eloquent->brand !== null

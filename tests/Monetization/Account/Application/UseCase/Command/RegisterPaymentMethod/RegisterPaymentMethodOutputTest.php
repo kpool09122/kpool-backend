@@ -47,7 +47,9 @@ class RegisterPaymentMethodOutputTest extends TestCase
         $result = $output->toArray();
 
         $this->assertSame($identifierValue, $result['paymentMethodIdentifier']);
-        $this->assertSame('pm_1234567890', $result['externalPaymentMethodId']);
+        $this->assertArrayNotHasKey('externalPaymentMethodId', $result);
+        $this->assertSame('active', $result['status']);
+        $this->assertNull($result['archivedAt']);
         $this->assertSame('card', $result['type']);
         $this->assertSame('visa', $result['brand']);
         $this->assertSame('4242', $result['last4']);

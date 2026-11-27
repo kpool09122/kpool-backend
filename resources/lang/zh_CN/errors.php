@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 return [
+    'payment_method_not_found' => '未找到付款方式。',
     'payment_method_already_exists' => '此支付方式已注册。',
     'invalid_payment_method' => '此付款无法使用指定的支付方式。',
     'account_snapshot_change_request_not_found' => '未找到快照变更申请。',
